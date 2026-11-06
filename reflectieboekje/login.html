@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KMA Reflectieboekje</title>
+<meta name="theme-color" content="#0c140f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+  :root { --bg: #0c140f; --panel: #14211a; --line: #2a3a30; --gold: #d8cb92; --text: #e8ece6; --muted: #a9b3ab; --red: #e0566a; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font: 16px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif; }
+  main { max-width: 400px; margin: 0 auto; padding: 56px 16px 32px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; }
+  img { width: 84px; height: 84px; border-radius: 20px; }
+  h1 { font-size: 24px; margin: 4px 0 0; }
+  p { margin: 0; color: var(--muted); font-size: 15px; }
+  form { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+  input { font: inherit; padding: 13px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); outline: none; }
+  input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(216,203,146,.18); }
+  button { font: inherit; font-weight: 700; padding: 13px 14px; border-radius: 10px; border: 0; background: var(--gold); color: #14211a; cursor: pointer; }
+  button:disabled { opacity: .6; }
+  #err { color: var(--red); min-height: 22px; font-size: 14px; }
+  small { color: var(--muted); font-size: 13px; }
+  a { color: var(--gold); }
+</style>
+</head>
+<body>
+<main>
+  <img src="icon-192.png" alt="">
+  <h1>KMA Reflectieboekje</h1>
+  <p>Deze app is beveiligd. Vul het wachtwoord in dat je van je teamleider hebt gekregen.</p>
+  <form id="f" autocomplete="on">
+    <input id="pw" type="password" autocomplete="current-password" placeholder="Wachtwoord" aria-label="Wachtwoord" required>
+    <button id="go" type="submit">Openen</button>
+    <div id="err" role="alert"></div>
+  </form>
+  <small>Je hoeft dit maar één keer te doen op dit toestel. Daarna werkt de app ook offline.</small>
+  <small><a href="../">Terug naar de startpagina</a></small>
+</main>
+<script>
+(function () {
+  'use strict';
+  var APP = 'reflectieboekje', START = 'index.html';
+  var err = document.getElementById('err'), btn = document.getElementById('go');
+  function b64(s) { var t = atob(s), u = new Uint8Array(t.length); for (var i = 0; i < t.length; i++) u[i] = t.charCodeAt(i); return u; }
+  function idb() { return new Promise(function (ok, bad) { var r = indexedDB.open('kma-gate', 1); r.onupgradeneeded = function () { r.result.createObjectStore('k'); }; r.onsuccess = function () { ok(r.result); }; r.onerror = function () { bad(r.error); }; }); }
+  function putKey(key) { return idb().then(function (db) { return new Promise(function (ok, bad) { var tx = db.transaction('k', 'readwrite'); tx.objectStore('k').put(key, APP); tx.oncomplete = ok; tx.onerror = function () { bad(tx.error); }; }); }); }
+  if (!('serviceWorker' in navigator) || !window.crypto || !crypto.subtle || !window.indexedDB) {
+    err.textContent = 'Deze browser kan de beveiligde app niet openen. Gebruik een recente versie van Safari, Chrome, Edge of Firefox (geen privévenster).';
+    btn.disabled = true; return;
+  }
+  var reg = navigator.serviceWorker.register('sw.js');
+  document.getElementById('f').addEventListener('submit', function (e) {
+    e.preventDefault(); err.textContent = ''; btn.disabled = true; btn.textContent = 'Bezig…';
+    var pw = document.getElementById('pw').value;
+    fetch('gate.json', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (g) {
+      return crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']).then(function (base) {
+        return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64(g.salt), iterations: g.iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+      }).then(function (key) {
+        var c = b64(g.check);
+        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: c.slice(0, 12) }, key, c.slice(12)).then(function () { return key; });
+      });
+    }).then(function (key) {
+      return putKey(key).then(function () { return reg; }).then(function () { return navigator.serviceWorker.ready; }).then(function (r) {
+        if (navigator.serviceWorker.controller) return;
+        return new Promise(function (ok) { navigator.serviceWorker.addEventListener('controllerchange', ok, { once: true }); setTimeout(ok, 3000); });
+      });
+    }).then(function () { location.replace(START); }).catch(function (x) {
+      btn.disabled = false; btn.textContent = 'Openen';
+      err.textContent = x && x.name === 'OperationError' ? 'Dit wachtwoord klopt niet.' : 'Openen lukte niet. Controleer je internetverbinding en probeer het opnieuw.';
+    });
+  });
+})();
+</script>
+</body>
+</html>

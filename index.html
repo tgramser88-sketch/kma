@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KMA-apps</title>
+<meta name="description" content="Het Reflectieboekje voor cadetten en het CadetVolgSysteem voor teamleiders en instructeurs van de KMA, als web-app.">
+<meta name="theme-color" content="#0c140f">
+<link rel="icon" href="assets/reflectieboekje.png">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<style>
+  :root { --bg: #0c140f; --panel: #14211a; --line: #2a3a30; --gold: #d8cb92; --text: #e8ece6; --muted: #a9b3ab; --red: #c8283a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 "DM Sans", "Segoe UI", system-ui, sans-serif; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+  header { border-bottom: 1px solid var(--line); }
+  header .wrap { display: flex; align-items: center; gap: 14px; padding-top: 18px; padding-bottom: 18px; }
+  header img { width: 40px; height: 40px; }
+  header b { display: block; font-size: 13px; letter-spacing: .12em; color: var(--gold); text-transform: uppercase; }
+  header span { font-size: 18px; font-weight: 600; }
+  .hero { padding: 56px 0 28px; }
+  h1 { font-family: "Libre Franklin", "DM Sans", sans-serif; font-size: clamp(30px, 5vw, 46px); line-height: 1.12; margin: 0 0 14px; letter-spacing: -.01em; }
+  h1 em { font-style: normal; color: var(--gold); }
+  .lead { color: var(--muted); font-size: 18px; max-width: 640px; margin: 0; }
+  .apps { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; padding: 24px 0 8px; }
+  .app { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+  .app .top { display: flex; gap: 14px; align-items: center; }
+  .app img { width: 56px; height: 56px; border-radius: 14px; }
+  .app h2 { margin: 0; font-size: 20px; }
+  .app .who { color: var(--gold); font-size: 13px; font-weight: 600; letter-spacing: .04em; }
+  .app p { margin: 0; color: var(--muted); font-size: 15px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: auto; padding: 12px 18px; border-radius: 10px; background: var(--gold); color: #14211a; font-weight: 700; text-decoration: none; }
+  .btn:hover { filter: brightness(1.07); }
+  section { padding: 30px 0; border-top: 1px solid var(--line); margin-top: 30px; }
+  h3 { font-size: 20px; margin: 0 0 14px; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .step { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .step strong { color: var(--gold); display: block; margin-bottom: 6px; }
+  .step ol { margin: 0; padding-left: 20px; color: var(--muted); font-size: 15px; }
+  .note { background: rgba(216,203,146,.07); border: 1px solid rgba(216,203,146,.3); border-radius: 12px; padding: 16px 18px; color: var(--text); font-size: 15px; }
+  .note ul { margin: 6px 0 0; padding-left: 20px; color: var(--muted); }
+  footer { color: var(--muted); font-size: 13px; padding: 30px 0 40px; border-top: 1px solid var(--line); margin-top: 30px; }
+</style>
+</head>
+<body>
+<header><div class="wrap"><img src="assets/kma-embleem.svg" alt=""><div><b>Koninklijke Militaire Academie</b><span>KMA-apps</span></div></div></header>
+<main class="wrap">
+  <div class="hero">
+    <h1>Reflecteren, volgen en begeleiden, <em>zonder app store</em>.</h1>
+    <p class="lead">Dezelfde apps als op Android, iPhone en Windows, nu ook gewoon in je browser. Open de app, zet hem op je beginscherm en hij werkt daarna ook offline.</p>
+  </div>
+  <div class="apps">
+    <div class="app">
+      <div class="top"><img src="assets/reflectieboekje.png" alt=""><div><div class="who">Voor cadetten</div><h2>Reflectieboekje</h2></div></div>
+      <p>Je persoonlijke reflectieboek: persoonlijkheidstest, de 4 V's, SMART-leervraag, 5G-T, DTF-logboek, je groei en je portfolio. Deel wat je wilt met je teamleider.</p>
+      <a class="btn" href="reflectieboekje/">Open het Reflectieboekje</a>
+    </div>
+    <div class="app">
+      <div class="top"><img src="assets/cadetvolgsysteem.png" alt=""><div><div class="who">Voor teamleiders en instructeurs</div><h2>CadetVolgSysteem</h2></div></div>
+      <p>Volg je cadetten: dossiers, DTF-notities, feedback, de cadetbeoordeling en ontwikkelplannen, beveiligd met een PIN-code.</p>
+      <a class="btn" href="cadetvolgsysteem/volgsysteem.html">Open het CadetVolgSysteem</a>
+    </div>
+  </div>
+  <section>
+    <h3>Op je beginscherm zetten</h3>
+    <div class="steps">
+      <div class="step"><strong>iPhone en iPad (Safari)</strong><ol><li>Open de app hierboven in Safari.</li><li>Tik op de deelknop (vierkant met pijl).</li><li>Kies <b>Zet op beginscherm</b>.</li></ol></div>
+      <div class="step"><strong>Android (Chrome)</strong><ol><li>Open de app hierboven in Chrome.</li><li>Tik op ⋮ rechtsboven.</li><li>Kies <b>App installeren</b> of <b>Toevoegen aan startscherm</b>.</li></ol></div>
+      <div class="step"><strong>Computer (Chrome of Edge)</strong><ol><li>Open de app hierboven.</li><li>Klik in de adresbalk op het installatie-icoon.</li><li>Kies <b>Installeren</b>.</li></ol></div>
+    </div>
+  </section>
+  <section>
+    <div class="note"><strong>Jouw gegevens blijven op jouw toestel.</strong>
+      <ul>
+        <li>Niets wordt naar deze website of naar iemand anders gestuurd; je deelt alleen wat je zelf deelt.</li>
+        <li>De gegevens staan in de opslag van je browser. Wis je de browsergegevens, dan ben je ze kwijt. Maak daarom regelmatig een back-up via het menu in de app.</li>
+        <li>De apps zijn beveiligd met een wachtwoord. Dat krijg je van je teamleider (Reflectieboekje) of van de beheerder (CadetVolgSysteem).</li>
+        <li>De apps uit de app store bewaren alles extra versleuteld. Gebruik die als je kunt; de web-app is voor wie geen toegang heeft tot een app store.</li>
+      </ul></div>
+  </section>
+</main>
+<footer><div class="wrap">KMA Reflectieboekje en CadetVolgSysteem · © 2026 T.T.W. Gramser</div></footer>
+</body>
+</html>

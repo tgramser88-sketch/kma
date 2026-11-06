@@ -1,0 +1,28 @@
+{
+ "name": "KMA CadetVolgSysteem",
+ "short_name": "CadetVolgSysteem",
+ "lang": "nl",
+ "start_url": "volgsysteem.html",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#0c140f",
+ "theme_color": "#0c140f",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-maskable.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
