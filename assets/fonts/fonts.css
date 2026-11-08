@@ -1,15 +1,17 @@
-/* Bundled fonts (SIL Open Font License, see OFL-*.txt) so the app looks the same offline. */
+/* Lettertype: Verdana, de standaardletter van de Rijksoverheid en Defensie in Office-documenten.
+   Staat Verdana niet op het toestel (Android), dan wordt DejaVu Sans gebruikt: vrij te gebruiken
+   (Bitstream Vera-licentie, zie LICENSE-DejaVu.txt) en vrijwel even breed en open als Verdana. */
 @font-face {
-  font-family: 'DM Sans';
-  src: url('DMSans-Variable.ttf') format('truetype');
-  font-weight: 100 1000;
+  font-family: 'KMA Tekst';
+  src: local('Verdana'), url('DejaVuSans.ttf') format('truetype');
+  font-weight: 100 549;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Libre Franklin';
-  src: url('LibreFranklin-Variable.ttf') format('truetype');
-  font-weight: 100 900;
+  font-family: 'KMA Tekst';
+  src: local('Verdana Bold'), local('Verdana-Bold'), url('DejaVuSans-Bold.ttf') format('truetype');
+  font-weight: 550 1000;
   font-style: normal;
   font-display: swap;
 }
