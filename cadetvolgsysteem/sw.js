@@ -1,7 +1,7 @@
-/* KMA web-app met wachtwoord. Versie: c2727ed46584
+/* KMA web-app met wachtwoord. Versie: b9cd3a32a505
    De app-bestanden staan versleuteld op de server (*.enc). Deze service worker ontsleutelt ze op het toestel
    met de sleutel die bij het inloggen is afgeleid van het wachtwoord. Zonder sleutel: naar login.html. */
-const APP = 'cadetvolgsysteem', CACHE = 'kma-' + APP + '-c2727ed46584', START = 'volgsysteem.html';
+const APP = 'cadetvolgsysteem', CACHE = 'kma-' + APP + '-b9cd3a32a505', START = 'volgsysteem.html';
 const ENC = new Set(["cadetbeoordeling.pdf","fonts/DejaVuSans-Bold.ttf","fonts/DejaVuSans.ttf","fonts/LICENSE-DejaVu.txt","fonts/fonts.css","html5-qrcode.min.js","index.html","kma-5gt.js","kma-academie.jpg","kma-beoordeling.js","kma-boek-chapters.js","kma-boek-feedback.js","kma-boek-hexaco.js","kma-boek-links.js","kma-book-meta.js","kma-bridge.js","kma-chapters.css","kma-deelmap.js","kma-embleem.svg","kma-eula.js","kma-hexaco-core.js","kma-koppel.js","kma-norms.js","kma-opco.js","kma-patterns.js","kma-pss.js","kma-toetsplan.js","kma-transfer.js","kma-ui-boek.js","kma-ui-volg.js","kma-ui.css","kma-ui.js","kma-ux-boek.js","kma-viz.js","kma-volg-agenda.js","kma-volg-plan.js","kma-volg-refl.js","kma-volg-team.js","kma-volg-visuals.js","kma-web.js","pdf-lib.min.js","qrcode.min.js","volgsysteem.html"]);
 const PLAIN = ["login.html","manifest.webmanifest","icon-192.png","icon-512.png","icon-maskable.png","apple-touch-icon.png"];
 const TYPES = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8', svg: 'image/svg+xml', json: 'application/json',
