@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>KMA OpOrder Generator</title>
+<meta name="theme-color" content="#18251d">
+<meta name="description" content="Operatiebevel invullen per paragraaf, met live A4-voorbeeld en PDF. Werkt offline; alles blijft op je eigen toestel.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="OpOrder">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root {
+    --bg-main: #f1f0e9; --bg-card: rgba(255,255,255,0.92); --bg-card-deep: #ece9dd; --bg-widget: #fafaf5;
+    --text-primary: #172019; --text-muted: #697169; --header-bg: #18251d; --accent-red: #a91f2b;
+    --accent-gold: #c5b983; --border-color: #d8d8cf; --preview-bg: #dcd9cc;
+  }
+  body.dark-theme {
+    --bg-main: #111a14; --bg-card: rgba(24,37,29,0.88); --bg-card-deep: #1b2a20; --bg-widget: #18261e;
+    --text-primary: #f1f0e9; --text-muted: #aeb5af; --header-bg: #0c140f; --accent-red: #c82837;
+    --accent-gold: #d8cb92; --border-color: #2c3d31; --preview-bg: #0c140f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { min-width: 320px; font-family: 'DM Sans', system-ui, sans-serif; background: var(--bg-main); color: var(--text-primary);
+         display: flex; flex-direction: column; transition: background 300ms ease, color 300ms ease; }
+  button, textarea, input, select { font: inherit; }
+  button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
+
+  /* ---------- Header ---------- */
+  .site-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 68px;
+    padding: 10px clamp(14px, 4vw, 40px); color: #f7f5ed; background: var(--header-bg); border-bottom: 2px solid var(--accent-red); flex: 0 0 auto; }
+  .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .brand-logo { height: 44px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+  .brand-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .brand-copy span { color: var(--accent-gold); font-size: 11px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; }
+  .brand-copy strong { font-family: 'Libre Franklin', sans-serif; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+  .save-status { display: flex; align-items: center; gap: 6px; color: #ccd1cc; font-size: 11px; margin-right: 4px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-gold); box-shadow: 0 0 0 4px rgba(197,185,131,0.15); transition: background 300ms ease; }
+  .status-dot.saving { background: var(--accent-red); box-shadow: 0 0 0 4px rgba(186,37,50,0.2); }
+  .kma-icon-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; min-width: 44px;
+    padding: 0 14px; border-radius: 999px; background: transparent; color: #f1f0e9; border: 1px solid rgba(216,203,146,0.55); font-size: 13px; font-weight: 700; }
+  .kma-icon-btn.is-primary { background: var(--accent-gold); color: #111a14; border-color: var(--accent-gold); }
+  .kma-icon-btn.is-round { padding: 0; width: 44px; }
+  .kma-icon-btn:active { transform: scale(0.97); }
+  .ki { width: 20px; height: 20px; flex: 0 0 auto; }
+  @media (max-width: 600px) {
+    .site-header { min-height: 60px; gap: 8px; }
+    .brand-logo { height: 36px; }
+    .brand-copy strong { font-size: 15px; }
+    .save-status span:last-child, .kma-icon-btn .lbl { display: none; }
+    .kma-icon-btn { padding: 0; width: 44px; }
+  }
+  .brand-copy em { font-style: normal; }
+  @media (max-width: 440px) { .brand-copy .long { display: none; } }
+
+  /* ---------- Tabs & layout ---------- */
+  .kma-tabs { display: flex; gap: 6px; padding: 8px clamp(14px, 4vw, 40px); background: var(--bg-main); border-bottom: 1px solid var(--border-color); flex: 0 0 auto; }
+  .kma-tab { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 14px;
+    border-radius: 999px; background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); font-size: 13px; font-weight: 700; }
+  .kma-tab.active { background: var(--accent-gold); color: #111a14; border-color: var(--accent-gold); }
+  .kma-tab .ki { width: 18px; height: 18px; }
+  main { flex: 1; display: flex; min-height: 0; }
+  #editor-panel { flex: 1; overflow-y: auto; padding: 20px clamp(14px, 4vw, 40px) 40px;
+    background: linear-gradient(rgba(38,49,39,0.035) 1px, transparent 1px), var(--bg-main); background-size: 100% 32px; }
+  #preview-panel { flex: 1; overflow: auto; background: var(--preview-bg); padding: 20px 14px 40px; }
+  body[data-tab="editor"] #preview-panel { display: none; }
+  body[data-tab="preview"] #editor-panel { display: none; }
+  @media (min-width: 1000px) {
+    .kma-tabs { display: none; }
+    #editor-panel, #preview-panel { display: block !important; width: 50%; }
+    #editor-panel { border-right: 1px solid var(--border-color); }
+  }
+  .editor-inner { max-width: 760px; margin: 0 auto; }
+  .section-heading { display: flex; align-items: flex-end; gap: 12px; padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); }
+  .section-heading > div { flex: 1; min-width: 0; }
+  .section-heading h2 { margin: 0 0 6px; font-family: 'Libre Franklin', sans-serif; font-size: clamp(22px, 4vw, 30px); line-height: 1.1; overflow-wrap: anywhere; }
+  .section-heading p { margin: 0; color: var(--text-muted); font-size: 14px; }
+
+  /* ---------- Cards & fields ---------- */
+  .question-card { padding: 18px; margin-bottom: 18px; border: 1px solid var(--border-color); background: var(--bg-card); transition: transform 160ms ease, box-shadow 160ms ease; }
+  .question-card:focus-within { box-shadow: 0 6px 16px rgba(24,37,29,0.08); border-color: #3f5545; }
+  .question-card.deepening { border-left: 4px solid var(--accent-red); background: var(--bg-card-deep); }
+  .question-label { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; color: var(--accent-red); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+  .card-title { margin: 0 0 14px; font-family: 'Libre Franklin', sans-serif; font-size: 18px; font-weight: 600; }
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  .field > label, .lbl-row { display: block; margin-bottom: 8px; font-family: 'Libre Franklin', sans-serif; font-size: 15px; font-weight: 600; line-height: 1.4; }
+  .field > label small { display: block; margin-top: 2px; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-weight: 400; font-size: 12px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid .field { margin: 0; }
+  .grid .field > label { font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
+  .full { grid-column: 1 / -1; }
+  @media (max-width: 440px) { .grid { grid-template-columns: 1fr; } }
+  input, textarea, select { width: 100%; padding: 11px 14px; border: 1px solid var(--border-color); outline: none; border-radius: 0;
+    color: var(--text-primary); background-color: var(--bg-widget); font-size: 15px; line-height: 1.5; }
+  input:focus, textarea:focus, select:focus { border-color: #3f5545; box-shadow: 0 0 0 3px rgba(63,85,69,0.12); }
+  body.dark-theme input:focus, body.dark-theme textarea:focus, body.dark-theme select:focus { border-color: var(--accent-gold); box-shadow: 0 0 0 3px rgba(216,203,146,0.15); }
+  textarea { min-height: 96px; resize: none; overflow-y: hidden; }
+  select { padding-right: 38px; min-height: 48px; -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; }
+  select option { background: var(--bg-widget); color: var(--text-primary); }
+  .upper { text-transform: uppercase; }
+  .dtg-row { display: flex; gap: 8px; }
+  .dtg-row input { flex: 1; min-width: 0; }
+  .dtg-row select { width: 92px; flex: 0 0 auto; }
+
+  .btn-pill { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px;
+    background: transparent; color: var(--text-primary); border: 1px solid var(--accent-gold); font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .btn-pill:active { transform: scale(0.97); background: var(--accent-gold); color: #111a14; }
+  .btn-pill .ki { width: 16px; height: 16px; color: var(--accent-gold); }
+  .btn-pill:active .ki { color: #111a14; }
+  .btn-pill.is-dashed { border-style: dashed; }
+  .btn-pill.is-listening { background: var(--accent-red); border-color: var(--accent-red); color: #fff; }
+  .btn-pill.is-listening .ki { color: #fff; }
+  .tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tools .btn-pill { min-height: 36px; font-size: 12px; padding: 0 12px; }
+  .icon-only { width: 40px; padding: 0 !important; }
+
+  /* Subcategories (i), (ii) */
+  .subs { margin: 8px 0 0 10px; padding-left: 12px; border-left: 2px solid var(--border-color); display: grid; gap: 8px; }
+  .subs:empty { display: none; }
+  .sub-row { display: flex; gap: 8px; align-items: flex-start; }
+  .sub-num { flex: 0 0 34px; padding-top: 12px; text-align: right; font-weight: 700; font-size: 13px; color: var(--accent-red); font-family: 'Libre Franklin', sans-serif; }
+  .sub-row textarea, .sub-row input { flex: 1; min-width: 0; }
+  .sub-row textarea { min-height: 64px; }
+  .x-btn { flex: 0 0 40px; height: 44px; border: 0; background: transparent; color: var(--text-muted); border-radius: 999px; display: grid; place-items: center; }
+  .x-btn:active { background: var(--bg-card-deep); color: var(--accent-red); }
+  .x-btn .ki { width: 18px; height: 18px; }
+  .instr { margin: -8px 0 14px; padding: 8px 12px; border-left: 2px solid var(--accent-gold); background: var(--bg-card-deep); color: var(--text-muted); font-size: 13px; font-style: italic; line-height: 1.45; }
+  .question-card.deepening .instr { background: var(--bg-card); }
+  body.hide-instr .instr { display: none; }
+  textarea::placeholder, input::placeholder { color: var(--text-muted); opacity: .75; font-style: italic; }
+
+  /* Jump bar (snel naar paragraaf) */
+  .jump-bar { display: flex; gap: 6px; overflow-x: auto; padding: 8px clamp(14px, 4vw, 40px); background: var(--bg-main); border-bottom: 1px solid var(--border-color); flex: 0 0 auto; scrollbar-width: none; }
+  .jump-bar::-webkit-scrollbar { display: none; }
+  .jump-bar button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--border-color);
+    background: var(--bg-widget); color: var(--text-primary); font-size: 12px; font-weight: 700; }
+  .jump-bar button .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border-color); }
+  .jump-bar button.done .dot { background: var(--accent-gold); }
+  .jump-bar button.fold { color: var(--text-muted); }
+  body[data-tab="preview"] .jump-bar { display: none; }
+  @media (min-width: 1000px) { body[data-tab="preview"] .jump-bar { display: flex; } }
+  /* Collapsible cards */
+  .card-title { cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; -webkit-tap-highlight-color: transparent; }
+  .card-title .chev { width: 20px; height: 20px; color: var(--text-muted); transition: transform 160ms ease; flex: 0 0 auto; }
+  .question-card.collapsed .card-title { margin-bottom: 0; }
+  .question-card.collapsed .card-title .chev { transform: rotate(-90deg); }
+  .question-card.collapsed > :not(.question-label):not(.card-title) { display: none !important; }
+  /* Toast with undo */
+  .kma-toast .undo { pointer-events: auto; margin-left: 6px; border: 0; background: transparent; color: #d8cb92; font-weight: 800; font-size: 13px; padding: 6px 4px; text-decoration: underline; }
+  /* Prompt inside a sheet */
+  .sheet-form { padding: 4px 14px 8px; display: grid; gap: 10px; }
+  .sheet-form textarea { min-height: 110px; overflow-y: auto; }
+  .sheet-form .row { display: flex; gap: 8px; justify-content: flex-end; }
+  .kma-sheet-item .badge { font-size: 10px; font-weight: 700; color: var(--accent-red); letter-spacing: .06em; text-transform: uppercase; }
+
+  /* Bevelsuitgifte-modus */
+  .present { position: fixed; inset: 0; z-index: 18000; background: #111a14; color: #f1f0e9; display: flex; flex-direction: column;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+  .present-top { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 2px solid #c82837; background: #0c140f; }
+  .present-top .count { flex: 1; font-size: 13px; color: #aeb5af; font-weight: 700; letter-spacing: .06em; }
+  .present-top button { min-width: 44px; min-height: 44px; border-radius: 999px; border: 1px solid rgba(216,203,146,.55); background: transparent; color: #f1f0e9; font-weight: 800; font-size: 15px; display: grid; place-items: center; }
+  .present-body { flex: 1; overflow-y: auto; padding: 22px clamp(18px, 6vw, 80px) 40px; }
+  .present-body .pk { color: #c82837; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 6px; }
+  .present-body h2 { font-family: 'Libre Franklin', sans-serif; color: #d8cb92; margin: 0 0 18px; font-size: 1.35em; line-height: 1.2; }
+  .present-body .pt { white-space: pre-wrap; word-wrap: break-word; line-height: 1.55; }
+  .present-body .ps { display: flex; gap: 10px; margin-top: 10px; } .present-body .ps b { color: #d8cb92; flex: 0 0 auto; }
+  .present-body .pg { margin-top: 16px; } .present-body .pg b { color: #d8cb92; display: block; margin-bottom: 4px; }
+  .present-body table { border-collapse: collapse; width: 100%; margin: 8px 0 14px; } .present-body td { border-bottom: 1px solid #2c3d31; padding: 6px 8px; vertical-align: top; }
+  .present-body td:first-child { color: #d8cb92; white-space: nowrap; }
+  .present-body .big { font-size: 1.6em; font-weight: 800; text-align: center; margin-top: 18vh; }
+  .present-body .center { text-align: center; color: #aeb5af; }
+  .present-nav { display: flex; gap: 10px; padding: 10px 14px; border-top: 1px solid #2c3d31; background: #0c140f; }
+  .present-nav button { flex: 1; min-height: 52px; border-radius: 999px; border: 1px solid #d8cb92; background: transparent; color: #f1f0e9; font-size: 15px; font-weight: 800; }
+  .present-nav button.next { background: #d8cb92; color: #111a14; }
+  .present-nav button:disabled { opacity: .35; }
+
+  /* Groups (3c) */
+  .group { border: 1px solid var(--border-color); background: var(--bg-card); padding: 12px; margin-top: 10px; }
+  .group-head { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .group-head input { flex: 1; font-weight: 700; }
+  /* Tables (3d) */
+  .tbl { margin-top: 14px; }
+  .tbl-title { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .tbl-rows { display: grid; gap: 6px; }
+  .tbl-row { display: flex; gap: 6px; align-items: center; }
+  .tbl-row input { min-width: 0; padding: 9px 10px; font-size: 14px; }
+  .tbl-row input:first-child { flex: 0 0 38%; }
+  .tbl-row input:nth-child(2) { flex: 1; }
+  /* Annexes */
+  .annex { border: 1px solid var(--border-color); background: var(--bg-widget); padding: 4px 12px; margin-bottom: 8px; }
+  .chk { display: flex; align-items: center; gap: 12px; min-height: 44px; cursor: pointer; font-size: 14px; }
+  .chk input { width: 20px; height: 20px; flex: 0 0 auto; accent-color: var(--accent-red); margin: 0; }
+  .chk strong { font-weight: 700; }
+  .annex-subs { margin: 0 0 6px 10px; padding-left: 14px; border-left: 2px solid var(--border-color); }
+  .annex-subs .chk { min-height: 38px; font-size: 13px; color: var(--text-muted); }
+  .annex.custom { display: flex; align-items: center; gap: 12px; padding: 6px 12px; }
+  .annex.custom input[type=text] { flex: 1; padding: 8px 10px; font-size: 14px; }
+  .annex.fixed { opacity: .7; }
+  .sub-hd { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin: 14px 0 6px; }
+
+  /* ---------- Document (A4) ---------- */
+  .page { background: #fff; color: #000; width: 21cm; max-width: 100%; min-height: 29.7cm; margin: 0 auto; padding: 2cm 1.8cm;
+          box-shadow: 0 10px 30px rgba(0,0,0,.25); border-top: 4px solid var(--accent-red);
+          font-family: Arial, Helvetica, sans-serif; font-size: 10.5pt; line-height: 1.25; }
+  @media (max-width: 700px) { .page { padding: 18px 16px; min-height: 0; font-size: 10pt; } }
+  .bold { font-weight: bold; }
+  .classif { text-align: center; font-weight: bold; margin-bottom: 24px; }
+  .meta { font-size: 10pt; margin-bottom: 18px; }
+  .title { text-align: center; font-weight: bold; font-size: 13pt; text-decoration: underline; margin-bottom: 18px; }
+  .subtitle { text-align: center; font-weight: bold; font-size: 12pt; margin: -10px 0 18px; }
+  .kv { display: flex; font-size: 10pt; margin-top: 4px; } .kv .k { width: 6.5em; font-weight: bold; flex: none; }
+  .pre { white-space: pre-wrap; word-wrap: break-word; }
+  .h1 { text-decoration: underline; font-weight: bold; margin-top: 18px; margin-bottom: 6px; }
+  ol.lvl-2 { list-style: none; padding-left: 22px; margin: 0; }
+  ol.lvl-2 > li { margin-top: 8px; }
+  ol.lvl-2 > li > .let { display: inline-block; width: 22px; margin-left: -22px; font-weight: bold; }
+  .sub-h { font-weight: bold; text-decoration: underline; }
+  .subs-v { margin: 4px 0 0 22px; }
+  .subs-v:empty { display: none; }
+  .subs-v .sv { display: flex; margin-top: 4px; }
+  .subs-v .sv .rn { flex: 0 0 34px; }
+  .subs-v .sv .pre { flex: 1; min-width: 0; }
+  .grp-v { margin-top: 8px; }
+  .grp-v .gn { font-weight: bold; text-decoration: underline; }
+  table.doc { border-collapse: collapse; margin: 4px 0 8px; font-size: 10pt; width: 100%; }
+  table.doc th, table.doc td { border: 1px solid #000; padding: 3px 6px; text-align: left; vertical-align: top; }
+  table.doc th { background: #eee; }
+  .tbl-v-title { font-weight: bold; margin-top: 10px; }
+  .sign { margin-top: 40px; display: flex; justify-content: space-between; gap: 16px; }
+  .sign .right { text-align: center; min-width: 40%; }
+  .bijlagen { margin-top: 36px; font-size: 10pt; }
+  .bijlagen ul { list-style: none; padding: 0; margin: 0; }
+  .bijlagen li { margin-bottom: 3px; }
+  .bijlagen ul ul { padding-left: 22px; }
+  .hidden { display: none !important; }
+  .app-copy { margin: 28px 0 4px; text-align: center; font-size: 10px; letter-spacing: .04em; color: var(--text-muted); opacity: .8; }
+  #preview-panel .app-copy { color: #6b6f68; }
+  body.dark-theme #preview-panel .app-copy { color: var(--text-muted); }
+
+  /* ---------- Toast & sheet ---------- */
+  .kma-toast-host { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 20000;
+    display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; width: min(92vw, 420px); }
+  .kma-toast { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 14px; background: #18251d; color: #f1f0e9;
+    border: 1px solid #d8cb92; box-shadow: 0 8px 28px rgba(0,0,0,0.35); font-size: 14px; font-weight: 600;
+    opacity: 0; transform: translateY(12px); transition: opacity 220ms ease, transform 220ms ease; }
+  .kma-toast.in { opacity: 1; transform: none; }
+  .kma-toast .ki { color: #d8cb92; }
+  .kma-sheet-overlay { position: fixed; inset: 0; z-index: 19000; background: rgba(0,0,0,0); display: flex; align-items: flex-end; justify-content: center; transition: background 200ms ease; }
+  .kma-sheet-overlay.in { background: rgba(0,0,0,0.5); }
+  .kma-sheet { width: min(560px, 100%); max-height: 85vh; overflow-y: auto; background: var(--bg-main); color: var(--text-primary);
+    border-radius: 20px 20px 0 0; border-top: 2px solid var(--accent-gold); padding: 8px 8px calc(16px + env(safe-area-inset-bottom));
+    transform: translateY(100%); transition: transform 220ms ease; box-shadow: 0 -10px 40px rgba(0,0,0,0.35); }
+  .kma-sheet-overlay.in .kma-sheet { transform: none; }
+  .kma-sheet-grip { width: 40px; height: 4px; border-radius: 4px; background: var(--border-color); margin: 4px auto 10px; }
+  .kma-sheet-title { font-family: 'Libre Franklin', sans-serif; font-weight: 700; font-size: 17px; padding: 4px 14px 10px; }
+  .kma-sheet-section { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); padding: 14px 14px 6px; }
+  .kma-sheet-item { width: 100%; display: flex; align-items: center; gap: 14px; padding: 12px 14px; min-height: 56px; border: 0; background: transparent;
+    color: inherit; text-align: left; border-radius: 12px; }
+  .kma-sheet-item:active, .kma-sheet-item:hover { background: var(--bg-card-deep); }
+  .kma-sheet-item > .ki { width: 22px; height: 22px; color: var(--accent-gold); }
+  .kma-sheet-label { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .kma-sheet-label strong { font-size: 15px; font-weight: 600; }
+  .kma-sheet-label small { font-size: 12px; color: var(--text-muted); white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .kma-sheet-item.is-danger, .kma-sheet-item.is-danger > .ki { color: var(--accent-red); }
+  .kma-sheet-item.is-current { background: var(--bg-card-deep); box-shadow: inset 4px 0 var(--accent-red); }
+  @media (min-width: 720px) { .kma-sheet-overlay { align-items: center; } .kma-sheet { border-radius: 18px; border: 2px solid var(--accent-gold); } }
+
+  /* ---------- Print ---------- */
+  @media print {
+    @page { size: A4; margin: 1.8cm 1.6cm; }
+    html, body { height: auto; background: #fff !important; display: block; }
+    .site-header, .kma-tabs, .jump-bar, .present, #editor-panel, .kma-toast-host, .kma-sheet-overlay, .app-copy { display: none !important; }
+    main { display: block; }
+    #preview-panel { display: block !important; width: 100% !important; padding: 0; background: #fff; overflow: visible; }
+    .page { box-shadow: none; border-top: 0; width: auto; min-height: 0; padding: 0; font-size: 10.5pt; }
+    .page-break { page-break-before: always; break-before: page; }
+    table.doc th { background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body data-tab="editor">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-print" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9 9.7 9.7 0 00-6.7 2.8L3 8"/><path d="M3 3v5h5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4M4 4h13l-2 4 2 4H4"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></symbol>
+    <symbol id="i-import" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15"/></symbol>
+  </defs>
+</svg>
+
+<header class="site-header">
+  <div class="brand">
+    <img src="kma-embleem.svg" alt="KMA Embleem" class="brand-logo">
+    <div class="brand-copy"><span>KMA</span><strong>OpOrder<em class="long"> Generator</em></strong></div>
+  </div>
+  <div class="header-actions">
+    <div class="save-status"><span class="status-dot" id="status-dot"></span><span id="save-status-text">Opgeslagen</span></div>
+    <button class="kma-icon-btn" id="btn-orders" title="Mijn bevelen"><svg class="ki"><use href="#i-list"/></svg><span class="lbl">Bevelen</span></button>
+    <button class="kma-icon-btn is-primary" id="btn-print" title="Print of opslaan als PDF"><svg class="ki"><use href="#i-print"/></svg><span class="lbl">PDF</span></button>
+    <button class="kma-icon-btn is-round" id="btn-more" title="Meer"><svg class="ki"><use href="#i-more"/></svg></button>
+  </div>
+</header>
+
+<nav class="kma-tabs">
+  <button class="kma-tab active" data-tab="editor"><svg class="ki"><use href="#i-edit"/></svg>Bewerken</button>
+  <button class="kma-tab" data-tab="preview"><svg class="ki"><use href="#i-doc"/></svg>Voorbeeld</button>
+</nav>
+<nav class="jump-bar" id="jump-bar"></nav>
+
+<main>
+  <div id="editor-panel"><div class="editor-inner">
+    <div class="section-heading">
+      <div>
+        <h2 id="doc-name">Operatiebevel</h2>
+        <p>Zodra je iets invult, wordt het bevel automatisch op dit toestel bewaard. Eerdere bevelen staan onder <b>Bevelen</b>.</p>
+      </div>
+    </div>
+
+    <section class="question-card">
+      <div class="question-label">Koptekst</div>
+      <h3 class="card-title">Metadata</h3>
+      <div class="grid">
+        <div class="field"><label>Documenttype</label><select data-k="doctype">
+          <option value="STANDAARD OPERATIE ORDER">Standaard Operatie Order</option>
+          <option value="FRAGMENTARY ORDER (FRAGO)">Fragmentary Order (FRAGO)</option>
+          <option value="WAARSCHUWINGSBEVEL (WNGO)">Waarschuwingsbevel (WNGO)</option>
+        </select></div>
+        <div class="field"><label>Rubricering</label><select data-k="rubricering">
+          <option value="ONGERUBRICEERD">ONGERUBRICEERD</option>
+          <option value="NATO UNCLASSIFIED">NATO UNCLASSIFIED</option>
+          <option value="DEPARTEMENTAAL VERTROUWELIJK">DEPARTEMENTAAL VERTROUWELIJK</option>
+          <option value="SECRET">SECRET</option>
+        </select></div>
+        <div class="field"><label>Codenaam operatie</label><input data-k="codenaam" class="upper"></div>
+        <div class="field"><label>Missietype</label><select data-k="missietype">
+          <option value="">-- Selecteer --</option>
+          <option value="Aanval">Aanval (Attack)</option>
+          <option value="Verdediging">Verdediging (Defense)</option>
+          <option value="Vredesmissie">Vredesmissie (Peacekeeping)</option>
+          <option value="Humanitair">Humanitair</option>
+        </select></div>
+        <div class="field"><label>Ordernummer</label><input data-k="ordernr"></div>
+        <div class="field"><label>FRAGO-nummer <small>Optioneel</small></label><input data-k="fragnr"></div>
+        <div class="field"><label>Oplcie / eenheid</label><input data-k="oplcie"></div>
+        <div class="field"><label>Plaats</label><input data-k="plaats"></div>
+        <div class="field full"><label>Datum-tijdgroep (DTG) &amp; tijdzone</label>
+          <div class="dtg-row">
+            <input data-k="dtg" class="upper">
+            <select data-k="tijdzone">
+              <option value="Z">Z (ZULU)</option>
+              <option value="A">A (ALPHA)</option>
+              <option value="B">B (BRAVO)</option>
+            </select>
+            <button type="button" class="btn-pill" id="btn-dtg" title="Vul de huidige DTG in"><svg class="ki"><use href="#i-clock"/></svg>Nu</button>
+          </div>
+        </div>
+        <div class="field full"><label>Refertes</label><textarea data-k="refertes"></textarea></div>
+      </div>
+    </section>
+
+    <section class="question-card deepening">
+      <div class="question-label">Paragraaf 1</div>
+      <h3 class="card-title">Toestand</h3>
+      <p class="instr">Situatie van vijandelijke en eigen troepen, toevoegingen en onttrekkingen.</p>
+      <div class="field"><label>a. Opponent en/of andere relevante partijen</label><textarea data-k="toestand.vijand" data-tools></textarea></div>
+      <div class="field"><label>b. Eigen troepen</label><textarea data-k="toestand.eigen" data-tools></textarea></div>
+      <div class="field"><label>c. Onderbevelstellingen</label><textarea data-k="toestand.onderbevel" data-tools style="min-height:52px"></textarea></div>
+    </section>
+
+    <section class="question-card deepening">
+      <div class="question-label">Paragraaf 2</div>
+      <h3 class="card-title">Opdracht</h3>
+      <p class="instr">Helder geformuleerd doel: wie, wat, waar, wanneer en waarom.</p>
+      <div class="field"><textarea data-k="opdracht" data-tools></textarea></div>
+    </section>
+
+    <section class="question-card deepening">
+      <div class="question-label">Paragraaf 3</div>
+      <h3 class="card-title">Uitvoering</h3>
+      <p class="instr">Oogmerk van de commandant, operatieconcept, taken aan eenheden en coördinatie.</p>
+      <div class="field"><label>a. Oogmerk van de commandant</label><textarea data-k="uitvoering.oogmerk" data-tools></textarea></div>
+      <div class="field"><label>b. Operatieconcept</label><textarea data-k="uitvoering.concept" data-tools></textarea></div>
+      <div class="field"><label>c. Opdrachten aan de gevechtseenheden <small>Algemene tekst (optioneel) en daaronder een blok per groep</small></label>
+        <textarea data-k="uitvoering.gevechtseenheden" data-tools style="min-height:52px"></textarea>
+        <div id="groups"></div>
+        <div class="tools"><button type="button" class="btn-pill is-dashed" id="btn-add-group"><svg class="ki"><use href="#i-plus"/></svg>Groep</button></div>
+      </div>
+      <div class="field"><label>d. Coördinerende bepalingen</label><textarea data-k="uitvoering.coord" data-tools></textarea>
+        <div id="tables"></div>
+      </div>
+    </section>
+
+    <section class="question-card deepening">
+      <div class="question-label">Paragraaf 4</div>
+      <h3 class="card-title">Logistiek</h3>
+      <p class="instr">Bevoorrading, Role 1/2/3 medische steun, transport, onderhoud.</p>
+      <div class="field"><textarea data-k="logistiek" data-tools></textarea></div>
+    </section>
+
+    <section class="question-card deepening">
+      <div class="question-label">Paragraaf 5</div>
+      <h3 class="card-title">Bevelvoering en verbindingen</h3>
+      <p class="instr">Locatie CP, opvolging, verbindingsmiddelen (CIS), callsigns, wachtwoorden.</p>
+      <div class="field"><textarea data-k="bevelvoering" data-tools></textarea></div>
+    </section>
+
+    <section class="question-card">
+      <div class="question-label">Afsluiting</div>
+      <h3 class="card-title">Waarmerking &amp; ondertekening</h3>
+      <div class="grid">
+        <div class="field"><label>Functie</label><input data-k="ondertekening.functie"></div>
+        <div class="field"><label>Rang &amp; naam</label><input data-k="ondertekening.naam"></div>
+      </div>
+    </section>
+
+    <section class="question-card">
+      <div class="question-label">Bijlagen</div>
+      <h3 class="card-title">Bijlagen &amp; bijvoegsels</h3>
+      <p class="instr">Vink een annex aan om de appendices mee te selecteren. Eigen bijlagen (SS–XX) krijgen een eigen titel. Annex ZZ staat er altijd in.</p>
+      <div id="annexes"></div>
+      <div class="field" style="margin-top:14px"><label>Overige bijlagen <small>Eén per regel, bijv. Bijlage D10: DOEL INLICHTINGEN</small></label><textarea data-k="bijlagen" style="min-height:64px"></textarea></div>
+    </section>
+    <div class="app-copy">© <span class="cr-year">2026</span> KMA TTW Gramser</div>
+  </div></div>
+
+  <div id="preview-panel">
+    <div class="page">
+      <div class="classif" data-v="rubricering"></div>
+      <div class="meta">
+        <div>Kopie Nr ____ van ____ kopieën</div>
+        <div data-v="oplcie"></div>
+        <div data-v="plaats"></div>
+        <div data-v="dtg"></div>
+      </div>
+      <div class="title" id="v-title"></div>
+      <div class="subtitle" id="v-subtitle"></div>
+      <div style="margin-bottom:18px">
+        <div class="kv"><div class="k">Refertes:</div><div class="pre" data-v="refertes"></div></div>
+        <div class="kv"><div class="k">Tijdzone:</div><div data-v="tijdzone"></div></div>
+        <div class="kv" data-show="missietype"><div class="k">Missietype:</div><div data-v="missietype"></div></div>
+      </div>
+
+      <div class="h1">1. TOESTAND</div>
+      <ol class="lvl-2">
+        <li><span class="let">a.</span><span class="sub-h">Opponent en/of andere relevante partijen</span><div class="pre" data-v="toestand.vijand"></div></li>
+        <li><span class="let">b.</span><span class="sub-h">Eigen troepen</span><div class="pre" data-v="toestand.eigen"></div></li>
+        <li><span class="let">c.</span><span class="sub-h">Onderbevelstellingen</span><div class="pre" data-v="toestand.onderbevel"></div></li>
+      </ol>
+
+      <div class="h1">2. OPDRACHT</div>
+      <div class="pre" data-v="opdracht"></div>
+
+      <div class="h1">3. UITVOERING</div>
+      <ol class="lvl-2">
+        <li><span class="let">a.</span><span class="sub-h">Oogmerk van de commandant</span><div class="pre" data-v="uitvoering.oogmerk"></div></li>
+        <li><span class="let">b.</span><span class="sub-h">Operatieconcept</span><div class="pre" data-v="uitvoering.concept"></div></li>
+        <li><span class="let">c.</span><span class="sub-h">Opdrachten aan de gevechtseenheden</span><div class="pre" data-v="uitvoering.gevechtseenheden"></div><div id="v-groups"></div></li>
+        <li><span class="let">d.</span><span class="sub-h">Coördinerende bepalingen</span><div class="pre" data-v="uitvoering.coord"></div><div id="v-tables"></div></li>
+      </ol>
+
+      <div class="h1">4. LOGISTIEK</div>
+      <div class="pre" data-v="logistiek"></div>
+
+      <div class="h1">5. BEVELVOERING EN VERBINDINGEN</div>
+      <div class="pre" data-v="bevelvoering"></div>
+
+      <div class="sign page-break">
+        <div><div class="bold">Kennisgeving van ontvangst (KVO):</div><div style="margin-top:8px">Waarmerking</div></div>
+        <div class="right"><div class="bold" data-v="ondertekening.functie"></div><div style="height:60px"></div><div data-v="ondertekening.naam"></div></div>
+      </div>
+
+      <div class="bijlagen">
+        <div class="bold" style="margin-bottom:6px">Bijlagen:</div>
+        <ul id="v-annexes"></ul>
+      </div>
+
+      <div class="classif" style="margin-top:48px;margin-bottom:0" data-v="rubricering"></div>
+    </div>
+    <div class="app-copy">© <span class="cr-year">2026</span> KMA TTW Gramser</div>
+  </div>
+</main>
+
+<div class="kma-toast-host" id="toast-host"></div>
+<input type="file" id="file-import" accept=".json,application/json,text/plain" class="hidden">
+
+<script>
+  /* =================================================================== */
+  /* Constants                                                           */
+  /* =================================================================== */
+  const ORDERS_KEY = 'oporder.orders.v2';
+  const LEGACY_KEY = 'oporder.doc.v1';
+  const THEME_KEY = 'oporder.theme';
+  const INSTR_KEY = 'oporder.instructies';
+
+  const ANNEXES = {
+    A: { title: 'Organisatie (Task Organization)', subs: { 1: 'Land Forces', 2: 'Air Forces', 3: 'Maritime Forces' } },
+    B: { title: 'Inlichtingen (Intelligence)', subs: { 1: 'Targeting', 2: 'Weather & Terrain' } },
+    C: { title: 'Operatiën (Operations)', subs: {} },
+    D: { title: 'Logistiek (Logistics)', subs: {} },
+    E: { title: 'Personeel (Personnel)', subs: {} },
+    F: { title: 'Civiel-Militaire Samenwerking (CIMIC)', subs: {} },
+    H: { title: 'Gereedheid (Readiness)', subs: {} },
+    K: { title: 'Commando & Verbindingen (CIS)', subs: {} }
+  };
+  const CUSTOM = ['SS', 'TT', 'UU', 'XX'];
+  const TABLES = {
+    tijdbalk: { title: 'Tijdbalk', cols: ['Tijd', 'Activiteit'], hint: ['bijv. 0800', 'bijv. Bevelsuitgifte PC'] },
+    locaties: { title: 'Locaties', cols: ['Locatie', 'Grid (MGRS)'], hint: ['bijv. AA CASTLE', 'bijv. 31U FT 2302 1710'] },
+    wachtwoorden: { title: 'Aanroep-wederwoord', cols: ['Periode', 'Wachtwoord'], hint: ['bijv. XX0000 – XX2359', 'bijv. J–B'] }
+  };
+  // Velden die subcategorieën (i), (ii) … kunnen krijgen
+  const SUB_KEYS = ['toestand.vijand', 'toestand.eigen', 'toestand.onderbevel', 'opdracht', 'uitvoering.oogmerk', 'uitvoering.concept',
+                    'uitvoering.gevechtseenheden', 'uitvoering.coord', 'logistiek', 'bevelvoering'];
+
+  // Snelzinnen per veld (gebaseerd op het voorbeeldbevel); 'algemeen' staat bij elk veld
+  const PHRASES = {
+    algemeen: ['Zie ACT/BCT', 'N.v.t.', 'Zie bijlage ', 'NLT ', 'o.l.v. '],
+    'toestand.vijand': ['Algemeen\nZie ACT/BCT', 'Wie\n\nWat\n\nWaar\n\nWanneer\n\nWaarmee\n\nWaarom\n\nHoe\n\nMLECOA\n\nMDECOA\n', 'MLECOA\n', 'MDECOA\n', 'Triggers: '],
+    'toestand.eigen': ['Opdracht, oogmerk en operatieconcept naasthogere commandant', 'Opdracht:\n\nOogmerk:\nPurpose: \nMethod: \nEndstate: ', 'Neven eenheden, steunende eenheden\n'],
+    'toestand.onderbevel': ['N.v.t.'],
+    opdracht: ['[Eenheid] bereidt voor en voert uit [taak] in de periode van XX t/m XX in de omgeving van [locatie].'],
+    'uitvoering.oogmerk': ['Purpose: \nMethod: \nEndstate: '],
+    'uitvoering.concept': ['Deze operatie bestaat uit 3 fases:\nFase 1: Voorbereiding\nFase 2: Uitvoering\nFase 3: Gereed voor vervolgopdrachten',
+      'Fase 1 Voorbereiding\n', 'Fase 2 Uitvoering\n', 'Fase 3 Gereed voor vervolgopdrachten\nVanaf dit moment draaien we routine en maken we ons gereed voor vervolgopdrachten.'],
+    'uitvoering.gevechtseenheden': ['Alle groepen:\n'],
+    groep: ['D.z.v. bevelsuitgifte rg gp;', 'Verplaatst als 1e groep rg ', 'Bereidt voor en voert uit betrekken vzgb sector ;', 'Bereidt voor en voert uit wachtpost in eigen sector;', 'Deconflicteer deze sector met de andere gpn;'],
+    'uitvoering.coord': ["Geweldsinstructies en ROE's\nZie annex E\nIK 2-27 Geweldgebruik", 'Herkenningsteken\nVij troepen\nOverdag: \nBij duister: \n\nEigen troepen\nOverdag: \nBij duister: ',
+      'Media en burgers\nNetjes te woord staan met de medialine: "", doorverwijzen naar R', 'CBRN dress state: zero, masker o.d.m.', "What if's:\nVij onderkent: \nOnderkent tijdens verplaatsing: \nOnderkent tijdens uitvoering: "],
+    logistiek: ['Plan voor de logistiek\n', 'Materieellogistiek\nBevoorrading\nKL I:\nKL II/IV:\nKL V:\nOnderhoud\n', 'Personeelslogistiek\nPersoneelszorg;\n',
+      'Operationele gezondheidszorg\nCUF, ZHKH, GPs gewondennest;\nMelding middels 9-liner;'],
+    bevelvoering: ['Bevelvoering\nLocatie CP Cie.:\nCP Pel:\nOpvolging in commando: R-E-A-B-C-D.', 'Verbindingen\nFrequenties en netnummers bijlage Q-1\nPACE\nP: \nA: \nC: \nE: ', 'Verplichte meldingen:\n']
+  };
+
+  /* =================================================================== */
+  /* Helpers                                                             */
+  /* =================================================================== */
+  const $ = s => document.querySelector(s);
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const get = (o, p) => p.split('.').reduce((a, k) => (a == null ? '' : a[k]), o) ?? '';
+  const set = (o, p, v) => { const ks = p.split('.'); const last = ks.pop(); ks.reduce((a, k) => (a[k] ??= {}), o)[last] = v; };
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+    del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  };
+  function merge(base, over) {
+    for (const k in over) {
+      if (over[k] && typeof over[k] === 'object' && !Array.isArray(over[k]) && base[k] && typeof base[k] === 'object' && !Array.isArray(base[k])) base[k] = merge(base[k], over[k]);
+      else base[k] = over[k];
+    }
+    return base;
+  }
+  const roman = n => { const v = [[40,'xl'],[10,'x'],[9,'ix'],[5,'v'],[4,'iv'],[1,'i']]; let r = ''; n += 1; for (const [a, b] of v) while (n >= a) { r += b; n -= a; } return r; };
+  const localZone = () => ({ 0: 'Z', 1: 'A', 2: 'B' })[-new Date().getTimezoneOffset() / 60] || 'Z';
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+  const icon = id => `<svg class="ki"><use href="#${id}"/></svg>`;
+
+  // Velden die de app onthoudt voor een volgend nieuw bevel
+  const PROFILE_KEY = 'oporder.profiel';
+  const PROFILE_FIELDS = ['oplcie', 'plaats', 'rubricering', 'ondertekening.functie', 'ondertekening.naam'];
+  const profile = () => { try { return JSON.parse(store.get(PROFILE_KEY)) || {}; } catch (e) { return {}; } };
+  function newDoc() {
+    const d = baseDoc(), pr = profile();
+    PROFILE_FIELDS.forEach(k => { if (pr[k]) set(d, k, pr[k]); });
+    return d;
+  }
+  function baseDoc() {
+    const annex = {}; for (const k in ANNEXES) annex[k] = { on: false, subs: Object.fromEntries(Object.keys(ANNEXES[k].subs).map(s => [s, false])) };
+    return {
+      doctype: 'STANDAARD OPERATIE ORDER', rubricering: 'ONGERUBRICEERD', codenaam: '', missietype: '', ordernr: '', fragnr: '',
+      oplcie: '', plaats: '', dtg: '', tijdzone: localZone(), refertes: '',
+      toestand: { vijand: '', eigen: '', onderbevel: '' }, opdracht: '',
+      uitvoering: { oogmerk: '', concept: '', gevechtseenheden: '', coord: '' }, logistiek: '', bevelvoering: '',
+      ondertekening: { functie: '', naam: '' }, bijlagen: '',
+      subs: {}, groepen: [], tabellen: { tijdbalk: [], locaties: [], wachtwoorden: [] },
+      annex, custom: Object.fromEntries(CUSTOM.map(k => [k, { on: false, title: '' }]))
+    };
+  }
+  const EXAMPLE_DATA = {
+ "oplcie": "Oplcie",
+ "plaats": "Breda",
+ "dtg": "311136B AUG 26",
+ "tijdzone": "B",
+ "ordernr": "001",
+ "refertes": "ACT/BCT\nKaart 49 Oost",
+ "toestand": {
+  "vijand": "Algemeen\nZie ACT/BCT\n\nRAZVEDKA compagnie\nWie\nRAZVEDKA compagnie \nWat\nNaderingsroutes richting de haven van Rdam in kaart brengen, daarnaast het lokaliseren en onder waarneming houden van militaire posities. (kazernes/munitiedepots).\nWaar\nDe compagnie is verspreid door NEDERLAND. Het is zeer waarschijnlijk dat de 3 pelotons verspreid zijn langs de grens van NLD (O/ZO/Z). \nWanneer\nHeden \nWaarmee\nDe compagnie bestaat uit een staf en 3 pelotons. De compagnie bestaat uit 10 pantserwielvoertuigen en bestaat uit 120paxen. De compagnie gebruikt GAZ-233014 TIGR als wielvoertuig. \nWaarom\nAlle verkregen (gevechts)informatie doorzetten richting het hoger net t.b.v. de (decision making proces) DMP. \nHoe\nDoor over verschillende assen voorwaarts te gaan zoveel mogelijk inlichtingen te verzamelen. Daarnaast door militaire locaties en knelpunten onder waarneming te houden reactietijd en (standaard operatie procedure/standaard operatie instructie) SOP/SOI te onderkennen. \nMLECOA\nDe vijand is voornamelijk snachts actief met verplaatsen waarbij ze overdag zich schuil houden in beboste gebieden of in de buurt van kritieke knelpunten. Daarnaast treden ze verspreid op waardoor een deel overdag in de rust zit, zeer waarschijnlijk in beboste gebieden en een deel in de waarneming. Dit om het voorzettingsvermogen door te kunnen zetten. \nMDECOA\nDe vijand is actief opzoek. Waarbij ze in de MLECOA zich alleen bezig houden met waarnemen zullen ze in de MDECOA de vijand aangrijpen. Vijand verplaatst niet alleen snachts maar laat zich ook overdag zien. \n\nRAZVEDKA peloton\nRAZVEDKA\nWie\nVerkpel van RAZVEDKA (combat recce)\nWat\nVerk van naderingsrtes en in kaart brengen opstellingen vijand..\nWaar\nArea of responsibility (AOR) RUCHPHENSE HEIDE\nWanneer\nHeden \nWaarmee\nPel bestaat uit 3x terreinvaardige voertuigen. Personeel is goed getraind en is bewapend met klein kaliber wapens (kkw) (5.56mm), drones en militaire communicatiemiddelen.. Daarnaast beschikt vij over beperkte eerste generatie hv middelen. Uit inlichtingen is gekomen dat de verwachte peloton sterkte 36 pax is.\nWaarom\nIn detail naderingsmogelijkheden in kaart brengen. Daarnaast de laatste gevechtsinlichtingen inwinnen over tussengelegen av doelen t.b.v. planning hogere cdt.\nHoe\nHet pel zal verspreid optreden om zo veel mogelijk inlichtingen te vergaren over naderingsroutes. Pel zal zo veel als mogelijk verpl bij duisternis. Bij daglicht zal statische observatie en recup plaatsvinden op de RUCHPHENSE HEIDE.. \nMLECOA\nHet is zeer waarschijnlijk dat de vijand alleen snachts actief is. Ze treden op in kleine zelfstandige groepen. Waarbij ze d.m.v. van fysieke verkenningen, inzet van UAS en gebruik van WLP de opgedragen opdrachten uitvoeren. Alle binnen gekregen informatie verzenden zij richting het hogere net om de DMP te ondersteunen. Daarnaast zal de vijand snachts drones hanteren om mogelijke vijandlocaties in kaart te brengen. Zeer waarschijnlijk houden ze zich overdag schuil waarbij ze gebruik maken van vooraf ingerichte WLP’s. Hier ligt de focus op knelpunten/kritieke terreindelen en eigen beveiliging in en rondom de RUCHPHENSE HEIDE. Vijand zal lonende doelen aangrijpen middels direct vuur, daarnaast kunnen zij in de lijn indirect vuur aanvragen maar is de reactietijd gemiddeld 2 uur. Indien de vijand wordt aangegrepen zullen zij agressief reageren en afbreken. Triggers: Geen troepenbeweging overdag, nachtelijke verplaatsingen met kleine eenheden, WLP zijn ondergronds/afbreken bij contact, drone activiteiten snachts, \nMDECOA\nVijand is niet alleen snachts maar ook overdag actief. Ze zijn zichtbaar d.m.v. patrouilles en willen hierdoor extra onrust creëren bij de bevolking. De vijand is actief opzoek naar vijandelijke elementen en willen deze d.m.v. hit and run acties aangrijpen. Hierbij is het doel niet zoveel mogelijk slachtoffers te maken maar de SOP/SOI en reactietijd te onderkennen. Daarnaast maken zij veel gebruik van UAS om de vijand te onderkennen, na onderkenning van de vijand zullen zij indirect vuur aanvragen bij het hogere niveau. \nBij vuurcontact zullen zij niet gelijk afbreken maar de situatie eerst bekijken/analyseren waarna ze eventuele acties ontplooien (tegenaanval/versterking oproepen/afbreken)\nTriggers: vijand is overdag en snachts actief en zichtbaar, Daarnaast zijn ze actief opzoek naar de vijand dmv patrouilles en veel vliegbewegingen met drones. Vijand hanteert hit and run om informatie te vergaren.",
+  "eigen": "Opdracht, oogmerk en operatieconcept naasthogere commandant\n\nKMA batalion\nOpdracht: \nKMA-bataljon bereidt voor en voert uit tegenverkenningsmaatregelen in BRABANT ten einde BRABANT vrij te waren van vijandelijke elementen\nOogmerk: \nP: Vijandelijke eenheden uit BRABANT verdringen. \nM: Door middel van een beweging te maken van N naar Z. Waarbij we gebieden welke zijn vrij gemaakt van vijand d.m.v. checkpoint en waarnemingsposten onder controle houden. Daarnaast op de locaties waar vijand nog verwacht wordt offensieve activiteiten uit te voeren. Hierbij is snelheid, flexibiliteit en eenheid van inspanning essentieel. \nO: Brabant is vrij gemaakt van vijandelijke eenheden en de aanval van RUSLAND is voorkomen. \n\nOpleidings compagnie\nOpdracht\nOpl. cie. bereidt voor en voer uit tegenverkenningsmaatregelen in toegewezen AOR in BRABANT.\nOogmerk:\nP: Vijandelijke elementen uit BRABANT verdringen\nM: Door middel van verschillende offensieve activiteiten en het uitbrengen van meerdere tactical assembly area’s (TAA’s), Hierdoor kunnen we een militaire voetprint uitbrengen waarvandaan operaties ontplooit kunnen worden. Snelheid, flexibiliteit en heimelijkheid zijn cruciaal voor deze operatie.  \nO: TAA’s zijn succesvol uitgevoerd waarnaast we de vijand op aangewezen locaties hebben geneutraliseerd. \n\nNeven eenheden, steunende eenheden\n1/7 KL:\t Voert uit offensieve activiteiten ten Westen van ons\n3/9 KL:\t Bevindt zich als reserve eenheid op assembly area (AA) CASTLE\n4/10 KL: Voert uit offensieve activiteiten ten Oosten van ons",
+  "onderbevel": "N.v.t."
+ },
+ "opdracht": "2KL bereidt voor en voert uit het betrekken en inrichten van TAA BASEBALL in de periode van XX t/m XX in de omgeving van de RUCHPHENSE HEIDE.",
+ "uitvoering": {
+  "oogmerk": "P: Voet aan de grond krijgen en BRABANT vrijwaren van RAZVEDKA elementen.    \nM: Dit doen wij door een degelijke uitvalsbasis te creëren op de RUCPHENSE HEIDE, waar veiligheid en flexibel optreden centraal staan. \nO: ten einde een stabiele TAA te creëren waar vanuit vervolgacties ontplooit kunnen worden,",
+  "concept": "In de week voor de operatie worden de personele en materiele voorbereidingen getroffen. Op dag-x wordt de operatie gestart vanuit AA CASTLE waarna er verplaatst wordt rg de RUCHPHENSEHEIDE. Hier wordt TAA BASEBALL betrokken en ingericht waarna we ons gereed maken voor vervolgacties. \nDeze operatie bestaat uit 3 fases:\nFase 1: Voorbereiding\nFase 2: Uitvoering\nFase 3: Gereed voor vervolgopdrachten\n\nFase 1 Voorbereiding\nIn fase 1 doorlopen we het OATDOEM proces. Daarnaast worden alle logistieke zaken voorbereid en de container beladen. Op de maandag starten we met appel waarna aansluitend de bevelsuitgifte wordt gedaan op groepsniveau. Fase 1 eindigt als de wapens zijn gehaald, HVA uitgevoerd en de radio’s geladen en een commscheck is uitgevoerd. \n\nFase 2 Uitvoering\nFase 2 start met een wielverplaatsing vanuit AA CASTLE richting het drop off point (DOP). Hier aangekomen wordt er een 360 ingenomen waarna er verplaatst gaat worden rg de TAA. De verplaatsing volgorde is A,B,C. De groepen nemen in de buurt van de TAA een laatst gedekte opstelling (LGO) in. De kwartiermaker gaat samen met een beveiliger richting de TAA om daar contact met de csm te leggen. Hier krijgt hij de laatste informatie m.b.t. het inrichten van de TAA. Als de kwartiermaker alle informatie heeft zorgt hij voor een link-up met zijn groep. Hier is de mogelijkheid voor een korte bevelsuitgifte waarna de groep de TAA gaat betrekken en inrichten. Elke groep heeft zijn eigen sector en elk peloton een eigen zijde. Als de TAA gereed is zal er een oefenalarm uitgevoerd worden. Hiermee eindigt fase 2. \n\nFase 3 Gereed voor vervolgopdrachten\nVanaf dit moment draaien we routine en maken we ons gereed voor vervolgopdrachten.",
+  "gevechtseenheden": "",
+  "coord": "Geweldsinstructies en ROE’s\nZie annex E\nIK 2-27 Geweldgebruik\n\nHerkenningsteken \nVij troepen\nOverdag: Mix van militair en burger gemixed.\nVoertuigen: Rode V\nBij duister: Blauwe breaklight\n\nEigen troepen\nOverdag: Oranje Flashcard\nBij duister: Groene breaklight\n\nMedia en burgers\nNetjes te woord staan met de medialine: “De KMA is bezig met offensieve activiteiten in regio RUCHPENSCHE HEIDE”, Doorverwijzen naar R\nCBRN dress state: zero, masker o.d.m.\nSpear is ten alle tijden op de man\n\nWhat if’s:\nVij onderkent:\t\t\t\tMelden, doorgaan met de opdracht\nOnderkent tijdens verplaatsing\t\tContact aangaan, melden, terugtrekken en via                                                                             een andere route opdr vervolgen\nOnderkent tijdens uitvoering\t\tContact aangaan, melden, R bepaald of de                                                                          actie door wordt gezet of dat we afbreken"
+ },
+ "logistiek": "Plan voor de logistiek\nDe pels worden in hun voorbereiding en uitvoering ost vwb bevoorrading en transport (op afroep) door logistiek KMA. Log behoeften zijn reeds ingediend. Extra log behoeften dienen dagelijks te worden aangegeven bij E NLT FCBB.  \n\nMaterieellogistiek\nBevoorrading\nAlle logistieke wensen dmv logistiek fuco (zie bijlage), Hrm omlooptijd van 24u\nKLI:\nWOL-cyclus, dagelijkse verstrekking via E;\nWaterdragers opgetopt voor vertrek;\nHerbevo mogelijk op vzgb na de actie.\nKLII/IV:\nGeleverd op locatie, aanvraag d.m.v. logistieke fuco;\nBehoeften dienen NLT FCBB te worden aangegeven bij E. \nKL V:\nBasic load voor vertrek;\nHerbevo mogelijk op vzgb na de actie.\nOnderhoud\nVoor vertrek fuco 1;\nIn fase 3 dient er een fuco 2 te worden uitgevoerd.\n\nPersoneelslogistiek\nPersoneelszorg;\nKgvn behandelen cfm OFSSA en afvoeren naar vzgb.\n\nOperationele gezondheidszorg\nCUF, ZHKH, GPs gewonden nest;\nVanaf GPs gewonden nest worden gewonden opgehaald door E indien beschikbaar;\nHrm verplaatsingstijd van 15 min voor E. Dzv opvang en doorgeven locatie gew nest. Melding middels 9liner;\nLOC pel gewondennest is TAA BASEBALL.",
+ "bevelvoering": "Bevelvoering\nLocatie CP Cie.\nFase 1 en 2 AA CASTLE\nFase 3 in TAA BASEBALL\nCp Pel:\nFase 1-3 achter de A-gp\nOpvolging in commando:\t\nR-E-A-B-C-D.\n\nVerbindingen\nFrequenties en netnummers bijlage Q-1\nPACE\nP: FM 9200\nA: Porto\nC: Runner\nE: \nVerplichte meldingen: \nVertrek DOP:\t\t\tRHINO\nBetrekken vzgb:\t \t\tEAGLE\nVzgb ingericht: \t\t\tFALCON \nStop actie (abort!)\t\tLION",
+ "ondertekening": {
+  "functie": "Commandant 2KL",
+  "naam": "Kap den Boer"
+ },
+ "groepen": [
+  {
+   "naam": "A-gp",
+   "tekst": "D.z.v bevelsuitgifte rg gp;\nVerplaatst als 1e groep rg de TAA;\nBereid voor en voer uit betrekken vzgb sector W/ZW;\nBereidt voor en voer uit wachtpost in eigen sector;\nBereidt voor en voer uit 1x cov tent;\nBereidt voor en oer uit 1x maquette;\nDeconflicteer deze sector met de andere gpn;"
+  },
+  {
+   "naam": "B-gp",
+   "tekst": "D.z.v bevelsuitgifte rg gp;\nVerplaatst als 2e groep rg de TAA;\nBereid voor en voer uit betrekken vzgb sector Z;\nBereidt voor en voer uit wachtpost in eigen sector;\nOndersteun A en C gp bij het opbouwen van de tenten;\nBereidt voor en oer uit 1x maquette;\nDeconflicteer deze sector met de andere gpn;"
+  },
+  {
+   "naam": "C-gp",
+   "tekst": "D.z.v bevelsuitgifte rg gp;\nVerplaatst als 3e groep rg de TAA;\nBereid voor en voer uit betrekken vzgb sector O/ZO;\nBereidt voor en voer uit wachtpost in eigen sector;\nBereidt voor en voer uit 1x cov tent;\nBereidt voor en oer uit 1x maquette;\nDeconflicteer deze sector met de andere gpn;"
+  }
+ ],
+ "tabellen": {
+  "tijdbalk": [
+   [
+    "Xx",
+    "Bevelsuitgifte PC"
+   ],
+   [
+    "Xx",
+    "ICBB"
+   ],
+   [
+    "Xx",
+    "FCBB"
+   ],
+   [
+    "Xx",
+    "Container beladen en gereed"
+   ],
+   [
+    "Xx",
+    "Appel"
+   ],
+   [
+    "Xx",
+    "Gp bevel"
+   ],
+   [
+    "Xx",
+    "commscheck"
+   ],
+   [
+    "Xx",
+    "NLT vertrek rg DOP"
+   ],
+   [
+    "Xx",
+    "NLT aankomst DOP"
+   ],
+   [
+    "Xx",
+    "NLT verzamelgebied betrokken"
+   ],
+   [
+    "Xx",
+    "NLT verzamelgebied ingericht"
+   ],
+   [
+    "Xx",
+    "Spear melding bij E"
+   ]
+  ],
+  "locaties": [
+   [
+    "AA CASTLE",
+    "31 UFT 2302 1710"
+   ],
+   [
+    "DOP",
+    "31"
+   ],
+   [
+    "TAA BASEBALL",
+    "31"
+   ]
+  ],
+  "wachtwoorden": [
+   [
+    "XX0000 – XX2359",
+    "J–B"
+   ],
+   [
+    "XX0000 – XX2359",
+    "A–H"
+   ],
+   [
+    "XX0000 – XX2359",
+    "A–B"
+   ],
+   [
+    "XX0000 – XX2359",
+    "S–B"
+   ]
+  ]
+ }
+};
+  function exampleDoc() {
+    const d = merge(newDoc(), clone(EXAMPLE_DATA));
+    d.tijdzone = 'B';
+    d.bijlagen = 'Bijlage A: GEVECHTSPLAN\nBijlage B: ORGANOGRAM\nBijlage D10: DOEL INLICHTINGEN\nBijlage E: RULES OF ENGAGEMENT\nBijlage Q-1: COMMSPLAN\nBijlage XX: LOGISTIEK FUCO';
+    return d;
+  }
+
+  /* =================================================================== */
+  /* Theme & instructions                                                */
+  /* =================================================================== */
+  const darkQuery = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+  function applyTheme() {
+    const saved = store.get(THEME_KEY);
+    document.body.classList.toggle('dark-theme', saved ? saved === 'dark' : !!(darkQuery && darkQuery.matches));
+  }
+  if (darkQuery && darkQuery.addEventListener) darkQuery.addEventListener('change', applyTheme);
+  applyTheme();
+  const applyInstr = () => document.body.classList.toggle('hide-instr', store.get(INSTR_KEY) !== 'aan'); // uitleg staat nu in de vakken zelf
+  applyInstr();
+
+  /* =================================================================== */
+  /* Orders (several saved orders)                                       */
+  /* =================================================================== */
+  let orders = (() => { try { return JSON.parse(store.get(ORDERS_KEY)) || null; } catch (e) { return null; } })();
+  if (!orders || !orders.items) {
+    orders = { current: null, items: {} };
+    const legacy = store.get(LEGACY_KEY); // migrate the single order of v1.x
+    if (legacy) { try { const id = uid(); orders.items[id] = { doc: merge(newDoc(), JSON.parse(legacy)), updated: Date.now() }; orders.current = id; } catch (e) {} }
+  }
+  // Een bevel telt als leeg als er niets is ingevuld behalve de standaardkeuzes en de onthouden velden
+  function isEmptyDoc(d) {
+    const skip = new Set(['doctype', 'rubricering', 'tijdzone', 'oplcie', 'plaats', 'ondertekening']);
+    const has = v => typeof v === 'string' ? v.trim() !== '' : Array.isArray(v) ? v.some(has) : (v && typeof v === 'object') ? Object.values(v).some(has) : v === true;
+    return !Object.keys(d).some(k => !skip.has(k) && has(d[k]));
+  }
+  // Lege bevelen worden niet bewaard
+  for (const id in orders.items) if (isEmptyDoc(merge(newDoc(), orders.items[id].doc))) delete orders.items[id];
+  // De app start altijd met een nieuw, leeg bevel; eerdere bevelen staan onder Bevelen
+  orders.current = uid();
+  let doc = newDoc();
+
+  // Bewaart het huidige bevel zodra er iets in staat (deels of compleet)
+  function persist() {
+    if (isEmptyDoc(doc)) delete orders.items[orders.current];
+    else orders.items[orders.current] = { doc, updated: Date.now() };
+    store.set(ORDERS_KEY, JSON.stringify(orders));
+  }
+  let saveTimer;
+  function setStatus(saving) { $('#status-dot').classList.toggle('saving', saving); $('#save-status-text').textContent = saving ? 'Opslaan…' : (isEmptyDoc(doc) ? 'Nog leeg' : 'Opgeslagen'); }
+  function save() { setStatus(true); clearTimeout(saveTimer); saveTimer = setTimeout(() => { persist(); setStatus(false); }, 300); }
+  function flush() { clearTimeout(saveTimer); persist(); setStatus(false); }
+  persist();
+
+  function orderName(d) {
+    const short = { 'STANDAARD OPERATIE ORDER': 'OPORD', 'FRAGMENTARY ORDER (FRAGO)': 'FRAGO', 'WAARSCHUWINGSBEVEL (WNGO)': 'WNGO' }[d.doctype] || 'Bevel';
+    const parts = [short + (d.ordernr ? ' ' + d.ordernr : '') + (d.fragnr ? ' - FRAGO ' + d.fragnr : '')];
+    if (d.codenaam) parts.push(d.codenaam.toUpperCase());
+    if (!d.ordernr && !d.codenaam) {
+      // geen nummer of codenaam: herken het bevel aan de eerste woorden
+      const txt = [d.opdracht, d.uitvoering.oogmerk, d.toestand.vijand, d.toestand.eigen].map(t => (t || '').trim()).find(Boolean);
+      if (txt) parts.push(txt.split('\n')[0].slice(0, 40) + (txt.split('\n')[0].length > 40 ? '…' : ''));
+    }
+    return isEmptyDoc(d) ? 'Nieuw bevel (leeg)' : parts.join(' · ');
+  }
+  function openOrder(id) { flush(); orders.current = id; doc = merge(newDoc(), orders.items[id].doc); persist(); loadIntoUI(); setTab('editor'); }
+  function addOrder(d, msg) { flush(); const id = uid(); orders.items[id] = { doc: d, updated: Date.now() }; orders.current = id; doc = merge(newDoc(), d); persist(); loadIntoUI(); setTab('editor'); toast(msg); }
+  function makeFrago(src) {
+    flush();
+    const c = clone(src); const n = parseInt(c.fragnr, 10);
+    c.doctype = 'FRAGMENTARY ORDER (FRAGO)'; c.fragnr = String(isNaN(n) ? 1 : n + 1).padStart(2, '0'); c.dtg = '';
+    addOrder(merge(newDoc(), c), 'FRAGO ' + c.fragnr + ' gemaakt');
+  }
+  function deleteOrder(id) {
+    const item = orders.items[id], wasCurrent = id === orders.current;
+    delete orders.items[id];
+    if (wasCurrent) { orders.current = uid(); doc = newDoc(); loadIntoUI(); }
+    store.set(ORDERS_KEY, JSON.stringify(orders));
+    toast('Bevel verwijderd', () => { flush(); orders.items[id] = item; if (wasCurrent) openOrder(id); else store.set(ORDERS_KEY, JSON.stringify(orders)); });
+  }
+  function fmtDate(t) { const d = new Date(t); return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }); }
+
+  function showOrders() {
+    flush();
+    const ids = Object.keys(orders.items).sort((a, b) => orders.items[b].updated - orders.items[a].updated);
+    const items = [
+      { icon: 'i-plus', label: 'Nieuw leeg bevel', run: () => addOrder(newDoc(), 'Nieuw bevel gestart') },
+      { icon: 'i-copy', label: 'Kopie van dit bevel', hint: 'Start een nieuw bevel met alles van het huidige', run: () => {
+          const d = clone(doc); d.dtg = ''; addOrder(d, 'Kopie gemaakt'); } },
+      { icon: 'i-flag', label: 'FRAGO van dit bevel', hint: 'Kopie als FRAGO met het volgende FRAGO-nummer', run: () => makeFrago(doc) },
+      { section: 'Opgeslagen bevelen (' + ids.length + ')' },
+      ...ids.map(id => ({ icon: 'i-doc', label: orderName(orders.items[id].doc), hint: 'Gewijzigd ' + fmtDate(orders.items[id].updated),
+        current: id === orders.current, run: () => orderActions(id) }))
+    ];
+    openSheet('Mijn bevelen', items);
+  }
+  function orderActions(id) {
+    const d = orders.items[id].doc;
+    openSheet(orderName(d), [
+      { icon: 'i-edit', label: id === orders.current ? 'Verder bewerken' : 'Openen', run: () => openOrder(id) },
+      { icon: 'i-copy', label: 'Kopie maken', hint: 'Als nieuw bevel, zonder DTG', run: () => { const c = clone(d); c.dtg = ''; addOrder(merge(newDoc(), c), 'Kopie gemaakt'); } },
+      { icon: 'i-flag', label: 'FRAGO maken', hint: 'Kopie als FRAGO met het volgende FRAGO-nummer', run: () => makeFrago(d) },
+      { icon: 'i-share', label: 'Delen als bestand', hint: 'Via Quick Share, mail of WhatsApp', run: () => shareOrder(d) },
+      { icon: 'i-trash', label: 'Verwijderen', danger: true, run: () => openSheet('Bevel verwijderen?', [
+          { icon: 'i-trash', label: 'Ja, verwijder "' + orderName(d) + '"', hint: 'Je kunt dit direct daarna nog ongedaan maken', danger: true, run: () => deleteOrder(id) },
+          { icon: 'i-x', label: 'Annuleren' }]) }
+    ]);
+  }
+
+  /* ---------- Share & import ---------- */
+  function shareOrder(d) {
+    const name = orderName(d).replace(/[^\w\-]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'bevel';
+    shareJson('OpOrder_' + name + '.json', JSON.stringify({ app: 'kma-oporder', versie: 2, bevel: d }, null, 1));
+  }
+  function shareJson(file, json) {
+    if (window.Android && Android.shareFile) { Android.shareFile(file, json); return; }
+    // Web: deelmenu van de telefoon als dat kan, anders downloaden
+    try {
+      const f = new File([json], file, { type: 'application/json' });
+      if (navigator.canShare && navigator.canShare({ files: [f] })) { navigator.share({ files: [f], title: file }).catch(() => {}); return; }
+    } catch (e) {}
+    const a = el('a'); a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' })); a.download = file; a.click();
+  }
+  function backupAll() {
+    flush();
+    const list = Object.values(orders.items).sort((a, b) => b.updated - a.updated).map(i => i.doc);
+    const day = new Date().toISOString().slice(0, 10);
+    shareJson('OpOrder_backup_' + day + '.json', JSON.stringify({ app: 'kma-oporder', versie: 2, bevelen: list }, null, 1));
+  }
+  function importText(text) {
+    try {
+      const o = JSON.parse(text);
+      if (o && o.app === 'kma-oporder' && Array.isArray(o.bevelen)) {
+        flush(); let first = null, added = 0;
+        const have = new Set(Object.values(orders.items).map(i => JSON.stringify(merge(newDoc(), i.doc))));
+        o.bevelen.forEach(d => {
+          const m = merge(newDoc(), d), key = JSON.stringify(m);
+          if (have.has(key)) return; // staat er al
+          have.add(key); const id = uid(); first ??= id; added++;
+          orders.items[id] = { doc: m, updated: Date.now() };
+        });
+        store.set(ORDERS_KEY, JSON.stringify(orders));
+        if (first) openOrder(first);
+        const skipped = o.bevelen.length - added;
+        toast(added ? added + (added === 1 ? ' bevel' : ' bevelen') + ' hersteld' + (skipped ? ', ' + skipped + ' stonden er al' : '') : 'Alle bevelen uit de back-up staan er al');
+        return;
+      }
+      const d = o && o.app === 'kma-oporder' ? o.bevel : (o && o.toestand ? o : null);
+      if (!d) throw new Error();
+      addOrder(merge(newDoc(), d), 'Bevel geïmporteerd');
+    } catch (e) { toast('Dit bestand is geen OpOrder-bevel'); }
+  }
+  window.onImport = importText; // called from Android
+  function startImport() {
+    if (window.Android && Android.pickImport) Android.pickImport();
+    else $('#file-import').click();
+  }
+  $('#file-import').addEventListener('change', e => { const f = e.target.files[0]; if (!f) return; f.text().then(importText); e.target.value = ''; });
+
+  /* =================================================================== */
+  /* Editor building                                                     */
+  /* =================================================================== */
+  function grow(t) { if (t && t.tagName === 'TEXTAREA') { t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; } }
+  function growAll() { document.querySelectorAll('#editor-panel textarea').forEach(grow); }
+
+  // Remember the caret per field, so snelzinnen and speech land where you were typing
+  const caret = new WeakMap();
+  document.addEventListener('focusout', e => { const t = e.target; if (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT') caret.set(t, [t.selectionStart, t.selectionEnd]); });
+  function insertAt(t, text) {
+    const [s, e] = caret.get(t) || [t.value.length, t.value.length];
+    const before = t.value.slice(0, s), after = t.value.slice(e);
+    const multi = text.includes('\n') || text.length > 30;
+    const pre = before && multi && !before.endsWith('\n') ? '\n' : (before && !/\s$/.test(before) ? ' ' : '');
+    t.value = before + pre + text + after;
+    const pos = (before + pre + text).length;
+    caret.set(t, [pos, pos]);
+    t.dispatchEvent(new Event('input', { bubbles: true }));
+    t.focus(); try { t.setSelectionRange(pos, pos); } catch (e) {}
+  }
+
+  const OWN_KEY = 'oporder.snelzinnen';
+  const ownPhrases = () => { try { return JSON.parse(store.get(OWN_KEY)) || {}; } catch (e) { return {}; } };
+  const phraseItem = (p, t, extra) => Object.assign({ icon: 'i-bolt', label: p.split('\n')[0] || p, hint: p.includes('\n') ? p.split('\n').slice(1).join('\n') : '', run: () => insertAt(t, p) }, extra || {});
+  function phraseSheet(t, key) {
+    const own = ownPhrases()[key] || [];
+    const [s0, e0] = caret.get(t) || [0, 0];
+    const selected = t.value.slice(s0, e0).trim();
+    openSheet('Snelzin invoegen', [
+      ...(own.length ? [{ section: 'Mijn snelzinnen' }, ...own.map(p => phraseItem(p, t, { icon: 'i-save' }))] : []),
+      { section: 'Standaard' },
+      ...[...(PHRASES[key] || []), ...PHRASES.algemeen].map(p => phraseItem(p, t)),
+      { section: 'Eigen snelzinnen' },
+      { icon: 'i-plus', label: selected ? 'Geselecteerde tekst opslaan als snelzin' : 'Eigen snelzin toevoegen', hint: 'Bewaard voor dit vak',
+        run: () => promptSheet('Eigen snelzin', selected, 'Typ de zin of opzet die je vaak gebruikt…', txt => {
+          const all = ownPhrases(); (all[key] ??= []).unshift(txt); store.set(OWN_KEY, JSON.stringify(all)); toast('Snelzin opgeslagen'); }) },
+      ...(own.length ? [{ icon: 'i-trash', label: 'Eigen snelzin verwijderen', run: () => openSheet('Welke snelzin verwijderen?',
+          own.map((p, i) => phraseItem(p, t, { icon: 'i-trash', danger: true, run: () => {
+            const all = ownPhrases(); const removed = all[key].splice(i, 1)[0]; store.set(OWN_KEY, JSON.stringify(all));
+            toast('Snelzin verwijderd', () => { const a = ownPhrases(); (a[key] ??= []).splice(i, 0, removed); store.set(OWN_KEY, JSON.stringify(a)); }); } }))) }] : [])
+    ]);
+  }
+  function promptSheet(title, value, placeholder, onSave) {
+    const form = el('div', 'sheet-form', `<textarea></textarea><div class="row"><button type="button" class="btn-pill">Annuleren</button><button type="button" class="btn-pill" style="background:var(--accent-gold);color:#111a14">${icon('i-save')}Opslaan</button></div>`);
+    const ta = form.querySelector('textarea'); ta.value = value || ''; ta.placeholder = placeholder || '';
+    const [cancel, ok] = form.querySelectorAll('button');
+    cancel.addEventListener('click', closeSheet);
+    ok.addEventListener('click', () => { const v = ta.value.trim(); if (!v) return; closeSheet(); onSave(v); });
+    openSheet(title, [{ node: form }]);
+    setTimeout(() => ta.focus(), 250);
+  }
+
+  /* ---------- Speech ---------- */
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const speechAvailable = !!((window.Android && Android.startSpeech) || SR);
+  const speechTargets = {}; let speechSeq = 0;
+  function startSpeech(t, btn) {
+    const id = 's' + (++speechSeq); speechTargets[id] = { t, btn };
+    btn.classList.add('is-listening');
+    if (window.Android && Android.startSpeech) { Android.startSpeech(id); return; }
+    const r = new SR(); r.lang = 'nl-NL'; r.interimResults = false;
+    r.onresult = ev => window.onSpeech(id, ev.results[0][0].transcript);
+    r.onend = () => btn.classList.remove('is-listening');
+    r.onerror = () => window.onSpeech(id, '');
+    r.start();
+  }
+  window.onSpeech = (id, text) => {
+    const s = speechTargets[id]; if (!s) return; delete speechTargets[id];
+    s.btn.classList.remove('is-listening');
+    if (text) insertAt(s.t, text);
+  };
+
+  function toolButtons(t, key, extra) {
+    const tools = el('div', 'tools');
+    if (extra) tools.appendChild(extra);
+    const ph = el('button', 'btn-pill', icon('i-bolt') + 'Snelzin'); ph.type = 'button';
+    ph.addEventListener('click', () => phraseSheet(t, key)); tools.appendChild(ph);
+    if (speechAvailable) {
+      const mic = el('button', 'btn-pill icon-only', icon('i-mic')); mic.type = 'button'; mic.title = 'Inspreken';
+      mic.addEventListener('click', () => startSpeech(t, mic)); tools.appendChild(mic);
+    }
+    return tools;
+  }
+
+  /* ---------- Subcategories (i), (ii) ---------- */
+  const subsOf = k => (doc.subs && Array.isArray(doc.subs[k])) ? doc.subs[k] : [];
+  function buildSubs(k, focusLast) {
+    const box = document.querySelector(`.subs[data-subs="${k}"]`); box.innerHTML = '';
+    subsOf(k).forEach((txt, i) => {
+      const row = el('div', 'sub-row', '<span class="sub-num"></span><textarea placeholder="Tekst subcategorie…"></textarea><button type="button" class="x-btn" title="Verwijder subcategorie">' + icon('i-x') + '</button>');
+      row.querySelector('.sub-num').textContent = '(' + roman(i) + ')';
+      const ta = row.querySelector('textarea'); ta.value = txt;
+      ta.addEventListener('input', () => { doc.subs[k][i] = ta.value; grow(ta); render(); save(); });
+      row.querySelector('.x-btn').addEventListener('click', () => { const snap = clone(doc); doc.subs[k].splice(i, 1); buildSubs(k); render(); save(); undoToast('Subcategorie verwijderd', snap); });
+      box.appendChild(row);
+    });
+    box.querySelectorAll('textarea').forEach(grow);
+    if (focusLast) { const all = box.querySelectorAll('textarea'); if (all.length) all[all.length - 1].focus(); }
+  }
+  document.querySelectorAll('textarea[data-tools]').forEach(t => {
+    const k = t.dataset.k;
+    const add = el('button', 'btn-pill is-dashed', icon('i-plus') + 'Subcategorie'); add.type = 'button';
+    add.addEventListener('click', () => { (doc.subs[k] ??= []).push(''); buildSubs(k, true); save(); });
+    const box = el('div', 'subs'); box.dataset.subs = k;
+    t.after(toolButtons(t, k, add), box);
+    // preview container for this field's subcategories
+    const v = document.querySelector(`.pre[data-v="${k}"]`);
+    const vb = el('div', 'subs-v'); vb.dataset.subv = k; v.after(vb);
+  });
+
+  /* ---------- Groups (3c) ---------- */
+  function nextGroupName(name) {
+    const m = /^([A-Za-z])(\b.*)$/.exec(name.trim());
+    if (m && m[1].toUpperCase() < 'Z') return String.fromCharCode(m[1].toUpperCase().charCodeAt(0) + 1) + m[2];
+    return name ? name + ' (kopie)' : '';
+  }
+  function buildGroups(focusIdx) {
+    const box = $('#groups'); box.innerHTML = '';
+    doc.groepen.forEach((g, i) => {
+      const card = el('div', 'group');
+      card.innerHTML = `<div class="group-head"><input placeholder="Naam, bijv. A-gp"><button type="button" class="btn-pill icon-only" title="Kopieer naar nieuwe groep">${icon('i-copy')}</button><button type="button" class="x-btn" title="Verwijder groep">${icon('i-x')}</button></div><textarea placeholder="Opdrachten voor deze groep: bevelsuitgifte, volgorde van verplaatsen, sector, taken en deconflictie."></textarea>`;
+      const name = card.querySelector('input'), ta = card.querySelector('textarea');
+      name.value = g.naam; ta.value = g.tekst;
+      name.addEventListener('input', () => { g.naam = name.value; render(); save(); });
+      ta.addEventListener('input', () => { g.tekst = ta.value; grow(ta); render(); save(); });
+      card.querySelector('.icon-only').addEventListener('click', () => {
+        // copy: next letter (A-gp → B-gp) and next ordinal ("als 1e groep" → "als 2e groep")
+        const tekst = g.tekst.replace(/(\d+)e groep/g, (_, n) => (+n + 1) + 'e groep');
+        doc.groepen.splice(i + 1, 0, { naam: nextGroupName(g.naam), tekst });
+        buildGroups(i + 1); render(); save(); toast('Groep gekopieerd');
+      });
+      card.querySelector('.x-btn').addEventListener('click', () => { const snap = clone(doc); doc.groepen.splice(i, 1); buildGroups(); render(); save(); undoToast('Groep verwijderd', snap); });
+      ta.after(toolButtons(ta, 'groep'));
+      box.appendChild(card);
+    });
+    box.querySelectorAll('textarea').forEach(grow);
+    if (focusIdx != null) { const c = box.children[focusIdx]; if (c) { c.scrollIntoView({ block: 'center' }); c.querySelector('input').focus(); } }
+  }
+  $('#btn-add-group').addEventListener('click', () => {
+    const last = doc.groepen[doc.groepen.length - 1];
+    doc.groepen.push({ naam: last ? nextGroupName(last.naam) : 'A-gp', tekst: '' });
+    buildGroups(doc.groepen.length - 1); render(); save();
+  });
+
+  /* ---------- Tables (3d) ---------- */
+  function buildTables() {
+    const box = $('#tables'); box.innerHTML = '';
+    for (const k in TABLES) {
+      const T = TABLES[k], rows = doc.tabellen[k] ??= [];
+      const wrap = el('div', 'tbl'); wrap.innerHTML = `<div class="tbl-title"></div><div class="tbl-rows"></div>`;
+      wrap.querySelector('.tbl-title').textContent = T.title;
+      const list = wrap.querySelector('.tbl-rows');
+      rows.forEach((r, i) => {
+        const row = el('div', 'tbl-row', `<input><input><button type="button" class="x-btn" title="Verwijder regel">${icon('i-x')}</button>`);
+        const [a, b] = row.querySelectorAll('input');
+        a.value = r[0] || ''; b.value = r[1] || ''; a.placeholder = T.hint[0]; b.placeholder = T.hint[1];
+        a.addEventListener('input', () => { r[0] = a.value; render(); save(); });
+        b.addEventListener('input', () => { r[1] = b.value; render(); save(); });
+        b.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addRow(k); } });
+        row.querySelector('.x-btn').addEventListener('click', () => { const snap = clone(doc); rows.splice(i, 1); buildTables(); render(); save(); undoToast('Regel verwijderd', snap); });
+        list.appendChild(row);
+      });
+      const add = el('button', 'btn-pill is-dashed', icon('i-plus') + 'Regel ' + T.title.toLowerCase()); add.type = 'button';
+      add.style.marginTop = '6px'; add.style.minHeight = '36px'; add.style.fontSize = '12px';
+      add.addEventListener('click', () => addRow(k));
+      wrap.appendChild(add);
+      box.appendChild(wrap);
+    }
+  }
+  function addRow(k) {
+    doc.tabellen[k].push(['', '']); buildTables(); render(); save();
+    const rows = document.querySelectorAll('#tables .tbl')[Object.keys(TABLES).indexOf(k)].querySelectorAll('.tbl-row');
+    rows[rows.length - 1].querySelector('input').focus();
+  }
+
+  /* ---------- Annexes ---------- */
+  function buildAnnexes() {
+    const box = $('#annexes'); box.innerHTML = '';
+    for (const k in ANNEXES) {
+      const A = ANNEXES[k], st = doc.annex[k];
+      const card = el('div', 'annex');
+      const main = el('label', 'chk', `<input type="checkbox"><span><strong>Annex ${k}</strong> · </span>`);
+      main.querySelector('span').append(A.title);
+      const cb = main.querySelector('input'); cb.checked = st.on;
+      card.appendChild(main);
+      const subKeys = Object.keys(A.subs);
+      let subBox;
+      if (subKeys.length) {
+        subBox = el('div', 'annex-subs');
+        subKeys.forEach(s => {
+          const l = el('label', 'chk', `<input type="checkbox"><span>Appendix ${s} · </span>`); l.querySelector('span').append(A.subs[s]);
+          const c = l.querySelector('input'); c.checked = !!st.subs[s];
+          c.addEventListener('change', () => { st.subs[s] = c.checked; if (c.checked) { st.on = true; cb.checked = true; } render(); save(); });
+          subBox.appendChild(l);
+        });
+        card.appendChild(subBox);
+      }
+      cb.addEventListener('change', () => {
+        st.on = cb.checked; subKeys.forEach(s => st.subs[s] = cb.checked);
+        if (subBox) subBox.querySelectorAll('input').forEach(c => c.checked = cb.checked);
+        render(); save();
+      });
+      box.appendChild(card);
+    }
+    box.appendChild(el('div', 'sub-hd', 'Eigen bijlagen'));
+    CUSTOM.forEach(k => {
+      const st = doc.custom[k];
+      const card = el('label', 'annex custom chk', `<input type="checkbox"><strong style="width:72px">Annex ${k}</strong><input type="text" placeholder="Titel…">`);
+      const [cb, title] = card.querySelectorAll('input');
+      cb.checked = st.on; title.value = st.title;
+      cb.addEventListener('change', () => { st.on = cb.checked; render(); save(); });
+      title.addEventListener('input', () => { st.title = title.value; if (title.value && !st.on) { st.on = true; cb.checked = true; } render(); save(); });
+      box.appendChild(card);
+    });
+    box.appendChild(el('label', 'annex chk fixed', '<input type="checkbox" checked disabled><span><strong>Annex ZZ</strong> · Verzendlijst (altijd)</span>'));
+  }
+
+  /* =================================================================== */
+  /* Preview                                                             */
+  /* =================================================================== */
+  function render() {
+    document.querySelectorAll('[data-v]').forEach(e => e.textContent = get(doc, e.dataset.v));
+    document.querySelectorAll('[data-show]').forEach(e => e.classList.toggle('hidden', !String(get(doc, e.dataset.show)).trim()));
+    const nr = doc.ordernr.trim(), frag = doc.fragnr.trim(), code = doc.codenaam.trim();
+    $('#v-title').textContent = (doc.doctype || 'OPERATIEBEVEL') + (nr ? ' NO. ' + nr : '') + (frag ? ' - FRAGO ' + frag : '');
+    $('#v-subtitle').textContent = code ? 'OPERATIE ' + code.toUpperCase() : '';
+    $('#v-subtitle').classList.toggle('hidden', !code);
+    $('#doc-name').textContent = orderName(doc);
+    if (typeof updateJump === 'function') updateJump();
+
+    document.querySelectorAll('[data-subv]').forEach(box => {
+      box.innerHTML = '';
+      subsOf(box.dataset.subv).filter(t => t.trim()).forEach((t, i) => {
+        const row = el('div', 'sv', '<span class="rn"></span><div class="pre"></div>');
+        row.firstChild.textContent = '(' + roman(i) + ')'; row.lastChild.textContent = t;
+        box.appendChild(row);
+      });
+    });
+
+    const vg = $('#v-groups'); vg.innerHTML = '';
+    doc.groepen.filter(g => g.naam.trim() || g.tekst.trim()).forEach(g => {
+      const b = el('div', 'grp-v', '<div class="gn"></div><div class="pre"></div>');
+      b.firstChild.textContent = g.naam; b.lastChild.textContent = g.tekst; vg.appendChild(b);
+    });
+
+    const vt = $('#v-tables'); vt.innerHTML = '';
+    for (const k in TABLES) {
+      const rows = (doc.tabellen[k] || []).filter(r => (r[0] || '').trim() || (r[1] || '').trim());
+      if (!rows.length) continue;
+      vt.appendChild(Object.assign(el('div', 'tbl-v-title'), { textContent: TABLES[k].title }));
+      const t = el('table', 'doc', '<thead><tr><th></th><th></th></tr></thead><tbody></tbody>');
+      t.querySelectorAll('th').forEach((th, i) => th.textContent = TABLES[k].cols[i]);
+      rows.forEach(r => { const tr = el('tr', null, '<td></td><td></td>'); tr.children[0].textContent = r[0] || ''; tr.children[1].textContent = r[1] || ''; t.tBodies[0].appendChild(tr); });
+      vt.appendChild(t);
+    }
+
+    const va = $('#v-annexes'); va.innerHTML = '';
+    const li = text => { const l = el('li'); l.textContent = text; return l; };
+    for (const k in ANNEXES) {
+      const st = doc.annex[k]; if (!st.on) continue;
+      const l = li(`Annex ${k} - ${ANNEXES[k].title}`);
+      const subs = Object.keys(ANNEXES[k].subs).filter(s => st.subs[s]);
+      if (subs.length) { const ul = el('ul'); subs.forEach(s => ul.appendChild(li(`Appendix ${s} to Annex ${k} - ${ANNEXES[k].subs[s]}`))); l.appendChild(ul); }
+      va.appendChild(l);
+    }
+    CUSTOM.forEach(k => { const st = doc.custom[k]; if (st.on && st.title.trim()) va.appendChild(li(`Annex ${k} - ${st.title.trim()}`)); });
+    doc.bijlagen.split('\n').map(s => s.trim()).filter(Boolean).forEach(s => va.appendChild(li(s)));
+    va.appendChild(li('Annex ZZ - Verzendlijst'));
+  }
+
+  /* =================================================================== */
+  /* Wiring                                                              */
+  /* =================================================================== */
+  function loadIntoUI() {
+    document.querySelectorAll('[data-k]').forEach(e => { e.value = get(doc, e.dataset.k); });
+    SUB_KEYS.forEach(k => buildSubs(k));
+    buildGroups(); buildTables(); buildAnnexes(); render();
+    requestAnimationFrame(growAll);
+  }
+  document.querySelectorAll('[data-k]').forEach(e => e.addEventListener(e.tagName === 'SELECT' ? 'change' : 'input', () => {
+    set(doc, e.dataset.k, e.value); grow(e); render(); save();
+    if (PROFILE_FIELDS.includes(e.dataset.k)) { const pr = profile(); pr[e.dataset.k] = e.value; store.set(PROFILE_KEY, JSON.stringify(pr)); }
+  }));
+  window.addEventListener('resize', growAll);
+
+  function setTab(t) {
+    document.body.dataset.tab = t;
+    document.querySelectorAll('.kma-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+    if (t === 'editor') requestAnimationFrame(growAll);
+  }
+  document.querySelectorAll('.kma-tab').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+  window.handleBack = () => {
+    if (document.querySelector('.kma-sheet-overlay.in')) { closeSheet(); return true; }
+    if (document.querySelector('.present')) { closePresent(); return true; }
+    if (document.body.dataset.tab === 'preview' && window.innerWidth < 1000) { setTab('editor'); return true; }
+    return false;
+  };
+
+  function toast(msg, undo) {
+    const t = el('div', 'kma-toast', icon('i-check') + '<span></span>');
+    t.querySelector('span').textContent = msg;
+    const close = () => { t.classList.remove('in'); setTimeout(() => t.remove(), 250); };
+    if (undo) {
+      const b = el('button', 'undo', 'Ongedaan maken'); b.type = 'button';
+      b.addEventListener('click', () => { undo(); close(); });
+      t.appendChild(b);
+    }
+    $('#toast-host').appendChild(t);
+    requestAnimationFrame(() => t.classList.add('in'));
+    setTimeout(close, undo ? 6000 : 2400);
+  }
+  function undoToast(msg, snap) {
+    toast(msg, () => { doc = merge(newDoc(), snap); loadIntoUI(); save(); toast('Hersteld'); });
+  }
+  window.kmaToast = toast;
+
+  function closeSheet() { const o = document.querySelector('.kma-sheet-overlay.in'); if (!o) return; o.classList.remove('in'); setTimeout(() => o.remove(), 220); }
+  function openSheet(title, items) {
+    closeSheet(); document.querySelectorAll('.kma-sheet-overlay:not(.in)').forEach(x => x.remove());
+    const o = el('div', 'kma-sheet-overlay'), s = el('div', 'kma-sheet', '<div class="kma-sheet-grip"></div><div class="kma-sheet-title"></div>');
+    s.querySelector('.kma-sheet-title').textContent = title;
+    items.forEach(it => {
+      if (it.section) { const h = el('div', 'kma-sheet-section'); h.textContent = it.section; s.appendChild(h); return; }
+      if (it.node) { s.appendChild(it.node); return; }
+      const b = el('button', 'kma-sheet-item' + (it.danger ? ' is-danger' : '') + (it.current ? ' is-current' : ''),
+        icon(it.icon) + '<span class="kma-sheet-label"><strong></strong><small></small></span>');
+      b.querySelector('strong').textContent = it.label; b.querySelector('small').textContent = it.hint || '';
+      if (!it.hint) b.querySelector('small').remove();
+      b.addEventListener('click', () => { closeSheet(); it.run && setTimeout(it.run, it.run.length ? 0 : 0); });
+      s.appendChild(b);
+    });
+    o.appendChild(s);
+    o.addEventListener('click', e => { if (e.target === o) closeSheet(); });
+    document.body.appendChild(o);
+    requestAnimationFrame(() => o.classList.add('in'));
+  }
+
+  function printDoc() {
+    const name = (orderName(doc).replace(/[^\w\-]+/g, '_').replace(/^_|_$/g, '')) || 'OPORD';
+    if (window.Android && Android.print) Android.print(name); else window.print();
+  }
+  /* ---------- Controle voor het printen ---------- */
+  const OPEN_RE = /\b(?:XX|Xx|xx)|\[[^\]\n]{2,40}\]/g;
+  function allTexts() {
+    const out = [];
+    document.querySelectorAll('[data-k]').forEach(e => out.push(get(doc, e.dataset.k)));
+    Object.values(doc.subs).forEach(a => out.push(...a));
+    doc.groepen.forEach(g => out.push(g.naam, g.tekst));
+    Object.values(doc.tabellen).forEach(rows => rows.forEach(r => out.push(r[0] || '', r[1] || '')));
+    CUSTOM.forEach(k => out.push(doc.custom[k].title));
+    return out.map(String);
+  }
+  function jumpTo(target, re) {
+    setTab('editor');
+    const card = target.closest('.question-card'); if (card) card.classList.remove('collapsed');
+    requestAnimationFrame(() => {
+      target.scrollIntoView({ block: 'center' }); target.focus();
+      if (re) { re.lastIndex = 0; const m = re.exec(target.value); if (m) try { target.setSelectionRange(m.index, m.index + m[0].length); } catch (e) {} }
+    });
+  }
+  function preflight() {
+    flush();
+    const issues = [];
+    [['ordernr', 'Ordernummer'], ['dtg', 'DTG'], ['opdracht', '2. Opdracht'], ['uitvoering.oogmerk', '3a. Oogmerk'],
+     ['uitvoering.concept', '3b. Operatieconcept'], ['ondertekening.naam', 'Rang & naam']].forEach(([k, label]) => {
+      if (!String(get(doc, k)).trim()) issues.push({ icon: 'i-info', label: label + ' is nog leeg', hint: 'Tik om erheen te gaan', run: () => jumpTo(document.querySelector(`[data-k="${k}"]`)) });
+    });
+    const open = allTexts().reduce((n, t) => n + (t.match(OPEN_RE) || []).length, 0);
+    if (open) {
+      const first = [...document.querySelectorAll('#editor-panel textarea, #editor-panel input:not([type=checkbox])')].find(e => { OPEN_RE.lastIndex = 0; return OPEN_RE.test(e.value); });
+      issues.push({ icon: 'i-edit', label: `Nog ${open}× XX of [invullen] in de tekst`, hint: 'Tik om naar de eerste te gaan', run: () => first && jumpTo(first, OPEN_RE) });
+    }
+    if (!issues.length) { printDoc(); return; }
+    openSheet('Nog niet compleet', [...issues, { section: ' ' }, { icon: 'i-print', label: 'Toch printen of opslaan als PDF', run: printDoc }]);
+  }
+  $('#btn-print').addEventListener('click', preflight);
+
+  /* ---------- Bevelsuitgifte-modus ---------- */
+  let presentIdx = 0, presentSlides = [];
+  const PFONT_KEY = 'oporder.uitgifte.letter';
+  function buildSlides() {
+    const S = [];
+    const subsHtml = k => subsOf(k).filter(t => t.trim()).map((t, i) => ({ n: '(' + roman(i) + ')', t }));
+    const add = (pk, title, text, key, extra) => {
+      const subs = key ? subsHtml(key) : [];
+      if (!String(text || '').trim() && !subs.length && !(extra && extra.length)) return;
+      S.push({ pk, title, text, subs, extra: extra || [] });
+    };
+    S.push({ cover: true });
+    add('1. Toestand', 'a. Opponent en/of andere relevante partijen', doc.toestand.vijand, 'toestand.vijand');
+    add('1. Toestand', 'b. Eigen troepen', doc.toestand.eigen, 'toestand.eigen');
+    add('1. Toestand', 'c. Onderbevelstellingen', doc.toestand.onderbevel, 'toestand.onderbevel');
+    add('2. Opdracht', 'Opdracht', doc.opdracht, 'opdracht');
+    add('3. Uitvoering', 'a. Oogmerk van de commandant', doc.uitvoering.oogmerk, 'uitvoering.oogmerk');
+    add('3. Uitvoering', 'b. Operatieconcept', doc.uitvoering.concept, 'uitvoering.concept');
+    add('3. Uitvoering', 'c. Opdrachten aan de gevechtseenheden', doc.uitvoering.gevechtseenheden, 'uitvoering.gevechtseenheden',
+        doc.groepen.filter(g => g.naam.trim() || g.tekst.trim()).map(g => ({ group: g })));
+    add('3. Uitvoering', 'd. Coördinerende bepalingen', doc.uitvoering.coord, 'uitvoering.coord',
+        Object.keys(TABLES).map(k => ({ table: k, rows: (doc.tabellen[k] || []).filter(r => (r[0] || '').trim() || (r[1] || '').trim()) })).filter(x => x.rows.length));
+    add('4. Logistiek', 'Logistiek', doc.logistiek, 'logistiek');
+    add('5. Bevelvoering en verbindingen', 'Bevelvoering en verbindingen', doc.bevelvoering, 'bevelvoering');
+    S.push({ end: true });
+    return S;
+  }
+  function renderSlide() {
+    const box = $('.present-body'), sl = presentSlides[presentIdx];
+    box.innerHTML = ''; box.scrollTop = 0;
+    if (sl.cover) {
+      box.innerHTML = '<div class="pk"></div><h2></h2><div class="pt center"></div>';
+      box.querySelector('.pk').textContent = doc.rubricering;
+      box.querySelector('h2').textContent = $('#v-title').textContent + (doc.codenaam ? '\nOPERATIE ' + doc.codenaam.toUpperCase() : '');
+      box.querySelector('h2').style.whiteSpace = 'pre-line';
+      box.querySelector('.pt').textContent = [doc.oplcie, doc.plaats, doc.dtg && ('DTG ' + doc.dtg), doc.tijdzone && ('Tijdzone ' + doc.tijdzone)].filter(Boolean).join('\n');
+    } else if (sl.end) {
+      box.innerHTML = '<div class="big">Vragen?</div><p class="center">Einde bevelsuitgifte</p>';
+    } else {
+      box.innerHTML = '<div class="pk"></div><h2></h2><div class="pt"></div>';
+      box.querySelector('.pk').textContent = sl.pk; box.querySelector('h2').textContent = sl.title; box.querySelector('.pt').textContent = sl.text || '';
+      sl.subs.forEach(s => { const r = el('div', 'ps', '<b></b><div class="pt"></div>'); r.firstChild.textContent = s.n; r.lastChild.textContent = s.t; box.appendChild(r); });
+      sl.extra.forEach(x => {
+        if (x.group) { const g = el('div', 'pg', '<b></b><div class="pt"></div>'); g.firstChild.textContent = x.group.naam; g.lastChild.textContent = x.group.tekst; box.appendChild(g); }
+        if (x.table) {
+          const g = el('div', 'pg', '<b></b>'); g.firstChild.textContent = TABLES[x.table].title;
+          const t = el('table'); x.rows.forEach(r => { const tr = el('tr', null, '<td></td><td></td>'); tr.children[0].textContent = r[0] || ''; tr.children[1].textContent = r[1] || ''; t.appendChild(tr); });
+          g.appendChild(t); box.appendChild(g);
+        }
+      });
+    }
+    $('.present-top .count').textContent = (presentIdx + 1) + ' / ' + presentSlides.length;
+    $('.present-nav .prev').disabled = presentIdx === 0;
+    $('.present-nav .next').textContent = presentIdx === presentSlides.length - 1 ? 'Sluiten' : 'Volgende';
+  }
+  function presentGo(d) {
+    if (presentIdx + d >= presentSlides.length) { closePresent(); return; }
+    presentIdx = Math.max(0, presentIdx + d); renderSlide();
+  }
+  function openPresent() {
+    flush(); presentSlides = buildSlides(); presentIdx = 0;
+    const p = el('div', 'present', `<div class="present-top"><span class="count"></span><button type="button" class="fs-down" title="Kleinere letters">A−</button><button type="button" class="fs-up" title="Grotere letters">A+</button><button type="button" class="close" title="Sluiten">${icon('i-x')}</button></div><div class="present-body"></div><div class="present-nav"><button type="button" class="prev">Vorige</button><button type="button" class="next">Volgende</button></div>`);
+    let fs = parseInt(store.get(PFONT_KEY), 10) || 21;
+    const applyFs = () => { p.querySelector('.present-body').style.fontSize = fs + 'px'; store.set(PFONT_KEY, fs); };
+    p.querySelector('.fs-up').addEventListener('click', () => { fs = Math.min(40, fs + 2); applyFs(); });
+    p.querySelector('.fs-down').addEventListener('click', () => { fs = Math.max(14, fs - 2); applyFs(); });
+    p.querySelector('.close').addEventListener('click', closePresent);
+    p.querySelector('.prev').addEventListener('click', () => presentGo(-1));
+    p.querySelector('.next').addEventListener('click', () => presentGo(1));
+    let x0 = null, y0 = null;
+    p.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    p.addEventListener('touchend', e => {
+      if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) presentGo(dx < 0 ? 1 : -1);
+    });
+    document.body.appendChild(p); applyFs(); renderSlide();
+    if (window.Android && Android.keepAwake) Android.keepAwake(true);
+  }
+  function closePresent() {
+    const p = $('.present'); if (p) p.remove();
+    if (window.Android && Android.keepAwake) Android.keepAwake(false);
+  }
+  document.addEventListener('keydown', e => {
+    if (!$('.present')) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') presentGo(1);
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') presentGo(-1);
+    if (e.key === 'Escape') closePresent();
+  });
+
+  /* ---------- Springbalk en inklappen ---------- */
+  const SECTIONS = [['Kop', 'Koptekst'], ['1', 'Toestand'], ['2', 'Opdracht'], ['3', 'Uitvoering'], ['4', 'Logistiek'], ['5', 'Bevelvoering'], ['Ond.', 'Ondertekening'], ['Bijl.', 'Bijlagen']];
+  const cards = [...document.querySelectorAll('#editor-panel .question-card')];
+  const jump = $('#jump-bar');
+  cards.forEach((card, i) => {
+    card.id = 'sec-' + i;
+    const title = card.querySelector('.card-title');
+    title.insertAdjacentHTML('beforeend', '<svg class="chev"><use href="#i-chev"/></svg>');
+    title.addEventListener('click', () => { card.classList.toggle('collapsed'); if (!card.classList.contains('collapsed')) requestAnimationFrame(growAll); });
+    const b = el('button', null, '<span class="dot"></span><span></span>'); b.type = 'button'; b.title = SECTIONS[i][1];
+    b.lastChild.textContent = SECTIONS[i][0];
+    b.addEventListener('click', () => { setTab('editor'); card.classList.remove('collapsed'); requestAnimationFrame(() => { growAll(); card.scrollIntoView({ block: 'start', behavior: 'smooth' }); }); });
+    jump.appendChild(b);
+  });
+  const foldBtn = el('button', 'fold', 'Alles inklappen'); foldBtn.type = 'button';
+  foldBtn.addEventListener('click', () => {
+    const fold = !cards.every(c => c.classList.contains('collapsed'));
+    cards.forEach(c => c.classList.toggle('collapsed', fold));
+    foldBtn.textContent = fold ? 'Alles uitklappen' : 'Alles inklappen';
+    if (!fold) requestAnimationFrame(growAll);
+  });
+  jump.appendChild(foldBtn);
+  function updateJump() {
+    const t = k => String(get(doc, k)).trim() || subsOf(k).some(x => x.trim());
+    const done = [
+      doc.ordernr.trim() || doc.dtg.trim(),
+      t('toestand.vijand') || t('toestand.eigen') || t('toestand.onderbevel'),
+      t('opdracht'),
+      t('uitvoering.oogmerk') || t('uitvoering.concept') || t('uitvoering.gevechtseenheden') || t('uitvoering.coord') || doc.groepen.length || Object.values(doc.tabellen).some(r => r.length),
+      t('logistiek'), t('bevelvoering'),
+      doc.ondertekening.naam.trim() || doc.ondertekening.functie.trim(),
+      Object.values(doc.annex).some(a => a.on) || CUSTOM.some(k => doc.custom[k].on) || doc.bijlagen.trim()
+    ];
+    [...jump.children].forEach((b, i) => { if (i < done.length) b.classList.toggle('done', !!done[i]); });
+  }
+  $('#btn-orders').addEventListener('click', showOrders);
+  $('#btn-dtg').addEventListener('click', () => {
+    const tz = doc.tijdzone || 'Z';
+    const d = new Date(Date.now() + ({ Z: 0, A: 1, B: 2 }[tz] || 0) * 3600000);
+    const p = n => String(n).padStart(2, '0');
+    const mon = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][d.getUTCMonth()];
+    doc.dtg = `${p(d.getUTCDate())}${p(d.getUTCHours())}${p(d.getUTCMinutes())}${tz} ${mon} ${String(d.getUTCFullYear()).slice(-2)}`;
+    $('[data-k="dtg"]').value = doc.dtg; render(); save();
+  });
+  $('#btn-more').addEventListener('click', () => {
+    const dark = document.body.classList.contains('dark-theme'), hidden = document.body.classList.contains('hide-instr');
+    openSheet('Operatiebevel', [
+      { icon: 'i-play', label: 'Bevelsuitgifte-modus', hint: 'Paragraaf voor paragraaf in grote letters, om voor te lezen', run: openPresent },
+      { icon: 'i-print', label: 'Print of opslaan als PDF', hint: 'Met controle op lege velden en XX', run: preflight },
+      { icon: 'i-list', label: 'Mijn bevelen', hint: 'Openen, kopiëren, delen of verwijderen', run: showOrders },
+      { icon: 'i-flag', label: 'FRAGO van dit bevel', hint: 'Kopie als FRAGO met het volgende FRAGO-nummer', run: () => makeFrago(doc) },
+      { icon: 'i-share', label: 'Dit bevel delen', hint: 'Als bestand via Quick Share, mail of WhatsApp', run: () => { flush(); shareOrder(doc); } },
+      { icon: 'i-import', label: 'Bevel of back-up importeren', hint: 'Open een gedeeld OpOrder-bestand of back-up', run: startImport },
+      { icon: 'i-save', label: 'Back-up van alle bevelen', hint: 'Eén bestand met al je bevelen, bewaar het op een veilige plek', run: backupAll },
+      { icon: 'i-doc', label: 'Voorbeeldbevel openen', hint: 'Als apart bevel, je eigen bevelen blijven staan', run: () => addOrder(exampleDoc(), 'Voorbeeld geopend') },
+      { icon: 'i-info', label: hidden ? 'Instructies tonen' : 'Instructies verbergen', hint: 'Extra uitleg per paragraaf (de uitleg in de vakken blijft)',
+        run: () => { store.set(INSTR_KEY, hidden ? 'aan' : 'uit'); applyInstr(); } },
+      { icon: 'i-moon', label: dark ? 'Lichte modus' : 'Donkere modus', hint: 'Wissel het thema van de app',
+        run: () => { store.set(THEME_KEY, dark ? 'light' : 'dark'); applyTheme(); } }
+    ]);
+  });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) flush(); });
+
+  const HINTS = {
+    oplcie: 'bijv. Oplcie', plaats: 'bijv. Breda', dtg: 'DDHHMM(Z) MON YY', ordernr: 'bijv. 001',
+    codenaam: 'bijv. DESERT STORM', fragnr: 'bijv. 01', refertes: 'Kaarten, ACT/BCT, andere bevelen…',
+    'toestand.vijand': 'Wie, wat, waar, wanneer, waarmee, waarom en hoe van de opponent en andere relevante partijen.',
+    'toestand.eigen': 'Opdracht, oogmerk en operatieconcept van de naasthogere commandant. Daarna de neven- en steunende eenheden en wat zij doen.',
+    'toestand.onderbevel': 'Toegevoegde en onttrokken eenheden, met ingang van wanneer. Anders: N.v.t.',
+    opdracht: 'Wie, wat, waar, wanneer en waarom, in één zin. Bijv.: 2KL bereidt voor en voert uit … in de periode van … in de omgeving van …',
+    'uitvoering.oogmerk': 'Purpose, Method, Endstate.',
+    'uitvoering.concept': 'Hoe de operatie verloopt, van begin tot eind. Verdeel in fases: wat gebeurt er per fase en wanneer eindigt die?',
+    'uitvoering.gevechtseenheden': 'Opdrachten die voor alle eenheden gelden. Per groep maak je hieronder een eigen blok.',
+    'uitvoering.coord': 'Geweldsinstructies en ROE, herkenningstekens, media en burgers, CBRN-dress state, what ifs. Tijdbalk, locaties en wachtwoorden zet je in de tabellen hieronder.',
+    logistiek: 'Bevoorrading (KL I t/m V), onderhoud, personeelszorg, geneeskundige steun en afvoer van gewonden.',
+    bevelvoering: 'Locatie CP, opvolging in commando, verbindingen (PACE, frequenties, netnummers) en verplichte meldingen.',
+    'ondertekening.functie': 'bijv. Commandant 2KL', 'ondertekening.naam': 'bijv. Kap Jansen',
+    bijlagen: 'Bijlage D10: DOEL INLICHTINGEN'
+  };
+  for (const k in HINTS) { const e = document.querySelector(`[data-k="${k}"]`); if (e) e.placeholder = HINTS[k]; }
+  document.querySelectorAll('.cr-year').forEach(e => e.textContent = new Date().getFullYear());
+  loadIntoUI(); setStatus(false);
+  // Web-app: offline beschikbaar via een service worker (niet in de Android-app)
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost') && location.hostname !== 'appassets.androidplatform.net') {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>

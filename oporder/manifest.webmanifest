@@ -1,0 +1,16 @@
+{
+ "name": "KMA OpOrder Generator",
+ "short_name": "OpOrder",
+ "description": "Operatiebevel invullen per paragraaf, met live A4-voorbeeld en PDF.",
+ "lang": "nl",
+ "start_url": "index.html",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#f1f0e9",
+ "theme_color": "#18251d",
+ "icons": [
+  { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+  { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+  { "src": "icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+ ]
+}

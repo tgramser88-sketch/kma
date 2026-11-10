@@ -1,0 +1,15 @@
+/* Bundled fonts (SIL Open Font License, see OFL-*.txt) so the app looks the same offline. */
+@font-face {
+  font-family: 'DM Sans';
+  src: url('DMSans-Variable.ttf') format('truetype');
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Libre Franklin';
+  src: url('LibreFranklin-Variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
