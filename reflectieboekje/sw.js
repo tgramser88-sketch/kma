@@ -1,7 +1,7 @@
-/* KMA web-app met wachtwoord. Versie: b9b45aaf2a9a
+/* KMA web-app met wachtwoord. Versie: efb4e0dff2ca
    De app-bestanden staan versleuteld op de server (*.enc). Deze service worker ontsleutelt ze op het toestel
    met de sleutel die bij het inloggen is afgeleid van het wachtwoord. Zonder sleutel: naar login.html. */
-const APP = 'reflectieboekje', CACHE = 'kma-' + APP + '-b9b45aaf2a9a', START = 'index.html';
+const APP = 'reflectieboekje', CACHE = 'kma-' + APP + '-efb4e0dff2ca', START = 'index.html';
 const ENC = new Set(["fonts/DejaVuSans-Bold.ttf","fonts/DejaVuSans.ttf","fonts/LICENSE-DejaVu.txt","fonts/fonts.css","html5-qrcode.min.js","index.html","kma-5gt.js","kma-academie.jpg","kma-boek-chapters.js","kma-boek-feedback.js","kma-boek-gesprek.js","kma-boek-herinneringen.js","kma-boek-hexaco.js","kma-boek-links.js","kma-boek-plannen.js","kma-boek-vandaag.js","kma-boek-voorbeelden.js","kma-bridge.js","kma-chapters.css","kma-deelmap.js","kma-demo.js","kma-embleem.svg","kma-eula.js","kma-handleiding-boek.js","kma-hexaco-core.js","kma-koppel.js","kma-opco.js","kma-patterns.js","kma-pss.js","kma-toetsplan.js","kma-transfer.js","kma-ui-boek.js","kma-ui.css","kma-ui.js","kma-ux-boek.js","kma-viz.js","kma-web-veilig.js","kma-web.js","qrcode.min.js"]);
 const PLAIN = ["login.html","manifest.webmanifest","icon-192.png","icon-512.png","icon-maskable.png","apple-touch-icon.png"];
 const TYPES = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8', svg: 'image/svg+xml', json: 'application/json',
