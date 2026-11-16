@@ -421,6 +421,7 @@ body[data-kma-fab="mini"] .kma-fab > span, body[data-kma-fab="mini"] .kma-quick-
 .kma-dlg-ov { position: fixed; inset: 0; z-index: 2147482000; background: rgba(0,0,0,.5); display: flex; align-items: flex-end; justify-content: center; padding: 0; }
 .kma-dlg { width: min(520px, 100%); max-height: 88vh; overflow: auto; background: var(--bg-main, #111a14); color: var(--text-primary, #f1f0e9);
   border-top: 2px solid var(--accent-gold, #d8cb92); border-radius: 20px 20px 0 0; padding: 20px 20px calc(16px + env(safe-area-inset-bottom)); box-shadow: 0 -10px 40px rgba(0,0,0,.35); }
+.kma-dlg > .kma-sheet-grip { margin: -10px auto 12px; }
 .kma-dlg h3 { margin: 0 0 8px; font-size: var(--fs-2, 20px); line-height: 1.25; }
 .kma-dlg-body { font-size: 15px; line-height: 1.5; }
 .kma-dlg-body p { margin: 0 0 10px; }
@@ -438,6 +439,7 @@ body[data-kma-fab="mini"] .kma-fab > span, body[data-kma-fab="mini"] .kma-quick-
   .kma-dlg-ov { align-items: center; padding: 16px; }
   .kma-dlg { border-radius: 18px; border: 2px solid var(--accent-gold, #d8cb92); padding: 22px 24px 18px; }
   .kma-dlg-b { flex: 0 0 auto; }
+  .kma-dlg > .kma-sheet-grip { display: none; }
 }
 
 /* Vinkje dat zichzelf tekent */
@@ -518,3 +520,24 @@ body[data-kma-fab="mini"] .kma-fab > span, body[data-kma-fab="mini"] .kma-quick-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* 4.8.3: knop "Naar boven" (linksonder; rechtsonder staat de zwevende knop) */
+.kma-top {
+  position: fixed; left: 16px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 950;
+  width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; padding: 0; cursor: pointer;
+  border: 2px solid var(--accent-gold, #d8cb92); background: var(--bg-card, #18251d); color: var(--text-primary, #f1f0e9);
+  box-shadow: 0 6px 18px rgba(0,0,0,.35); opacity: 0; pointer-events: none; transform: translateY(12px) scale(.9);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.kma-top.in { opacity: 1; pointer-events: auto; transform: none; }
+.kma-top svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.kma-top:focus-visible { outline: 3px solid var(--accent-gold, #d8cb92); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .kma-top { transition: none; } }
+@media print { .kma-top { display: none !important; } }
+
+/* 4.8.3: lege lijst in het CadetVolgSysteem: eerst rondkijken met de demo-cadetten */
+.kma-empty-demo { margin: 18px 0 0; padding-top: 14px; border-top: 1px dashed var(--border-color, #3a4a3f); color: var(--text-muted, #aeb5af); font-size: 14px; display: grid; gap: 6px; justify-items: start; }
+.kma-link-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 2px; border: 0; background: none; color: var(--accent-gold, #d8cb92); font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.kma-link-btn .ki { width: 18px; height: 18px; }
+.kma-empty-demo small { font-size: 13px; }
+body.kma-has-bottombar .kma-top { bottom: calc(100px + env(safe-area-inset-bottom)); }

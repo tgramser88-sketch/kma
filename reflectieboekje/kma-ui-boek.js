@@ -95,6 +95,11 @@
     kmaSheet({
       title: 'Meer',
       items: [
+        // 4.8.3: zoeken in het hele boekje, ook vanuit het menu te vinden
+        { icon: 'search', label: 'Zoeken in je boekje', hint: 'Antwoorden, DTF, reflecties, levenslijn, plannen en begrippen', onClick: function () {
+          var inp = document.getElementById('search-input'); if (!inp) return;
+          setTimeout(function () { try { inp.scrollIntoView({ block: 'center', behavior: 'smooth' }); inp.focus({ preventScroll: true }); } catch (e) { inp.focus(); } }, 320);
+        } },
         { icon: 'file', label: 'Portfolio (PDF)', hint: 'Download al je producten als opgemaakt portfolio', onClick: function () { window.kmaPortfolio && kmaPortfolio(); } },
         { icon: 'users', label: 'Bereid je gesprek voor', hint: 'Eén pagina voor het gesprek met je teamleider', onClick: function () { window.kmaGesprek && kmaGesprek.open(); } },
         { icon: 'bell', label: 'Herinneringen', hint: window.kmaReminders && kmaReminders.anyOn() ? 'Aan' : 'Uit: meldingen voor je check-in, evaluatie en back-up', onClick: function () { window.kmaReminders && kmaReminders.open(); } },

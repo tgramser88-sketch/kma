@@ -152,6 +152,10 @@
     (cases5GT || []).forEach(function (c, ci) { if (!c) return; var t = Object.keys(c).filter(function (k) { return typeof c[k] === 'string'; }).map(function (k) { return c[k]; }).join(' '); if (hit(t)) out.push({ step: idx('5gt-multi'), kind: '5G-T', label: c.title || '5G-T', hint: snip(t), act: function () { select5GTCase(ci); } }); });
     (casesKorthagen || []).forEach(function (c, ci) { if (!c) return; var t = Object.keys(c).filter(function (k) { return typeof c[k] === 'string'; }).map(function (k) { return c[k]; }).join(' '); if (hit(t)) out.push({ step: idx('korthagen-multi'), kind: 'Korthagen', label: c.title || 'Korthagen', hint: snip(t), act: function () { if (typeof selectKorthagenCase === 'function') selectKorthagenCase(ci); } }); });
     (jargonItems || []).forEach(function (j) { if (j && (hit(j.term) || hit(j.def))) out.push({ step: idx('jargon-list'), kind: 'Begrip', label: j.term, hint: snip(j.def) }); });
+    // 4.8.3: ook de levenslijn, de als-dan-plannen en de notities bij fitheid
+    try { (typeof timelineItems !== 'undefined' ? timelineItems : []).forEach(function (t) { if (t && hit(t.text)) out.push({ step: idx('timeline'), kind: 'Levenslijn', label: (t.year ? t.year + ' · ' : '') + snip(t.text), hint: '' }); }); } catch (e) {}
+    try { (JSON.parse(kmaStore.getItem('kma-x-plannen') || '[]') || []).forEach(function (pl) { if (pl && (hit(pl.als) || hit(pl.dan))) out.push({ step: steps.findIndex(function (s) { return /SMART/.test(s.title); }), kind: 'Plan', label: 'Als ' + (pl.als || '') + ', dan ' + (pl.dan || ''), hint: '' }); }); } catch (e) {}
+    try { (typeof fitnessLogs !== 'undefined' ? fitnessLogs : []).forEach(function (f) { if (f && hit(f.notes)) out.push({ step: idx('fitheid'), kind: 'Fitheid', label: snip(f.notes), hint: f.date || '' }); }); } catch (e) {}
     return out.slice(0, 40);
   }
   function showResults(q) {

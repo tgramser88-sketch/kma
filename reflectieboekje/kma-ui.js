@@ -1275,7 +1275,7 @@ window.kmaAfter = function (name, fn) {
     var ov = document.createElement('div'); ov.className = 'kma-dlg-ov';
     var box = document.createElement('div'); box.className = 'kma-dlg'; box.setAttribute('role', d.buttons.length > 1 ? 'alertdialog' : 'dialog'); box.setAttribute('aria-modal', 'true');
     var id = 'kma-dlg-' + Date.now();
-    box.innerHTML = (d.icon ? '<span class="kma-dlg-ic ' + (d.danger ? 'is-danger' : '') + '" aria-hidden="true">' + (window.kmaIcon ? kmaIcon(d.icon) : '') + '</span>' : '') +
+    box.innerHTML = '<div class="kma-sheet-grip" aria-hidden="true"></div>' + (d.icon ? '<span class="kma-dlg-ic ' + (d.danger ? 'is-danger' : '') + '" aria-hidden="true">' + (window.kmaIcon ? kmaIcon(d.icon) : '') + '</span>' : '') +
       (f.title ? '<h3 id="' + id + '-h">' + esc(f.title) + '</h3>' : '') + '<div class="kma-dlg-body" id="' + id + '-b">' + f.body + '</div>' +
       '<div class="kma-dlg-act">' + d.buttons.map(function (b, i) { return '<button type="button" class="kma-dlg-b' + (b.kind ? ' is-' + b.kind : '') + '" data-dlg="' + i + '">' + esc(b.label) + '</button>'; }).join('') + '</div>';
     if (f.title) box.setAttribute('aria-labelledby', id + '-h'); box.setAttribute('aria-describedby', id + '-b');
@@ -1478,6 +1478,9 @@ window.kmaAfter = function (name, fn) {
       for (var n = el; n && n !== stop.parentElement; n = n.parentElement) { if (n.scrollTop > 0) return true; if (n === stop) break; }
       return false;
     }
+    function buzz() {
+      try { if (window.KMA_CAP && window.KMA_CAP.haptic) window.KMA_CAP.haptic('light'); else if (navigator.vibrate) navigator.vibrate(10); } catch (e) {}
+    }
     function reset(panel) { panel.style.transition = ''; panel.style.transform = ''; var ov = panel.parentElement; if (ov) ov.style.background = ''; }
     document.addEventListener('touchstart', function (e) {
       d = null;
@@ -1499,6 +1502,10 @@ window.kmaAfter = function (name, fn) {
       }
       d.dy = Math.max(0, dy);
       d.panel.style.transform = 'translateY(' + d.dy + 'px)';
+      // een tikje als de veeg ver genoeg is om te sluiten (en weer als je terugschuift en opnieuw over de grens gaat)
+      var far = d.dy > Math.min(140, (d.h || (d.h = d.panel.getBoundingClientRect().height || 400)) * 0.3);
+      if (far && !d.far) buzz();
+      d.far = far;
       if (e.cancelable) e.preventDefault();
     }, { passive: false });
     function end() {
@@ -1507,6 +1514,7 @@ window.kmaAfter = function (name, fn) {
       var h = x.panel.getBoundingClientRect().height || 400, v = x.dy / Math.max(1, Date.now() - x.t);
       x.panel.style.transition = 'transform 180ms ease';
       if (x.dy > Math.min(140, h * 0.3) || (v > 0.6 && x.dy > 40)) {
+        if (!x.far) buzz();   // snel weggeveegd: dan nu het tikje
         x.panel.style.transform = 'translateY(' + Math.round(h + 40) + 'px)';
         setTimeout(function () {
           closeOverlay(x.ov);
@@ -1588,4 +1596,47 @@ window.kmaAfter = function (name, fn) {
     var w = b.getAttribute('data-empty-step'), i = steps.findIndex(function (s) { return s.widget === w || new RegExp(w, 'i').test(s.title || ''); });
     if (i >= 0) goToStep(i);
   });
+})();
+
+/*
+ * 4.8.3: knop "Naar boven". Verschijnt linksonder als je in een lang hoofdstuk of dossier ver naar beneden bent
+ * gescrold en weer een stukje omhoog scrolt (dan zoek je iets). Eén tik brengt je naar het begin van de pagina.
+ * Niet zichtbaar als er een menu of venster openstaat, en niet bij het afdrukken.
+ */
+(function () {
+  'use strict';
+  if (window.__kmaNaarBoven) return; window.__kmaNaarBoven = true;
+  var btn = null, last = 0, shown = false;
+  function reduce() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
+  function make() {
+    if (btn || !document.body) return btn;
+    btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'kma-top'; btn.setAttribute('aria-label', 'Naar boven'); btn.title = 'Naar boven';
+    btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+    btn.addEventListener('click', function () {
+      try { window.scrollTo({ top: 0, behavior: reduce() ? 'auto' : 'smooth' }); } catch (e) { window.scrollTo(0, 0); }
+      show(false);
+      // de focus naar het begin van de pagina, voor wie met een schermlezer of toetsenbord werkt
+      var h = document.querySelector('#step-title, .kma-det-head h2, main h1, main h2');
+      if (h) { if (!h.hasAttribute('tabindex')) h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) {} }
+    });
+    document.body.appendChild(btn);
+    return btn;
+  }
+  function overlayOpen() {
+    return !!document.querySelector('.kma-dlg-ov, .kma-sheet-overlay.in, .modal-overlay.active, #kma-ho, .kma-ws-ov, .kma-plan-ov');
+  }
+  function show(on) {
+    if (on === shown) return; shown = on;
+    var b = make(); if (!b) return;
+    b.classList.toggle('in', on); b.tabIndex = on ? 0 : -1; b.setAttribute('aria-hidden', on ? 'false' : 'true');
+  }
+  window.addEventListener('scroll', function () {
+    var y = window.scrollY || document.documentElement.scrollTop || 0, h = window.innerHeight || 800;
+    if (y < h * 1.5 || overlayOpen()) show(false);
+    else if (y < last - 8) show(true);        // omhoog aan het scrollen, ver van boven
+    else if (y > last + 8) show(false);       // weer naar beneden: niet in de weg zitten
+    last = y;
+  }, { passive: true });
+  window.kmaNaarBoven = { show: show };
 })();

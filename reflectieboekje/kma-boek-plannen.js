@@ -362,7 +362,13 @@
       (window.__kmaPlanEdited = window.__kmaPlanEdited || {})[id] = wk();
       editing = null; toast('Plan aangepast'); rerender(); return;
     }
-    if (act === 'del') { kmaConfirm('Dit plan en de check-ins ervan verwijderen?', { ok: 'Verwijderen', danger: true }).then(function (ok) { if (!ok) return; remove(id); rerender(); }); }
+    if (act === 'del') {
+      // 4.8.3: direct verwijderen, met "Ongedaan maken" (zoals bij de andere lijsten)
+      var snap = { p: getX('plannen', []), c: getX('plan-checkins', []), l: getX('plan-dtf', {}) };
+      remove(id); rerender();
+      if (window.kmaUndoToast) kmaUndoToast('Plan verwijderd', function () { setX('plannen', snap.p); setX('plan-checkins', snap.c); setX('plan-dtf', snap.l); rerender(); });
+      else toast('Plan verwijderd');
+    }
   });
   document.addEventListener('change', function (e) {
     if (!e.target.hasAttribute || !e.target.hasAttribute('data-pcn')) return;

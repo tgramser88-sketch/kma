@@ -328,7 +328,11 @@
     }
     items.push({ section: 'Bestand' });
     items.push({ icon: 'download', label: 'Feedback importeren', hint: 'Kies het bestand KMA_Feedback_….json van je teamleider', onClick: pickFile });
-    if (d) items.push({ icon: 'trash', label: 'Feedback verwijderen', danger: true, onClick: function () { kmaConfirm('Alle ontvangen feedback van dit toestel verwijderen?', { ok: 'Verwijderen', danger: true }).then(function (ok) { if (!ok) return; kmaStore.removeItem(KEY); renderStep(); updateBanner(); }); } });
+    if (d) items.push({ icon: 'trash', label: 'Feedback verwijderen', danger: true, onClick: function () {
+      // 4.8.3: direct verwijderen, met "Ongedaan maken"
+      var snap = kmaStore.getItem(KEY); kmaStore.removeItem(KEY); renderStep(); updateBanner();
+      if (window.kmaUndoToast) kmaUndoToast('Feedback verwijderd', function () { if (snap != null) kmaStore.setItem(KEY, snap); renderStep(); updateBanner(); });
+    } });
     kmaSheet({ title: 'Feedback van je teamleider', items: items });
   }
 
