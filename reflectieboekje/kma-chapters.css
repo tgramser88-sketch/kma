@@ -1522,3 +1522,43 @@ body.dark-theme .kma-pill.ok { color: #7cc69a; }
 /* 4.8.0: grotere tekst op een smal scherm: de datum springt naar een eigen regel in plaats van buiten beeld */
 .kma-fb-plan-top { flex-wrap: wrap; }
 .kma-fb-plan-top > * { min-width: 0; }
+
+/* 4.9.0: feedback van en voor medecadetten (kma-boek-kameraden.js) */
+.kma-quick-fab.has-new::after { content: ""; position: absolute; top: 4px; right: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent-red, #c82837); border: 2px solid var(--kma-action, #d8cb92); }
+.kma-quick-fab { position: fixed; }
+.kma-kam .kma-code-lab small { font-weight: 400; color: var(--text-muted, #aeb5af); }
+.kma-kam .kma-code-lab textarea, .kma-kam .kma-code-lab select { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); font: inherit; font-weight: 400; font-size: 16px; }
+.kma-kam .kma-code-lab textarea { resize: vertical; min-height: 64px; }
+.kma-kam-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kma-kam-to { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: var(--bg-card-deep, rgba(255,255,255,.05)); margin: 4px 0 6px; }
+.kma-kam-to .ki { width: 18px; height: 18px; flex: none; margin-top: 2px; color: var(--accent-gold, #d8cb92); }
+.kma-kam-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+.kma-kam-chip { position: relative; }
+.kma-kam-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.kma-kam-chip span { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--border-color); font-weight: 600; font-size: 14px; }
+.kma-kam-chip input:checked + span { background: var(--kma-action, #d8cb92); color: var(--kma-action-ink, #18251d); border-color: var(--kma-action, #d8cb92); }
+.kma-kam-chip.is-grow input:checked + span { background: #b9822a; border-color: #b9822a; color: #fff; }
+.kma-kam-chip input:focus-visible + span { outline: 3px solid var(--accent-gold, #d8cb92); outline-offset: 2px; }
+.kma-kam-pick { display: grid; gap: 4px; max-height: 220px; overflow: auto; padding: 4px 0; }
+.kma-kam-check { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 6px; border-radius: 8px; font-weight: 500; }
+.kma-kam-check input { width: 20px; height: 20px; }
+.kma-kam-list { display: grid; gap: 10px; margin: 8px 0 12px; }
+.kma-kam-item { display: block; width: 100%; padding: 0; border: 0; background: none; text-align: left; color: inherit; font: inherit; cursor: pointer; }
+.kma-kam-card { border: 1px solid var(--border-color); border-left: 4px solid var(--accent-gold, #d8cb92); border-radius: 12px; padding: 12px 14px; background: var(--bg-card, transparent); }
+.kma-kam-card.is-grow { border-left-color: #b9822a; }
+.kma-kam-card p { margin: 6px 0; font-size: 15px; line-height: 1.45; }
+.kma-kam-head { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.kma-kam-head span { color: var(--text-muted, #aeb5af); white-space: nowrap; }
+.kma-kam-sit { font-size: 13px; color: var(--text-muted, #aeb5af); margin-top: 2px; }
+.kma-kam-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.kma-kam-tag { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border-color); }
+.kma-kam-tag.is-keep { border-color: var(--accent-gold, #d8cb92); }
+.kma-kam-tag.is-grow { border-color: #b9822a; }
+.kma-kam-tag.is-new { background: var(--accent-red, #c82837); border-color: var(--accent-red, #c82837); color: #fff; }
+.kma-kam-sum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+.kma-kam-sum > div { border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; text-align: center; display: grid; }
+.kma-kam-sum b { font-size: 24px; }
+.kma-kam-sum span { font-size: 12px; color: var(--text-muted, #aeb5af); }
+.kma-kam-sum .is-keep { border-color: var(--accent-gold, #d8cb92); }
+.kma-kam-sum .is-grow { border-color: #b9822a; }
+.kma-kam-uitleg { padding-left: 20px; display: grid; gap: 8px; font-size: 15px; line-height: 1.45; }

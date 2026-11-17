@@ -28,8 +28,10 @@
     kmaSheet({ title: 'Snel toevoegen', items: [
       { icon: 'calendar', label: 'DTF-feit', hint: 'Leg nu vast wat er gebeurde, met datum en tijd', onClick: quickDtf },
       { icon: 'refresh', label: '5G-T-reflectie', hint: 'Nieuwe reflectie in 4 stappen', onClick: function () { goToStep(idx('5gt-multi')); after(80, function () { if (typeof add5GTCase === 'function') add5GTCase(); }); } },
-      { icon: 'activity', label: 'Korthagen-reflectie', hint: 'Nieuwe ronde door de ALACT-cirkel', onClick: function () { goToStep(idx('korthagen-multi')); after(80, function () { if (typeof addKorthagenCase === 'function') addKorthagenCase(); }); } }
-    ] });
+      { icon: 'activity', label: 'Korthagen-reflectie', hint: 'Nieuwe ronde door de ALACT-cirkel', onClick: function () { goToStep(idx('korthagen-multi')); after(80, function () { if (typeof addKorthagenCase === 'function') addKorthagenCase(); }); } },
+      // 4.9.0: feedback van en voor medecadetten (kma-boek-kameraden.js)
+      window.kmaKameraad ? { icon: 'users', label: 'Feedback van en voor medecadetten', hint: (function () { var n = kmaKameraad.newCount(); return n ? n + ' nieuw in je postvak' : 'Geven, vragen aan je groep, of ontvangen'; })(), onClick: function () { kmaKameraad.open(); } } : null
+    ].filter(Boolean) });
   });
   document.body.appendChild(fab);
   document.body.classList.add('kma-has-quick');
