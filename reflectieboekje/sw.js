@@ -1,5 +1,5 @@
-/* Offline-cache voor de KMA web-app. Versie: 1474b8a38536 */
-const CACHE = 'kma-reflectieboekje-1474b8a38536';
+/* Offline-cache voor de KMA web-app. Versie: a1f961cc71a1 */
+const CACHE = 'kma-reflectieboekje-a1f961cc71a1';
 const FILES = ["./", "apple-touch-icon.png", "fonts/DejaVuSans-Bold.ttf", "fonts/DejaVuSans.ttf", "fonts/LICENSE-DejaVu.txt", "fonts/fonts.css", "html5-qrcode.min.js", "icon-192.png", "icon-512.png", "icon-maskable.png", "index.html", "kma-5gt.js", "kma-academie.jpg", "kma-boek-chapters.js", "kma-boek-feedback.js", "kma-boek-gesprek.js", "kma-boek-herinneringen.js", "kma-boek-hexaco.js", "kma-boek-kameraden.js", "kma-boek-links.js", "kma-boek-plannen.js", "kma-boek-vandaag.js", "kma-boek-voorbeelden.js", "kma-bridge.js", "kma-chapters.css", "kma-deelmap.js", "kma-demo.js", "kma-embleem.svg", "kma-eula.js", "kma-gegevens.js", "kma-handleiding-boek.js", "kma-hexaco-core.js", "kma-koppel.js", "kma-opco.js", "kma-patterns.js", "kma-pss.js", "kma-toetsplan.js", "kma-transfer.js", "kma-ui-boek.js", "kma-ui.css", "kma-ui.js", "kma-ux-boek.js", "kma-viz.js", "kma-web-veilig.js", "kma-web.js", "manifest.webmanifest", "qrcode.min.js"];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {
