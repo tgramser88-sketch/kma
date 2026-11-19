@@ -1562,3 +1562,37 @@ body.dark-theme .kma-pill.ok { color: #7cc69a; }
 .kma-kam-sum .is-keep { border-color: var(--accent-gold, #d8cb92); }
 .kma-kam-sum .is-grow { border-color: #b9822a; }
 .kma-kam-uitleg { padding-left: 20px; display: grid; gap: 8px; font-size: 15px; line-height: 1.45; }
+
+/* ---- 4.10.0: KMALijst — compacte lijsten per maand (DTF, tijdlijn, notities) ---- */
+.kma-kl { display: grid; gap: 8px; min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.kma-kl-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; min-width: 0; }
+.kma-kl-months { display: flex; gap: 6px; overflow-x: auto; flex: 1 1 100%; min-width: 0; max-width: 100%; padding-bottom: 2px; scrollbar-width: thin; }
+.kma-kl-months .kma-chip-btn { white-space: nowrap; flex: 0 0 auto; }
+.kma-kl-months em, .kma-kl-month > summary em, .kma-filter-more > summary em { font-style: normal; background: var(--border-color); border-radius: 999px; padding: 0 7px; font-size: 12px; color: var(--text-primary); }
+.kma-kl-month { border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); }
+.kma-kl-month > summary { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; cursor: pointer; font-weight: 700; font-size: 14px; list-style: none; text-transform: capitalize; min-height: 44px; }
+.kma-kl-month > summary::-webkit-details-marker, .kma-kl-row > summary::-webkit-details-marker { display: none; }
+.kma-kl-month > summary::after { content: '▸'; transition: transform .15s; margin-left: auto; color: var(--text-muted); }
+.kma-kl-month[open] > summary::after { transform: rotate(90deg); }
+.kma-kl-month > summary > span { flex: 0 1 auto; }
+.kma-kl-row { border-top: 1px solid var(--border-color); }
+.kma-kl-row > summary { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 8px 12px; cursor: pointer; list-style: none; min-height: 44px; }
+.kma-kl-row.pos > summary { box-shadow: inset 3px 0 0 #2f9e5b; }
+.kma-kl-row.neg > summary { box-shadow: inset 3px 0 0 #c8463a; }
+.kma-kl-when { font-size: 12px; color: var(--text-muted); white-space: nowrap; min-width: 64px; }
+.kma-kl-title { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kma-kl-row[open] .kma-kl-title { white-space: normal; font-weight: 600; }
+.kma-kl-badges { display: flex; gap: 4px; align-items: center; }
+.kma-kl-badges .kma-vdot { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+.kma-kl-body { padding: 4px 12px 12px; display: grid; gap: 8px; font-size: 14px; }
+.kma-kl-body p { margin: 0; white-space: pre-wrap; }
+.kma-kl-more { justify-self: center; }
+.kma-filter-more > summary { cursor: pointer; font-size: 13px; font-weight: 600; padding: 6px 0; list-style: none; display: inline-flex; gap: 6px; align-items: center; min-height: 34px; }
+.kma-filter-more > summary::-webkit-details-marker { display: none; }
+.kma-filter-more .kma-chips { margin: 4px 0; }
+.kma-filter-more .kma-filter-lab { font-size: 12px; color: var(--text-muted); margin: 6px 0 2px; }
+.kma-lv-list { display: grid; gap: 6px; margin: 8px 0; }
+.kma-lv-item { display: flex; gap: 8px; align-items: center; width: 100%; text-align: left; padding: 8px 12px; min-height: 44px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: 14px; cursor: pointer; }
+.kma-lv-item.active { border-color: var(--accent-gold); box-shadow: inset 3px 0 0 var(--accent-gold); font-weight: 700; }
+.kma-lv-item small { margin-left: auto; color: var(--text-muted); font-size: 12px; }
+.kma-lv-done-list > summary { cursor: pointer; font-size: 13px; color: var(--text-muted); padding: 6px 0; }

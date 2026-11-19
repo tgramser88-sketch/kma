@@ -1061,16 +1061,12 @@
   /* ======================= 11. DTF-logboek ======================= */
   var dtfFilter = 'Alle', dtfFormOpen = false;
   var INTERP = /\b(vind|vond|denk|dacht|lijkt|leek|waarschijnlijk|altijd|nooit|lui|slecht|geweldig|irritant|ongeïnteresseerd|duidelijk dat|eigenlijk|expres|bewust)\b/i;
-  function weekKey(iso) {
-    var d = iso ? new Date(iso + 'T12:00:00') : null;
-    if (!d || isNaN(d)) return { key: 'zz', label: 'Zonder datum' };
-    var day = (d.getDay() + 6) % 7, mon = new Date(d); mon.setDate(d.getDate() - day);
-    var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); var dn = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - dn);
-    var y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)), wk = Math.ceil(((t - y0) / 864e5 + 1) / 7);
-    var sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-    var iso2 = function (x) { return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); };
-    return { key: iso2(mon), label: 'Week ' + wk + ' · ' + fmtDate(iso2(mon)).replace(/ \d{4}$/, '') + ' tot ' + fmtDate(iso2(sun)) };
-  }
+  /** Datum (JJJJ-MM-DD) van het laatste gesprek/feedbackmoment met de teamleider, of ''. */
+  window.kmaLaatsteGesprek = function () {
+    var best = '';
+    try { (window.kmaFeedback && kmaFeedback.all ? kmaFeedback.all() : []).forEach(function (r) { var f = r && r.form || {}, d = /^\d{4}-\d{2}-\d{2}/.test(f.datumGesprek || '') ? f.datumGesprek.slice(0, 10) : String(r && r.date || '').slice(0, 10); if (/^\d{4}-\d{2}-\d{2}$/.test(d) && d > best) best = d; }); } catch (e) {}
+    return best;
+  };
   var P = window.KMAPatterns, dtfSel = {}, dtfSug = [];
   // repair DTF data from old or edited files
   (function () {
@@ -1103,10 +1099,14 @@
   }
   R['dtf-logbook'] = function (c) {
     var counts = VS.map(function (v) { return { label: v, value: dtfItems.filter(function (d) { return (d.vValues || []).indexOf(v) >= 0; }).length }; });
-    var list = dtfItems.filter(function (d) { return dtfFilter === 'Alle' || (d.vValues || []).indexOf(dtfFilter) >= 0; })
-      .slice().sort(function (a, b) { return String(b.datum || '') + (b.tijd || '') > String(a.datum || '') + (a.tijd || '') ? 1 : -1; });
-    var weeks = [], byKey = {};
-    list.forEach(function (d) { var w = weekKey(d.datum); if (!byKey[w.key]) { byKey[w.key] = { label: w.label, items: [] }; weeks.push(w.key); } byKey[w.key].items.push(d); });
+    var since = window.kmaLaatsteGesprek ? kmaLaatsteGesprek() : '';
+    var list = dtfItems.filter(function (d) {
+      if (dtfFilter !== 'Alle' && (d.vValues || []).indexOf(dtfFilter) < 0) return false;
+      if (dtfTeken !== 'alle' && (d.teken || '') !== dtfTeken) return false;
+      if (dtfBron !== 'alle' && (d.bron === 'medecadet' ? 'medecadet' : 'zelf') !== dtfBron) return false;
+      return !window.KMALijst || KMALijst.inPeriod(d.datum, dtfPeriode, since);
+    });
+    var nMore = (dtfTeken !== 'alle') + (dtfBron !== 'alle') + (dtfPeriode !== 'alles');
     var form = '<div class="kma-card-block kma-dtf-form' + (dtfFormOpen ? '' : ' closed') + '"><h4>' + icon('plus') + 'Nieuw feit</h4>' +
       '<div class="kma-inline-form"><input type="date" id="dtf-date" value="' + today() + '"/><input type="time" id="dtf-time" value="' + nowTime() + '"/></div>' +
       '<textarea id="dtf-feit" placeholder="Wat gebeurde er precies? Wie was erbij, wat deed je feitelijk?"></textarea><div class="kma-field-hint" id="kma-dtf-hint"></div>' +
@@ -1125,22 +1125,38 @@
       form +
       '<div class="kma-chips kma-filter">' + ['Alle'].concat(VS).map(function (v) { return '<button type="button" class="kma-chip-btn' + (v === dtfFilter ? ' on' : '') + '" data-dtff="' + v + '">' + v + '</button>'; }).join('') +
       '<button type="button" class="kma-chip-btn" onclick="exportDTFLogbook()">' + icon('download') + 'Exporteer</button></div>' +
-      (weeks.length ? weeks.map(function (k) {
-        return '<div class="kma-week"><h5>' + esc(byKey[k].label) + ' <em>' + byKey[k].items.length + '</em></h5>' + byKey[k].items.map(function (d) {
-          var sg = d.teken === '+' ? ' pos' : d.teken === '-' ? ' neg' : '';
-          return '<div class="kma-dtf-item' + sg + '"><div class="kma-dtf-when">' + esc(fmtDate(d.datum)) + (d.tijd ? '<br>' + esc(d.tijd) : '') + '</div><div class="kma-dtf-body"><p>' + esc(d.feit) + '</p>' +
-            ((d.vValues || []).length ? '<div class="kma-chips small">' + d.vValues.map(function (v) { return '<span class="kma-chip-btn on">' + esc(v) + '</span>'; }).join('') + '</div>' : '') +
-            ((d.swot || []).length ? '<div class="kma-chips small">' + d.swot.map(function (t) { return '<span class="kma-chip-btn kma-swtag on ' + t.k + '"><i>' + (t.k === 's' ? 'S' : 'V') + '</i>' + esc(t.t) + '</span>'; }).join('') + '</div>' : '') +
-            (d.aspect ? '<p class="muted small">' + esc(d.aspect) + '</p>' : '') +
-            '<div class="kma-row-btns"><button type="button" class="kma-chip-btn" onclick="kmaStart5GTFromDtf(' + d.id + ')">' + icon('refresh') + 'Maak 5G-T</button>' +
-            '<button type="button" class="kma-chip-btn" data-dtflink="' + d.id + '">' + icon('target') + 'Sterkte/valkuil</button>' +
-            '<button type="button" class="kma-chip-btn kma-signbtn' + sg + '" data-dtfsign="' + d.id + '" title="Tik om te wisselen: positief, negatief, geen">' + (d.teken === '+' ? 'Positief' : d.teken === '-' ? 'Negatief' : '+/−') + '</button>' +
-            '<button type="button" class="kma-chip-btn" onclick="deleteDTFItem(' + d.id + ')">' + icon('trash') + 'Verwijder</button></div></div></div>';
-        }).join('') + '</div>';
-      }).join('') : (dtfItems.length ? '<p class="muted">Geen feiten bij ' + esc(dtfFilter) + '.</p>' : kmaEmpty({ icon: 'calendar', title: 'Nog geen DTF-feiten', text: 'Leg vast wat er gebeurde: datum, tijd en het feit, zonder oordeel. Zo heb je later voorbeelden voor je gesprek en je beoordeling.', btn: 'Eerste feit vastleggen', attrs: 'data-act="dtf-open"' }))) +
+      (window.KMALijst ? '<details class="kma-filter-more"' + (nMore ? ' open' : '') + '><summary>' + icon('list') + 'Meer filters' + (nMore ? ' <em>' + nMore + '</em>' : '') + '</summary>' +
+        '<div class="kma-filter-lab">Positief of negatief</div><div class="kma-chips">' + KMALijst.chips('data-dtft', [['alle', 'Alle'], ['+', 'Positief'], ['-', 'Negatief']], dtfTeken) + '</div>' +
+        '<div class="kma-filter-lab">Van wie</div><div class="kma-chips">' + KMALijst.chips('data-dtfb', [['alle', 'Alle'], ['zelf', 'Zelf'], ['medecadet', 'Medecadet']], dtfBron) + '</div>' +
+        '<div class="kma-filter-lab">Periode</div><div class="kma-chips">' + KMALijst.chips('data-dtfp', [['alles', 'Alles'], ['30d', 'Laatste 30 dagen'], ['gesprek', since ? 'Sinds laatste gesprek (' + fmtDate(since) + ')' : 'Sinds laatste gesprek']], dtfPeriode) + '</div></details>' : '') +
+      (list.length ? (window.KMALijst ? KMALijst.render('dtf', list, { key: dtfFilter + dtfTeken + dtfBron + dtfPeriode, date: function (d) { return d.datum; }, row: dtfRow }) : list.map(function (d) { return dtfRow(d).body; }).join(''))
+        : (dtfItems.length ? '<p class="muted">Geen feiten met deze filters.</p>' : kmaEmpty({ icon: 'calendar', title: 'Nog geen DTF-feiten', text: 'Leg vast wat er gebeurde: datum, tijd en het feit, zonder oordeel. Zo heb je later voorbeelden voor je gesprek en je beoordeling.', btn: 'Eerste feit vastleggen', attrs: 'data-act="dtf-open"' }))) +
       '<button type="button" class="kma-fab kma-dtf-fab" data-act="dtf-open">' + icon('plus') + '<span>Nieuw feit</span></button></div>';
   };
-  var dtfSign = '';
+  var dtfSign = '', dtfTeken = 'alle', dtfBron = 'alle', dtfPeriode = 'alles';
+  var VKL = { Verbondenheid: '#c79a2a', Veiligheid: '#3f7cac', Vertrouwen: '#2f9e5b', Verantwoordelijkheid: '#a91f2b' };
+  function dtfRow(d) {
+    var sg = d.teken === '+' ? ' pos' : d.teken === '-' ? ' neg' : '';
+    var t = String(d.feit || '').replace(/\s+/g, ' ').trim();
+    return { cls: sg.trim(), when: esc(fmtDate(d.datum).replace(/ \d{4}$/, '')) + (d.tijd ? ' · ' + esc(d.tijd) : ''),
+      title: esc(t.length > 90 ? t.slice(0, 88) + '…' : t) + (d.bron === 'medecadet' ? ' <span class="muted small">(medecadet)</span>' : ''),
+      badges: (d.vValues || []).map(function (v) { return '<span class="kma-vdot" style="background:' + (VKL[v] || '#777') + '" title="' + esc(v) + '">' + esc(v.charAt(0)) + '</span>'; }).join(''),
+      body: '<div class="kma-dtf-item' + sg + '"><div class="kma-dtf-when">' + esc(fmtDate(d.datum)) + (d.tijd ? '<br>' + esc(d.tijd) : '') + '</div><div class="kma-dtf-body"><p>' + esc(d.feit) + '</p>' +
+        ((d.vValues || []).length ? '<div class="kma-chips small">' + d.vValues.map(function (v) { return '<span class="kma-chip-btn on">' + esc(v) + '</span>'; }).join('') + '</div>' : '') +
+        ((d.swot || []).length ? '<div class="kma-chips small">' + d.swot.map(function (t) { return '<span class="kma-chip-btn kma-swtag on ' + t.k + '"><i>' + (t.k === 's' ? 'S' : 'V') + '</i>' + esc(t.t) + '</span>'; }).join('') + '</div>' : '') +
+        (d.aspect ? '<p class="muted small">' + esc(d.aspect) + '</p>' : '') +
+        '<div class="kma-row-btns"><button type="button" class="kma-chip-btn" onclick="kmaStart5GTFromDtf(' + d.id + ')">' + icon('refresh') + 'Maak 5G-T</button>' +
+        '<button type="button" class="kma-chip-btn" data-dtflink="' + d.id + '">' + icon('target') + 'Sterkte/valkuil</button>' +
+        '<button type="button" class="kma-chip-btn kma-signbtn' + sg + '" data-dtfsign="' + d.id + '" title="Tik om te wisselen: positief, negatief, geen">' + (d.teken === '+' ? 'Positief' : d.teken === '-' ? 'Negatief' : '+/−') + '</button>' +
+        '<button type="button" class="kma-chip-btn" onclick="deleteDTFItem(' + d.id + ')">' + icon('trash') + 'Verwijder</button></div></div></div>' };
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-dtft],[data-dtfb],[data-dtfp]'); if (!b) return;
+    if (b.hasAttribute('data-dtft')) dtfTeken = b.getAttribute('data-dtft');
+    else if (b.hasAttribute('data-dtfb')) dtfBron = b.getAttribute('data-dtfb');
+    else dtfPeriode = b.getAttribute('data-dtfp');
+    renderWidgets();
+  });
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-dtfsign-new]');
     if (b) {
@@ -1611,6 +1627,7 @@
       var d = idDate(c.id); if (d) ev.push({ date: d, kind: 'kort', icon: 'refresh', title: 'Korthagen: ' + (c.title || 'reflectie'), text: c.uitproberen ? 'Uitproberen: ' + String(c.uitproberen).slice(0, 90) : '' });
     });
     getX('smart-checkins', []).forEach(function (x) { var d = weekDate(x.week); if (d) ev.push({ date: d, kind: 'checkin', icon: 'target', title: 'Check-in leervraag', text: ['Niet gelukt', 'Deels gelukt', 'Gelukt'][x.r] + (x.note ? ': ' + x.note : ''), r: x.r }); });
+    dtfItems.forEach(function (d) { if (!d || !/^\d{4}-\d{2}-\d{2}/.test(d.datum || '')) return; var t = String(d.feit || '').replace(/\s+/g, ' ').trim(); ev.push({ date: d.datum.slice(0, 10), kind: 'dtf', icon: 'calendar', title: 'DTF' + (d.teken === '+' ? ' (positief)' : d.teken === '-' ? ' (negatief)' : '') + ': ' + (t.length > 60 ? t.slice(0, 58) + '…' : t), text: t + ((d.vValues || []).length ? ' · ' + d.vValues.join(', ') : ''), teken: d.teken }); });
     var months = {};
     dtfItems.forEach(function (d) { var m = String(d.datum || '').slice(0, 7); if (!/^\d{4}-\d{2}$/.test(m)) return; months[m] = months[m] || { pos: 0, neg: 0, neu: 0 }; months[m][d.teken === '+' ? 'pos' : d.teken === '-' ? 'neg' : 'neu']++; });
     var latest = window.kmaFeedback && kmaFeedback.latest ? kmaFeedback.latest() : null;
@@ -1657,23 +1674,24 @@
     return '<div class="kma-groei-tiles">' + t(g.tl.length, g.tl.length === 1 ? 'beoordeling teamleider' : 'beoordelingen teamleider', g.self.length ? '+ ' + g.self.length + ' zelfbeoordeling' + (g.self.length === 1 ? '' : 'en') : '') + t(g.g5 + g.ko, g.g5 + g.ko === 1 ? 'reflectie' : 'reflecties', avg != null ? '−' + avg + ' pp geloof' : '') +
       t(dtfItems.length, 'DTF-feiten', pos || neg ? pos + ' + · ' + neg + ' −' : '') + (function (n) { return t(n, n === 1 ? 'check-in gelukt' : 'check-ins gelukt', ''); })(getX('smart-checkins', []).filter(function (x) { return x.r === 2; }).length) + '</div>';
   }
+  var groeiSoort = 'alles', SOORT = { dtf: ['dtf'], refl: ['5gt', 'kort'], leer: ['checkin', 'plan'], beo: ['beoordeling', 'zelf'] };
   function groeiTimeline(g) {
     if (!g.ev.length) return kmaEmpty({ icon: 'activity', title: 'Nog geen momenten', text: 'Maak een zelfbeoordeling, een reflectie of een DTF-feit; ze verschijnen hier op datum.', btn: 'DTF-feit vastleggen', attrs: 'data-empty-step="dtf-logbook"' });
-    var html = '', cur = '';
-    g.ev.slice(0, 60).forEach(function (e) {
-      var m = e.date.slice(0, 7);
-      if (m !== cur) { cur = m; html += '<h5 class="kma-groei-month">' + esc(monthLabel(m).replace(/ (\d\d)$/, ' 20$1')) + '</h5>'; }
-      html += '<div class="kma-groei-ev ' + e.kind + '"><i>' + icon(e.icon) + '</i><div><small>' + esc(fmtDate(e.date)) + '</small><strong>' + esc(e.title) + '</strong>' + (e.text ? '<p>' + esc(e.text) + '</p>' : '') + '</div></div>';
-    });
-    return '<div class="kma-groei-line">' + html + '</div>';
+    var ev = groeiSoort === 'alles' ? g.ev : g.ev.filter(function (e) { return SOORT[groeiSoort].indexOf(e.kind) >= 0; });
+    var chips = '<div class="kma-chips kma-filter">' + (window.KMALijst ? KMALijst.chips('data-groeis', [['alles', 'Alles'], ['dtf', 'DTF-feiten'], ['refl', 'Reflecties'], ['leer', 'Leervraag en plannen'], ['beo', 'Beoordelingen']], groeiSoort) : '') + '</div>';
+    if (!window.KMALijst) return chips + '<div class="kma-groei-line">' + ev.slice(0, 60).map(function (e) { return '<div class="kma-groei-ev ' + e.kind + '"><i>' + icon(e.icon) + '</i><div><small>' + esc(fmtDate(e.date)) + '</small><strong>' + esc(e.title) + '</strong>' + (e.text ? '<p>' + esc(e.text) + '</p>' : '') + '</div></div>'; }).join('') + '</div>';
+    return chips + (ev.length ? KMALijst.render('groei', ev, { key: groeiSoort, date: function (e) { return e.date; }, row: function (e) {
+      return { cls: e.kind + (e.teken === '+' ? ' pos' : e.teken === '-' ? ' neg' : ''), when: esc(fmtDate(e.date).replace(/ \d{4}$/, '')), title: '<i class="kma-kl-ic">' + icon(e.icon) + '</i> ' + esc(e.title), body: e.text ? '<p>' + esc(e.text) + '</p>' : '<p class="muted small">Geen toelichting.</p>' };
+    } }) : '<p class="muted">Niets in deze categorie.</p>');
   }
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-groeis]'); if (!b) return; groeiSoort = b.getAttribute('data-groeis'); var c = document.getElementById('kma-groei-tl'); if (c) c.innerHTML = groeiTimeline(groeiData()); });
   R['groei'] = function (c) {
     var g = groeiData();
     c.innerHTML = groeiTiles(g) +
       cardHtml('Beoordelingen over tijd', groeiV(g) || '<p class="muted">Nog geen beoordelingen. Na je zelfbeoordeling (hoofdstuk Zelfbeoordelingsformulier) en de beoordeling van je teamleider zie je hier per V hoe je groeit.</p>', 'chart') +
       (g.v4.length > 1 ? cardHtml('Eigen score per V (1-10)', V.lineChart(g.v4.map(function (h) { return fmtDate(h.date).replace(/ \d{4}$/, ''); }), VS.map(function (v, i) { return { label: v, color: VCOL[v], values: g.v4.map(function (h) { return h.s[i]; }) }; }), { yMin: 0, yMax: 10, ticks: [0, 5, 10], label: 'Eigen score per V', connect: true }) + V.legend(VS.map(function (v) { return { label: v, color: VCOL[v] }; })), 'activity') : '') +
       (Object.keys(g.months).length ? cardHtml('DTF-feiten per maand', groeiDtf(g), 'calendar') : '') +
-      cardHtml('Jouw groei op een tijdlijn', groeiTimeline(g), 'activity');
+      cardHtml('Jouw groei op een tijdlijn', '<div id="kma-groei-tl">' + groeiTimeline(g) + '</div>', 'activity');
   };
   window.kmaGroeiData = groeiData;
 
@@ -1868,7 +1886,7 @@
     return pfCard('', groeiTiles(g).replace('kma-groei-tiles', 'kma-groei-tiles pf-tiles')) +
       (groeiV(g) ? pfCard('Beoordelingen over tijd', '<div class="pf-chart">' + groeiV(g) + '</div>') : '') +
       (Object.keys(g.months).length ? pfCard('DTF-feiten per maand', '<div class="pf-chart wide">' + groeiDtf(g) + '</div>') : '') +
-      pfCard('Mijlpalen', '<table class="pf-table">' + g.ev.slice(0, 25).map(function (e) { return '<tr><th style="width:90px">' + esc(fmtDate(e.date)) + '</th><td><strong>' + esc(e.title) + '</strong>' + (e.text ? '<br><span class="pf-muted">' + esc(e.text) + '</span>' : '') + '</td></tr>'; }).join('') + '</table>');
+      pfCard('Mijlpalen', '<table class="pf-table">' + g.ev.filter(function (e) { return e.kind !== 'dtf'; }).slice(0, 25).map(function (e) { return '<tr><th style="width:90px">' + esc(fmtDate(e.date)) + '</th><td><strong>' + esc(e.title) + '</strong>' + (e.text ? '<br><span class="pf-muted">' + esc(e.text) + '</span>' : '') + '</td></tr>'; }).join('') + '</table>');
   };
   PF_VIS.cv = function () {
     cvFlush();

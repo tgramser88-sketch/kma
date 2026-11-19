@@ -243,9 +243,10 @@
   var closing = false;
   function lvCard() {
     var l = lvAll(), cur = lvActief(), done = cur.status === 'voltooid';
-    var tabs = l.length > 1 ? '<div class="cases-tabs kma-lv-tabs">' + l.map(function (x, i) {
-      return '<button type="button" class="case-tab' + (x.id === cur.id ? ' active' : '') + '" data-lv-open="' + esc(x.id) + '">' + (x.status === 'voltooid' ? icon('check') : '') + esc(lvTitle(x, i)) + '</button>';
-    }).join('') + '</div>' : '';
+    var item = function (x) { var i = l.indexOf(x); return '<button type="button" class="kma-lv-item' + (x.id === cur.id ? ' active' : '') + '" data-lv-open="' + esc(x.id) + '" aria-current="' + (x.id === cur.id) + '">' + icon(x.status === 'voltooid' ? 'check' : 'target') + '<span>' + esc(lvTitle(x, i)) + '</span><small>' + (x.status === 'voltooid' ? 'afgerond ' + esc(fmt(x.voltooid)) : (x.id === cur.id ? 'open · actief' : 'open')) + '</small></button>'; };
+    var open = l.filter(function (x) { return x.status !== 'voltooid'; }), klaar = l.filter(function (x) { return x.status === 'voltooid'; });
+    var tabs = l.length > 1 ? '<div class="kma-lv-list">' + open.slice().reverse().map(item).join('') + '</div>' +
+      (klaar.length ? '<details class="kma-lv-done-list"' + (cur.status === 'voltooid' ? ' open' : '') + '><summary>Afgeronde leervragen (' + klaar.length + ')</summary><div class="kma-lv-list">' + klaar.slice().reverse().map(item).join('') + '</div></details>' : '') : '';
     var body;
     if (done) {
       body = '<div class="kma-lv-done">' + icon('medal') + '<div><strong>Voltooid op ' + esc(fmt(cur.voltooid)) + '</strong>' + (cur.terugblik ? '<p>' + esc(cur.terugblik) + '</p>' : '') + '</div></div>' +
