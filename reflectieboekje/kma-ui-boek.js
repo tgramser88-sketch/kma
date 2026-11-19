@@ -96,6 +96,7 @@
       title: 'Meer',
       items: [
         // 4.8.3: zoeken in het hele boekje, ook vanuit het menu te vinden
+        window.kmaInbox ? { icon: 'message', label: 'Inbox', hint: kmaInbox.hint(), onClick: function () { kmaInbox.open(); } } : null,
         { icon: 'search', label: 'Zoeken in je boekje', hint: 'Antwoorden, DTF, reflecties, levenslijn, plannen en begrippen', onClick: function () {
           var inp = document.getElementById('search-input'); if (!inp) return;
           setTimeout(function () { try { inp.scrollIntoView({ block: 'center', behavior: 'smooth' }); inp.focus({ preventScroll: true }); } catch (e) { inp.focus(); } }, 320);
@@ -113,7 +114,7 @@
         { icon: 'book', label: 'Handleiding', hint: 'Uitleg en tutorials, met een knop naar elk hoofdstuk', onClick: function () { window.kmaHandleiding && kmaHandleiding.open(); } },
         { icon: 'book', label: 'Uitleg', hint: 'De drie introschermen opnieuw bekijken', onClick: function () { window.kmaIntro && kmaIntro.open(); } },
         // 4.6.0: back-up maken en terugzetten staan samen hier (voor jezelf), niet meer bij Delen (naar je teamleider)
-        { icon: 'download', label: 'Back-up maken', hint: 'Voor jezelf: back-up (.json) en tekstbestand naar Downloads', onClick: function () { exportAnswers(); } },
+        { icon: 'download', label: 'Back-up maken', hint: (function () { var a = window.kmaVandaag && kmaVandaag.backupAge ? kmaVandaag.backupAge() : null; return (a == null ? 'Nog nooit gemaakt' : a === 0 ? 'Laatste back-up: vandaag' : 'Laatste back-up: ' + a + (a === 1 ? ' dag' : ' dagen') + ' geleden') + ' · back-up (.json) en tekstbestand naar Downloads'; })(), onClick: function () { exportAnswers(); } },
         { icon: 'folder', label: 'Back-up terugzetten', hint: 'Een eerder gemaakte back-up terugzetten, bijvoorbeeld op een nieuwe telefoon', onClick: function () { triggerImportBackup(); } },
         // 4.5.4: alleen in de web-app (kma-web-veilig.js)
         window.kmaWebSafe ? { icon: 'shield', label: 'Gegevens veilig bewaren', hint: kmaWebSafe.hint(), onClick: function () { kmaWebSafe.open(); } } : null,

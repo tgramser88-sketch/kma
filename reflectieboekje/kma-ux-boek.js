@@ -91,8 +91,11 @@
   var origAddDtf = window.addDTFItem;
   if (typeof origAddDtf === 'function') {
     window.addDTFItem = addDTFItem = function () {
-      var n = dtfItems.length, r = origAddDtf.apply(this, arguments);
-      if (dtfItems.length > n) { try { st().removeItem(DRAFT); } catch (e) {} }
+      // Concept eerst weghalen: het opslaan tekent het formulier opnieuw en zou het anders terugzetten.
+      var n = dtfItems.length, keep = null;
+      try { keep = st().getItem(DRAFT); st().removeItem(DRAFT); } catch (e) {}
+      var r = origAddDtf.apply(this, arguments);
+      if (dtfItems.length === n && keep) { try { st().setItem(DRAFT, keep); } catch (e) {} }
       return r;
     };
   }

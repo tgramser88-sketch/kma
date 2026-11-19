@@ -99,7 +99,7 @@
     var age = backupAge(), first = daysTo(getX('first-use', today()));
     var filled = Object.keys(answers || {}).filter(function (k) { return answers[k] && String(answers[k]).trim(); }).length;
     // In de web-app herinnert kma-web-veilig.js na 7 dagen, met een balk bovenaan; dan hier geen tweede melding.
-    if (window.KMA_PLATFORM !== 'web' && ((age != null && age >= 30) || (age == null && first != null && first <= -14 && filled >= 10))) {
+    if (window.KMA_PLATFORM !== 'web' && ((age != null && age >= 14) || (age == null && first != null && first <= -14 && filled >= 10))) {
       list.push({ k: 'backup', ic: 'download', t: age == null ? 'Je hebt nog geen back-up' : 'Je laatste back-up is ' + age + ' dagen oud', s: 'Alles staat alleen op dit toestel. Een back-up beschermt je werk.', b: 'Back-up' });
     }
     // 6. Ga verder

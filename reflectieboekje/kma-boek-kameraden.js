@@ -549,7 +549,7 @@
   }
 
   /* ---------------- Start ---------------- */
-  window.kmaKameraad = { open: open, give: giveForm, ask: askForm, inbox: listInbox, scan: scanSheet, accept: accept, sync: sync, left: leftThisWeek, newCount: newCount, people: people, _S: S };
+  window.kmaKameraad = { open: open, give: giveForm, ask: askForm, inbox: listInbox, scan: scanSheet, accept: accept, sync: sync, left: leftThisWeek, newCount: newCount, requests: openRequests, people: people, _S: S };
   badge();
   setTimeout(function () { sync().then(badge); }, 4000);
   setInterval(function () { if (!document.hidden) sync().then(badge); }, 120000);
