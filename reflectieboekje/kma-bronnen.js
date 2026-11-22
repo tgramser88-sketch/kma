@@ -59,6 +59,10 @@
     "vleuten2018": { "apa": "Van der Vleuten, C. P. M., Lindemann, I., & Schmidt, L. (2018). Programmatic assessment: The process, rationale and evidence for modern evaluation approaches in medical education. *Medical Journal of Australia, 209*(9), 386-388.", "doi": "10.5694/mja17.00926" },
     "woehr1994": { "apa": "Woehr, D. J., & Huffcutt, A. I. (1994). Rater training for performance appraisal: A quantitative review. *Journal of Occupational and Organizational Psychology, 67*(3), 189-205.", "doi": "10.1111/j.2044-8325.1994.tb00562.x" },
     "roch2012": { "apa": "Roch, S. G., Woehr, D. J., Mishra, V., & Kieszczynska, U. (2012). Rater training revisited: An updated meta-analytic review of frame-of-reference training. *Journal of Occupational and Organizational Psychology, 85*(2), 370-395.", "doi": "10.1111/j.2044-8325.2011.02045.x" },
+    "orford1986": { "apa": "Orford, J. (1986). The rules of interpersonal complementarity: Does hostility beget hostility and dominance, submission? *Psychological Review, 93*(3), 365-377.", "doi": "10.1037/0033-295X.93.3.365" },
+    "sadler2009": { "apa": "Sadler, P., Ethier, N., Gunn, G. R., Duong, D., & Woody, E. (2009). Are we on the same wavelength? Interpersonal complementarity as shared cyclical patterns during interactions. *Journal of Personality and Social Psychology, 97*(6), 1005-1020.", "doi": "10.1037/a0016232" },
+    "mainhard2011": { "apa": "Mainhard, M. T., Brekelmans, M., & Wubbels, T. (2011). Coercive and supportive teacher behaviour: Within- and across-lesson associations with the classroom social climate. *Learning and Instruction, 21*(3), 345-354.", "doi": "10.1016/j.learninstruc.2010.03.003" },
+    "watling2019": { "apa": "Watling, C. J., & Ginsburg, S. (2019). Assessment, feedback and the alchemy of learning. *Medical Education, 53*(1), 76-85.", "doi": "10.1111/medu.13645" },
     "theeboom2014": { "apa": "Theeboom, T., Beersma, B., & van Vianen, A. E. M. (2014). Does coaching work? A meta-analysis on the effects of coaching on individual level outcomes in an organizational context. *The Journal of Positive Psychology, 9*(1), 1-18.", "doi": "10.1080/17439760.2013.837499" },
     "zimmerman2002": { "apa": "Zimmerman, B. J. (2002). Becoming a self-regulated learner: An overview. *Theory Into Practice, 41*(2), 64-70.", "doi": "10.1207/s15430421tip4102_2" },
     "theobald2021": { "apa": "Theobald, M. (2021). Self-regulated learning training programs enhance university students' academic performance, self-regulated learning strategies, and motivation: A meta-analysis. *Contemporary Educational Psychology, 66*, Artikel 101976.", "doi": "10.1016/j.cedpsych.2021.101976" },
@@ -141,10 +145,10 @@
       "id": "leary", "apps": ["boek","cvs"], "titel": "Roos van Leary", "waar": "Boekje: Roos van Leary (hoofdstuk), roos bij DTF-feiten en feedback. CVS: roos per cadet.",
       "hoofdstukken": ["Roos van Leary"],
       "wat": "Interpersoonlijk gedrag op twee assen: boven tegenover onder (invloed) en samen tegenover tegen (verbondenheid). Je zet een gedraging als stip op de roos.",
-      "waarom": "De twee assen van het interpersoonlijk circumplex zijn in veel onderzoek teruggevonden. Gedrag lokt gedrag uit: wie boven gaat zitten, lokt vaak onder-gedrag uit (complementariteit). Zo kun je bewuster kiezen hoe je een ander beïnvloedt.",
+      "waarom": "De twee assen van het interpersoonlijk circumplex zijn in veel onderzoek teruggevonden. Gedrag lokt gedrag uit: op de samen-tegen-as roept gedrag hetzelfde gedrag op (samen roept samen op, tegen roept tegen op), op de boven-onder-as het tegenovergestelde (boven lokt onder uit). Metingen van moment tot moment laten zien dat twee mensen in een gesprek zo op elkaar inregelen. In de klas hangt ondersteunend gedrag van de leraar samen met een beter klimaat en dwingend gedrag met een slechter; het beste werkt warm en duidelijk tegelijk. Zo kun je bewuster kiezen hoe je een ander beïnvloedt, en een escalatie doorbreken door niet mee te gaan in tegen-gedrag.",
       "effect": "",
-      "grenzen": "De assen zijn goed onderbouwd, de gelijke verdeling in acht sectoren niet; daarom bewaart de app asscores. Eén stip van één beoordelaar zegt weinig: de verdeling verschijnt pas vanaf vijf stippen per bron. HEXACO en de roos hangen maar matig samen. De koppeling met de 4 V's is een denkhulp, geen meting.",
-      "bronnen": ["leary1957", "wiggins1979", "kiesler1983", "barford2015"]
+      "grenzen": "Aan de tegen-kant klopt de regel maar half: op aanvallend gedrag reageren mensen vaak óók aanvallend, niet onderdanig, en zo escaleert het. Dat een samen-reactie zo'n escalatie doorbreekt, komt vooral uit de therapiepraktijk en is minder hard bewezen. De assen zijn goed onderbouwd, de gelijke verdeling in acht sectoren niet; daarom bewaart de app asscores. Eén stip van één beoordelaar zegt weinig: de verdeling verschijnt pas vanaf vijf stippen per bron. HEXACO en de roos hangen maar matig samen. De koppeling met de 4 V's is een denkhulp, geen meting.",
+      "bronnen": ["leary1957", "wiggins1979", "kiesler1983", "orford1986", "sadler2009", "mainhard2011", "barford2015"]
     },
     {
       "id": "pss", "apps": ["boek"], "titel": "Stresscheck (PSS-10)", "waar": "Boekje: Fitheid & stress (altijd privé).",
@@ -210,13 +214,13 @@
       "bronnen": ["woehr1994", "roch2012"]
     },
     {
-      "id": "coaching", "apps": ["boek","cvs"], "titel": "Coaching en gesprekken met de teamleider", "waar": "Boekje: Bereid je gesprek voor, afspraken op Vandaag. CVS: gespreksverslagen.",
+      "id": "coaching", "apps": ["boek","cvs"], "titel": "Coaching en gesprekken met teamleider en senior-instructeur", "waar": "Boekje: Bereid je gesprek voor, afspraken op Vandaag. CVS: gespreksverslagen (teamleider), meelezen en feedback (senior-instructeur).",
       "hoofdstukken": [],
-      "wat": "Regelmatige gesprekken waarin de teamleider vragen stelt, de cadet zelf een doel en een afspraak kiest, en die afspraak in het volgende gesprek terugkomt.",
+      "wat": "Regelmatige gesprekken waarin de teamleider vragen stelt, de cadet zelf een doel en een afspraak kiest, en die afspraak in het volgende gesprek terugkomt. Daarnaast is er de senior-instructeur: die coacht en begeleidt alleen en beoordeelt niet.",
       "waarom": "Coaching in organisaties heeft positieve effecten op prestaties, welbevinden, omgaan met druk en vooral op doelgerichte zelfsturing. Leiderschap ontwikkelt zich over jaren via ervaring, feedback en zelfbeeld; gesprekken verbinden die.",
       "effect": "Coaching: van g = 0,43 (omgaan met druk) tot g = 0,74 (doelgerichte zelfsturing).",
-      "grenzen": "De studies gaan vooral over professionele coaches, niet over een teamleider die ook beoordeelt. Die dubbele rol vraagt om duidelijke afspraken over wat wel en niet meetelt.",
-      "bronnen": ["theeboom2014", "day2014"]
+      "grenzen": "De studies gaan vooral over professionele coaches, niet over een teamleider die ook beoordeelt. Wie beoordeeld wordt, deelt minder snel twijfels en fouten; programmatisch toetsen raadt daarom aan coachen en beslissen te scheiden. De senior-instructeur maakt dat deels mogelijk: bij hem kan de cadet vrijer praten, omdat hij niet beoordeelt. Bij de teamleider blijft de dubbele rol bestaan en zijn duidelijke afspraken nodig over wat wel en niet meetelt.",
+      "bronnen": ["theeboom2014", "day2014", "vleuten2012", "watling2019"]
     },
     {
       "id": "zelfregulatie", "apps": ["boek"], "titel": "Zelfregulerend leren (de cyclus in het boekje)", "waar": "Boekje: Vandaag, leervraag, check-in, DTF en terugblik.",

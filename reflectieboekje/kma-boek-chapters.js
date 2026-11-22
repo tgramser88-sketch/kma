@@ -1078,6 +1078,7 @@
       if (d.vValues && !Array.isArray(d.vValues)) { d.vValues = []; ch = true; }
       if (d.feit != null && typeof d.feit !== 'string') { d.feit = String(d.feit); ch = true; }
       if ('leary' in d && window.KMALeary) { var lc = KMALeary.clean(d.leary); if (!lc) { delete d.leary; ch = true; } else if (lc.b !== d.leary.b || lc.s !== d.leary.s) { d.leary = lc; ch = true; } }
+      if ('learyAnder' in d && window.KMALeary) { var la = KMALeary.clean(d.learyAnder); if (!la) { delete d.learyAnder; ch = true; } else if (la.b !== d.learyAnder.b || la.s !== d.learyAnder.s) { d.learyAnder = la; ch = true; } }
     });
     if (ch) { try { kmaStore.setItem(DTF_KEY, JSON.stringify(dtfItems)); } catch (e) {} }
   })();
@@ -1118,7 +1119,7 @@
       '<p class="muted small">Was dit positief of negatief?</p><div class="kma-chips kma-dtf-sign">' +
         '<button type="button" class="kma-chip-btn pos' + (dtfSign === '+' ? ' on' : '') + '" data-dtfsign-new="+" aria-pressed="' + (dtfSign === '+') + '">Positief</button>' +
         '<button type="button" class="kma-chip-btn neg' + (dtfSign === '-' ? ' on' : '') + '" data-dtfsign-new="-" aria-pressed="' + (dtfSign === '-') + '">Negatief</button></div>' +
-      (window.KMALeary ? '<details class="kma-leary-open"><summary class="muted small">Roos van Leary (optioneel): welk gedrag liet je zien?</summary>' + KMALeary.picker('dtf-leary', null, 'Jouw gedrag op de roos') + '</details>' : '') +
+      (window.KMALeary ? '<details class="kma-leary-open"><summary class="muted small">Roos van Leary (optioneel): welk gedrag liet je zien?</summary>' + (window.kmaReactie ? kmaReactie.paarHtml('dtf-leary', 'dtf-leary-ander', null, null) : KMALeary.picker('dtf-leary', null, 'Jouw gedrag op de roos')) + '</details>' : '') +
       '<div id="kma-dtf-swot-box">' + swotPicker() + '</div>' +
       '<textarea id="dtf-aspect" placeholder="Waarom is dit belangrijk voor je beoordeling of leervraag? (optioneel)"></textarea>' +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-act="dtf-cancel">Annuleren</button><button type="button" class="kma-icon-btn is-primary" onclick="addDTFItem()">' + icon('save') + 'Opslaan</button></div></div>';
@@ -1144,7 +1145,7 @@
     var t = String(d.feit || '').replace(/\s+/g, ' ').trim();
     return { cls: sg.trim(), when: esc(fmtDate(d.datum).replace(/ \d{4}$/, '')) + (d.tijd ? ' · ' + esc(d.tijd) : ''),
       title: esc(t.length > 90 ? t.slice(0, 88) + '…' : t) + (d.bron === 'medecadet' ? ' <span class="muted small">(medecadet)</span>' : ''),
-      badges: (d.vValues || []).map(function (v) { return '<span class="kma-vdot" style="background:' + (VKL[v] || '#777') + '" title="' + esc(v) + '">' + esc(v.charAt(0)) + '</span>'; }).join('') + (window.KMALeary ? KMALeary.dot(d.leary) : ''),
+      badges: (d.vValues || []).map(function (v) { return '<span class="kma-vdot" style="background:' + (VKL[v] || '#777') + '" title="' + esc(v) + '">' + esc(v.charAt(0)) + '</span>'; }).join('') + (window.KMALeary ? (KMALeary.dotPaar ? KMALeary.dotPaar(d.leary, d.learyAnder) : KMALeary.dot(d.leary)) : ''),
       body: '<div class="kma-dtf-item' + sg + '"><div class="kma-dtf-when">' + esc(fmtDate(d.datum)) + (d.tijd ? '<br>' + esc(d.tijd) : '') + '</div><div class="kma-dtf-body"><p>' + esc(d.feit) + '</p>' +
         ((d.vValues || []).length ? '<div class="kma-chips small">' + d.vValues.map(function (v) { return '<span class="kma-chip-btn on">' + esc(v) + '</span>'; }).join('') + '</div>' : '') +
         ((d.swot || []).length ? '<div class="kma-chips small">' + d.swot.map(function (t) { return '<span class="kma-chip-btn kma-swtag on ' + t.k + '"><i>' + (t.k === 's' ? 'S' : 'V') + '</i>' + esc(t.t) + '</span>'; }).join('') + '</div>' : '') +
@@ -1198,16 +1199,18 @@
   });
   var origAddDtf = window.addDTFItem;
   window.addDTFItem = function () {
-    var lv = window.KMALeary ? KMALeary.value('dtf-leary') : null;
+    var lv = window.KMALeary ? KMALeary.value('dtf-leary') : null, lr = window.KMALeary ? KMALeary.value('dtf-leary-ander') : null;
     var sign = dtfSign, n = dtfItems.length, sel = dtfTags().filter(function (t) { return dtfSel[P.tagKey(t)]; }).map(function (t) { return { k: t.k, t: t.t, trait: t.trait }; });
     origAddDtf();
     if (dtfItems.length > n) {
       if (sel.length) dtfItems[0].swot = sel;
       if (sign) dtfItems[0].teken = sign;
       if (lv) dtfItems[0].leary = lv;
-      if (sel.length || sign || lv) saveDtf();
+      if (lr) dtfItems[0].learyAnder = lr;   // 4.21.0 (S1): wat deed de ander daarna?
+      if (sel.length || sign || lv || lr) saveDtf();
       dtfSign = '';
       dtfSel = {}; dtfSug = []; dtfFormOpen = false; renderWidgets();
+      if (lv && lr && window.kmaReactie) kmaReactie.aanbod(lv, lr);
     }
   };
   function linkSheet(id) {
@@ -1792,13 +1795,14 @@
       '<p>De Roos van Leary (Timothy Leary, 1957) beschrijft gedrag tussen mensen op twee assen. De verticale as gaat over <b>invloed</b>: neem je de leiding (boven) of laat je de ander bepalen (onder)? De horizontale as gaat over <b>verbondenheid</b>: werk je samen met de ander of zet je je ertegen af?</p>' +
       '<p>Samen geven die assen acht soorten gedrag. Geen enkel gedrag is goed of fout: leidend gedrag helpt bij een snelle beslissing, maar maakt de groep passief als het te lang duurt. Opstandig gedrag kan precies het kritische geluid zijn dat een plan veiliger maakt.</p>' +
       '<p><b>Actie lokt reactie uit.</b> Gedrag boven lokt vaak gedrag onder uit, en omgekeerd. Gedrag samen lokt samen uit, gedrag tegen lokt tegen uit. Wil je ander gedrag van je groep, kijk dan eerst naar je eigen plek op de roos.</p>' +
+      '<p><b>Escalatie doorbreken.</b> Aan de tegen-kant klopt de regel maar half: op aanvallend gedrag reageren mensen vaak óók aanvallend, en zo loopt het op. Ga niet mee in tegen-gedrag: blijf samen en wees duidelijk. Leg bij een DTF-feit ook vast wat de ander daarna deed; dan zie je je eigen patronen.</p>' +
       '<p><b>Zo gebruik je het:</b> kies bij een DTF-feit welk gedrag je liet zien, en vraag medecadetten bij hun feedback hetzelfde. Na een tijd zie je waar je vaak zit, en of anderen dat ook zo zien. Bespreek verschillen in het gesprek met je teamleider.</p>' +
       '<p class="muted small">Let op: de twee assen zijn in onderzoek goed terug te vinden; de precieze indeling in acht gelijke sectoren minder (Wiggins, 1979). Daarom bewaart de app de plek op beide assen en toont hij pas een verdeling bij genoeg waarnemingen.</p></details>';
     c.innerHTML = '<div class="kma-leary-ch">' + per +
       cardHtml('Jouw gedrag op de roos', beeld + bron, 'target') +
       cardHtml('Per soort gedrag', secs, 'list') +
       cardHtml('Naast je persoonlijkheidstest', hex, 'user') +
-      denk + uitleg + '</div>';
+      denk + (window.kmaReactie ? kmaReactie.oefeningHtml() : '') + uitleg + '</div>';
   };
   document.addEventListener('click', function (e) {
     var p = e.target.closest && e.target.closest('[data-learyp]');

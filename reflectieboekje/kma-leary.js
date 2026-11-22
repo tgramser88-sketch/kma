@@ -150,6 +150,24 @@
     return ov;
   }
 
+  /** 4.21.0 (S1): actie → reactie. Eigen gedrag (a) en wat de ander daarna deed (r). Samen-as: gelijk gedrag lokt gelijk
+   * gedrag uit; boven-as: tegengesteld (Carson 1969). Aan de tegen-kant escaleert het vaak (Orford 1986). */
+  function paar(a, r) {
+    a = clean(a); r = clean(r); if (!a || !r) return null;
+    var t = [], esc2 = a.s < 0 && r.s < 0;
+    if (esc2) t.push('Tegen-gedrag werd met tegen-gedrag beantwoord. Zo loopt het vaak op.');
+    else if (a.s < 0 && r.s >= 0) t.push('Jij zat tegen, de ander bleef samen: daarmee werd het niet erger.');
+    else if (a.s >= 0 && r.s < 0) t.push('Jij zat samen, de ander ging ertegenin. Blijf samen en vraag wat er speelt.');
+    else t.push('Samen lokte samen uit.');
+    if (a.b > 0 && r.b > 0) t.push('Jullie zaten allebei boven: dat wordt snel een strijd om de leiding.');
+    else if (a.b > 0 && r.b < 0) t.push('Jouw boven-gedrag lokte onder-gedrag uit.');
+    else if (a.b < 0 && r.b > 0) t.push('Jij liet de ander de ruimte; die nam de leiding.');
+    return { escalatie: esc2, tekst: t.join(' '), van: label(a), naar: label(r) };
+  }
+  var PLAN = { als: 'iemand tegen mij ingaat', dan: 'blijf ik rustig, ga ik er niet tegenin en vraag ik wat hij nodig heeft' };
+  /** Twee stippen: eigen gedrag → reactie van de ander. */
+  function dotPaar(a, r) { return dot(a) + (clean(r) ? '<span class="kma-leary-pijl" aria-hidden="true">→</span>' + dot(r).replace('title="Leary: ', 'title="Reactie van de ander: ') : ''); }
+
   window.KMALeary = { edit: edit, MIN: MIN, SECT: SECT, clean: clean, fromSector: fromSector, sector: sector, intensity: intensity, label: label,
-    dist: dist, picker: picker, value: value, set: setPick, rose: rose, axisBars: axisBars, dot: dot };
+    dist: dist, picker: picker, value: value, set: setPick, rose: rose, axisBars: axisBars, dot: dot, paar: paar, PLAN: PLAN, dotPaar: dotPaar };
 })();

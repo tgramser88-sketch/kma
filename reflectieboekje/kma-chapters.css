@@ -1821,3 +1821,16 @@ body.dark-theme .kma-oer-cyclus span.ok { color: #7fcf9b; border-color: #7fcf9b;
 .kma-tl-sig p { margin: 4px 0; font-size: 13px; display: flex; gap: 6px; align-items: flex-start; }
 .kma-tl-sig p.hoog { color: var(--accent-red, #c62828); font-weight: 600; }
 .kma-tl-sig svg { width: 14px; height: 14px; flex: none; margin-top: 2px; }
+
+/* 4.21.0 (S1, S2): actie → reactie op de roos, oefening escalatie doorbreken */
+.kma-leary-pijl { margin: 0 2px; font-size: 12px; color: var(--text-muted, #666); }
+.kma-reactie-hint { min-height: 1em; margin: 4px 0 8px; }
+.kma-reactie-hint.kma-reactie-esc { color: var(--accent-red, #c62828); font-weight: 600; }
+.kma-nb-samen { border: 1px solid var(--border-color); border-radius: 10px; padding: 6px 10px; }
+.kma-nb-samen summary { min-height: 40px; display: flex; align-items: center; cursor: pointer; }
+.kma-reactie-sit { border-top: 1px solid var(--border-color); padding: 8px 0; }
+.kma-reactie-sit p { margin: 4px 0; }
+.kma-reactie-opts { display: grid; gap: 6px; }
+.kma-reactie-opts .kma-chip-btn { text-align: left; white-space: normal; justify-content: flex-start; min-height: 44px; height: auto; padding: 8px 12px; }
+.kma-reactie-opts .kma-chip-btn.on { border-color: var(--accent-gold); background: rgba(201, 168, 76, .15); }
+.kma-reactie-sit.goed .kma-reactie-uit b { color: #2e7d32; }

@@ -14,7 +14,7 @@
   if (typeof steps === 'undefined' || typeof goToStep !== 'function' || !window.kmaChapterGroup) return;
   if (navigator.webdriver && !window.__kmaTabsForce) return;
   var KEY = 'kma-ui-tab', ALLES = 'kma-ui-alle-hoofdstukken';
-  var TABS = [['vandaag', 'Vandaag', 'calendar'], ['ontwikkeling', 'Mijn ontwikkeling', 'activity'], ['naslag', 'Naslag', 'book']];
+  var TABS = [['vandaag', 'Vandaag', 'calendar'], ['ontwikkeling', 'Mijn ontwikkeling', 'trend'], ['naslag', 'Naslag', 'book']];
   function store() { return window.kmaStore || window.localStorage; }
   function get(k) { try { return store().getItem(k); } catch (e) { return null; } }
   function set(k, v) { try { store().setItem(k, v); } catch (e) {} }

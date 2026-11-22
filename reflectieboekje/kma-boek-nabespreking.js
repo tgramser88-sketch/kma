@@ -4,6 +4,7 @@
  * Goed opgezette nabesprekingen verbeteren prestaties met gemiddeld 20 tot 25 procent (Tannenbaum & Cerasoli, 2013).
  * Opslaan maakt één DTF-feit (met de vier antwoorden in het veld aar) en, als de cadet dat kiest, een als-dan-plan
  * bij de leervraag (Gollwitzer & Sheeran, 2006). Menu ⋮ → Nabespreking na een oefening.
+ * 4.21.0 (S1, S3): ingeklapt deel Samenwerking: escalatievraag (aar.escalatie) en actie → reactie op de roos.
  * Copyright (c) 2026 T.T.W. Gramser. Alle rechten voorbehouden.
  */
 (function () {
@@ -29,6 +30,9 @@
       '<div class="kma-inline-form"><label class="kma-field"><span>Datum</span><input type="date" id="nb-datum" value="' + today() + '"></label>' +
       '<label class="kma-field"><span>Oefening of situatie</span><input type="text" id="nb-sit" maxlength="120" placeholder="bijv. Verkenning, oefening Hei"></label></div>' +
       VRAGEN.map(function (q) { return '<label class="kma-field"><span>' + q[1] + '</span><textarea id="nb-' + q[0] + '" rows="2" data-concept placeholder="' + esc(q[2]) + '"></textarea></label>'; }).join('') +
+      '<details class="kma-nb-samen"><summary class="small"><b>Samenwerking</b> (optioneel)</summary>' +
+      '<label class="kma-field"><span>Werd tegen-gedrag met tegen-gedrag beantwoord? Wat doorbrak het?</span><textarea id="nb-escalatie" rows="2" data-concept placeholder="Bijv. we gingen tegen elkaar in tot iemand vroeg wat de ander nodig had"></textarea></label>' +
+      (window.kmaReactie && window.KMALeary ? kmaReactie.paarHtml('nb-leary', 'nb-leary-ander', null, null, 'Jouw gedrag op de roos (optioneel)') : '') + '</details>' +
       '<div class="kma-field"><span>Bij welke V hoort dit?</span><div class="kma-chips">' + VS.map(function (v) { return '<label class="kma-chip-btn"><input type="checkbox" class="sr-only" name="nb-v" value="' + v + '">' + v + '</label>'; }).join('') + '</div></div>' +
       '<label class="kma-check"><input type="checkbox" id="nb-plan"> Maak er een als-dan-plan van voor mijn leervraag</label>' +
       '<div class="kma-nb-plan" hidden><label class="kma-field"><span>Als …</span><input type="text" id="nb-als" maxlength="160" placeholder="bijv. ik een opdracht geef"></label>' +
@@ -55,21 +59,26 @@
     var g = function (id) { var e = ov.querySelector('#' + id); return e ? String(e.value || '').trim() : ''; };
     var err = ov.querySelector('#nb-err'); err.textContent = '';
     var a = { bedoeling: g('nb-bedoeling'), gebeurd: g('nb-gebeurd'), waarom: g('nb-waarom'), volgende: g('nb-volgende') };
+    var esc2 = g('nb-escalatie'); if (esc2) a.escalatie = esc2;   // 4.21.0 (S3)
+    var lv = window.KMALeary ? KMALeary.value(ov.querySelector('#nb-leary')) : null, lr = window.KMALeary ? KMALeary.value(ov.querySelector('#nb-leary-ander')) : null;
     if (!a.gebeurd || !a.volgende) { err.textContent = 'Vul minstens in wat er gebeurde en wat je volgende keer doet.'; return; }
     var plan = ov.querySelector('#nb-plan').checked, als = g('nb-als'), dan = g('nb-dan');
     if (plan && (!als || !dan)) { err.textContent = 'Vul bij het als-dan-plan zowel "als" als "dan" in, of zet het vinkje uit.'; return; }
     var v = [].map.call(ov.querySelectorAll('input[name="nb-v"]:checked'), function (x) { return x.value; });
     var sit = g('nb-sit');
-    var feit = 'Nabespreking' + (sit ? ' ' + sit : '') + '. Bedoeling: ' + (a.bedoeling || '-') + ' Gebeurd: ' + a.gebeurd + ' Waarom: ' + (a.waarom || '-') + ' Volgende keer: ' + a.volgende;
+    var feit = 'Nabespreking' + (sit ? ' ' + sit : '') + '. Bedoeling: ' + (a.bedoeling || '-') + ' Gebeurd: ' + a.gebeurd + ' Waarom: ' + (a.waarom || '-') + ' Volgende keer: ' + a.volgende + (a.escalatie ? ' Samenwerking: ' + a.escalatie : '');
     if (typeof dtfItems === 'undefined') { err.textContent = 'Het DTF-logboek is niet geladen.'; return; }
     var now = new Date();
     dtfItems.unshift({ id: Date.now(), datum: g('nb-datum') || today(), tijd: ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2), feit: feit, vValues: v, aspect: 'Nabespreking na een oefening', aar: Object.assign({ situatie: sit }, a) });
+    if (lv) dtfItems[0].leary = lv;
+    if (lr) dtfItems[0].learyAnder = lr;
     try { kmaStore.setItem(DTF_KEY, JSON.stringify(dtfItems)); } catch (e) {}
     if (typeof dbSet === 'function') dbSet(DTF_KEY, dtfItems);
     var planOk = plan && window.kmaPlannen ? kmaPlannen.add({ als: als, dan: dan, from: 'nabespreking' }) : false;
-    ['nb-bedoeling', 'nb-gebeurd', 'nb-waarom', 'nb-volgende'].forEach(function (id) { try { var d = window.kmaGemak ? kmaGemak.drafts() : null; if (d && d[id]) { delete d[id]; (window.kmaStore || localStorage).setItem('kma-x-concepten', JSON.stringify(d)); } } catch (e) {} });
+    ['nb-bedoeling', 'nb-gebeurd', 'nb-waarom', 'nb-volgende', 'nb-escalatie'].forEach(function (id) { try { var d = window.kmaGemak ? kmaGemak.drafts() : null; if (d && d[id]) { delete d[id]; (window.kmaStore || localStorage).setItem('kma-x-concepten', JSON.stringify(d)); } } catch (e) {} });
     close();
     toast('Nabespreking opgeslagen als DTF-feit' + (planOk ? ', met een als-dan-plan' : ''));
+    if (!planOk && lv && lr && window.kmaReactie) kmaReactie.aanbod(lv, lr);
     if (typeof renderWidgets === 'function') try { renderWidgets(); } catch (e) {}
   }
   window.kmaNabespreking = { open: open, close: close, VRAGEN: VRAGEN };
