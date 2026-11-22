@@ -1,1 +1,1 @@
-window.KMA_APPVERSIE = '4.18.1';
+window.KMA_APPVERSIE = '4.19.0';

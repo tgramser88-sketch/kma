@@ -1,6 +1,6 @@
 /*
  * Wetenschappelijke onderbouwing: één bronnenbestand voor de apps, de handleiding en het onderzoeksvoorstel (4.18.0, blok O2).
- * Per onderdeel van de apps: wat het is, waarom het werkt (met het effect uit meta-analyses waar die er zijn),
+ * Per onderdeel van de apps (apps: boek, cvs of beide; de pagina toont alleen wat bij de app hoort): wat het is, waarom het werkt (met het effect uit meta-analyses waar die er zijn),
  * de grenzen, en de bronnen in APA-stijl. De pagina (kma-onderbouwing.js), de handleiding (docs/handleiding/build.py)
  * en het onderzoeksvoorstel (tools/bronnen.py → docs/onderzoek/voorstel.md) lezen het blok tussen JSON-START en
  * JSON-END. Dat blok moet dus geldige JSON blijven (dubbele aanhalingstekens, geen komma na het laatste element).
@@ -66,7 +66,7 @@
   },
   "onderdelen": [
     {
-      "id": "dtf", "titel": "Datum-Tijd-Feit (DTF)", "waar": "Boekje: DTF-logboek, + Nieuw → DTF-feit. CVS: DTF-notities per cadet.",
+      "id": "dtf", "apps": ["boek","cvs"], "titel": "Datum-Tijd-Feit (DTF)", "waar": "Boekje: DTF-logboek, + Nieuw → DTF-feit. CVS: DTF-notities per cadet.",
       "hoofdstukken": ["Datum-Tijd-Feit Logboek"],
       "wat": "Je legt kort na een gebeurtenis vast wanneer het was en wat er feitelijk gebeurde, zonder oordeel. Daarna koppel je het aan een V van de Gedragscode.",
       "waarom": "Een oordeel ('hij is lui') kun je niet nagaan en niet verbeteren; een feit wel. Vastleggen kort na de gebeurtenis voorkomt dat het geheugen het verhaal bijkleurt. De methode komt uit de critical incident technique: concrete, waargenomen voorvallen als basis voor beoordelen en leren. Feedback over concreet gedrag werkt beter dan feedback over de persoon.",
@@ -75,7 +75,7 @@
       "bronnen": ["flanagan1954", "hattie2007", "wisniewski2020", "kluger1996"]
     },
     {
-      "id": "5gt", "titel": "5G-T-reflectie", "waar": "Boekje: Zelfreflectie Leervraag (5G-T).",
+      "id": "5gt", "apps": ["boek"], "titel": "5G-T-reflectie", "waar": "Boekje: Zelfreflectie Leervraag (5G-T).",
       "hoofdstukken": ["Zelfreflectie Leervraag (5G-T)"],
       "wat": "Je ontleedt een situatie in vijf G's (gebeurtenis, gevoel, gedachten, gedrag, gevolg), toetst je belangrijkste gedachte, kijkt wat je kunt beïnvloeden en kiest wat je de volgende keer doet (T van toekomst).",
       "waarom": "Het 5G-schema komt uit de rationeel-emotieve en cognitieve gedragstherapie: niet de gebeurtenis zelf, maar je gedachte erover bepaalt grotendeels je gevoel en gedrag. Door die gedachte te toetsen aan de feiten krijg je meer keuze in hoe je reageert.",
@@ -84,7 +84,7 @@
       "bronnen": ["ellis1962", "david2018", "mann2009"]
     },
     {
-      "id": "korthagen", "titel": "Procesreflectie (Korthagen)", "waar": "Boekje: Procesreflectie (Korthagen).",
+      "id": "korthagen", "apps": ["boek"], "titel": "Procesreflectie (Korthagen)", "waar": "Boekje: Procesreflectie (Korthagen).",
       "hoofdstukken": ["Procesreflectie (Korthagen)"],
       "wat": "Reflecteren in vijf fasen (ALACT): handelen, terugblikken, je bewust worden van de kern, alternatieven bedenken en die uitproberen. Daarna begint de cirkel opnieuw.",
       "waarom": "Het model maakt van reflectie een cyclus die eindigt in ander gedrag, in plaats van alleen nadenken. Het is in de Nederlandse beroepsopleidingen (eerst lerarenopleiding) breed in gebruik.",
@@ -93,7 +93,7 @@
       "bronnen": ["korthagen2005", "mann2009"]
     },
     {
-      "id": "smart", "titel": "SMART-leervraag en als-dan-plannen", "waar": "Boekje: SMART Leervraag (leervraag, als-dan-plannen, wekelijkse check-in).",
+      "id": "smart", "apps": ["boek"], "titel": "SMART-leervraag en als-dan-plannen", "waar": "Boekje: SMART Leervraag (leervraag, als-dan-plannen, wekelijkse check-in).",
       "hoofdstukken": ["SMART Leervraag"],
       "wat": "Je maakt van je leerdoel een specifieke, meetbare leervraag met een datum. Daarbij maak je tot drie als-dan-plannen: 'Als situatie X, dan doe ik Y'. Elke week check je in: is het gelukt?",
       "waarom": "Specifieke, uitdagende doelen leiden tot betere prestaties dan 'doe je best'. Een als-dan-plan koppelt het doel aan een herkenbaar moment, zodat je in die situatie bijna vanzelf handelt. De check-in houdt bij of het werkt.",
@@ -102,7 +102,7 @@
       "bronnen": ["locke2002", "doran1981", "gollwitzer2006"]
     },
     {
-      "id": "gas", "titel": "Doel in vijf niveaus (GAS)", "waar": "Boekje: SMART Leervraag, onderdeel Doel in vijf niveaus.",
+      "id": "gas", "apps": ["boek"], "titel": "Doel in vijf niveaus (GAS)", "waar": "Boekje: SMART Leervraag, onderdeel Doel in vijf niveaus.",
       "hoofdstukken": ["SMART Leervraag"],
       "wat": "Je beschrijft vooraf vijf niveaus van je doel, van veel slechter (-2) tot veel beter (+2) dan verwacht, en geeft elke week aan waar je staat.",
       "waarom": "Goal Attainment Scaling maakt een persoonlijk doel meetbaar zonder dat iedereen hetzelfde doel hoeft te hebben. Je ziet je voortgang in een lijn.",
@@ -111,7 +111,7 @@
       "bronnen": ["kiresuk1968"]
     },
     {
-      "id": "woop", "titel": "WOOP (wens, uitkomst, obstakel, plan)", "waar": "Boekje: SMART Leervraag, onderdeel WOOP.",
+      "id": "woop", "apps": ["boek"], "titel": "WOOP (wens, uitkomst, obstakel, plan)", "waar": "Boekje: SMART Leervraag, onderdeel WOOP.",
       "hoofdstukken": ["SMART Leervraag"],
       "wat": "Je stelt je de beste uitkomst voor en daarna het belangrijkste obstakel in jezelf. Van dat obstakel maak je een als-dan-plan.",
       "waarom": "Alleen positief dromen maakt mensen soms minder actief. Het contrast tussen gewenste uitkomst en obstakel (mentaal contrasteren), gecombineerd met een als-dan-plan, helpt juist om in actie te komen.",
@@ -120,7 +120,7 @@
       "bronnen": ["oettingen2012", "wang2021", "gollwitzer2006"]
     },
     {
-      "id": "hexaco", "titel": "Persoonlijkheidstest (HEXACO, IPIP)", "waar": "Boekje: Persoonlijkheidstest (IPIP), 360-observaties, SWOT. CVS: profiel en KMA-normen.",
+      "id": "hexaco", "apps": ["boek","cvs"], "titel": "Persoonlijkheidstest (HEXACO, IPIP)", "waar": "Boekje: Persoonlijkheidstest (IPIP), 360-observaties, SWOT. CVS: profiel en KMA-normen.",
       "hoofdstukken": ["Persoonlijkheidstest (IPIP)"],
       "wat": "96 stellingen over zes eigenschappen: Integriteit, Emotionaliteit, Extraversie, Verdraagzaamheid, Consciëntieusheid en Openheid. Medecadetten kunnen dezelfde stellingen over jou invullen.",
       "waarom": "Het HEXACO-model is gevonden in taalonderzoek in veel talen, waaronder het Nederlands. De zesde eigenschap, Integriteit (Honesty-Humility), voorspelt integer en niet-integer gedrag op het werk beter dan de Big Five. Extraversie hangt samen met het ontstaan van leiderschap. Anderen zien sommige eigenschappen beter dan jijzelf; daarom de observaties.",
@@ -129,7 +129,7 @@
       "bronnen": ["ashton2007", "ashton2007ipip", "lee2004", "pletzer2019", "judge2002", "vazire2010", "roberts2006", "jackson2012", "johnson2005", "meade2012"]
     },
     {
-      "id": "swot", "titel": "SWOT en kernkwadranten", "waar": "Boekje: profiel na de persoonlijkheidstest, koppeling bij DTF-feiten.",
+      "id": "swot", "apps": ["boek"], "titel": "SWOT en kernkwadranten", "waar": "Boekje: profiel na de persoonlijkheidstest, koppeling bij DTF-feiten.",
       "hoofdstukken": [],
       "wat": "Je sterktes, zwaktes, kansen en bedreigingen, afgeleid uit je testuitslag en aan te vullen met je eigen voorbeelden.",
       "waarom": "Een SWOT maakt een testuitslag concreet en bespreekbaar, en verbindt hem met gedrag in je DTF-feiten.",
@@ -138,7 +138,7 @@
       "bronnen": ["helms2010"]
     },
     {
-      "id": "leary", "titel": "Roos van Leary", "waar": "Boekje: Roos van Leary (hoofdstuk), roos bij DTF-feiten en feedback. CVS: roos per cadet.",
+      "id": "leary", "apps": ["boek","cvs"], "titel": "Roos van Leary", "waar": "Boekje: Roos van Leary (hoofdstuk), roos bij DTF-feiten en feedback. CVS: roos per cadet.",
       "hoofdstukken": ["Roos van Leary"],
       "wat": "Interpersoonlijk gedrag op twee assen: boven tegenover onder (invloed) en samen tegenover tegen (verbondenheid). Je zet een gedraging als stip op de roos.",
       "waarom": "De twee assen van het interpersoonlijk circumplex zijn in veel onderzoek teruggevonden. Gedrag lokt gedrag uit: wie boven gaat zitten, lokt vaak onder-gedrag uit (complementariteit). Zo kun je bewuster kiezen hoe je een ander beïnvloedt.",
@@ -147,7 +147,7 @@
       "bronnen": ["leary1957", "wiggins1979", "kiesler1983", "barford2015"]
     },
     {
-      "id": "pss", "titel": "Stresscheck (PSS-10)", "waar": "Boekje: Fitheid & stress (altijd privé).",
+      "id": "pss", "apps": ["boek"], "titel": "Stresscheck (PSS-10)", "waar": "Boekje: Fitheid & stress (altijd privé).",
       "hoofdstukken": ["Fitheid & stress"],
       "wat": "Tien vragen over hoe onvoorspelbaar, oncontroleerbaar en overbelast je de afgelopen maand je leven ervoer. Score van 0 tot 40.",
       "waarom": "De Perceived Stress Scale is de meest gebruikte vragenlijst voor ervaren stress en heeft in een overzichtsstudie goede betrouwbaarheid. De app vergelijkt vooral met je eigen vorige meting en meldt een betrouwbare stijging (8 punten of meer).",
@@ -156,7 +156,7 @@
       "bronnen": ["cohen1983", "cohen1988", "cohen2012", "lee2012", "jacobson1991"]
     },
     {
-      "id": "who5", "titel": "Welzijnscheck (WHO-5)", "waar": "Boekje: Fitheid & stress (altijd privé).",
+      "id": "who5", "apps": ["boek"], "titel": "Welzijnscheck (WHO-5)", "waar": "Boekje: Fitheid & stress (altijd privé).",
       "hoofdstukken": ["Fitheid & stress"],
       "wat": "Vijf uitspraken over je welbevinden in de afgelopen twee weken, van 0 tot 100.",
       "waarom": "De WHO-5 is in een systematisch overzicht van 213 studies valide gebleken als maat voor welbevinden en om te zien wanneer het verstandig is met iemand te praten (50 of lager).",
@@ -165,7 +165,7 @@
       "bronnen": ["topp2015"]
     },
     {
-      "id": "feedback", "titel": "Feedback van de teamleider (feed-up, feed-back, feed-forward)", "waar": "Boekje: Feedback van je teamleider, Vandaag. CVS: feedback in drie vragen.",
+      "id": "feedback", "apps": ["boek","cvs"], "titel": "Feedback van de teamleider (feed-up, feed-back, feed-forward)", "waar": "Boekje: Feedback van je teamleider, Vandaag. CVS: feedback in drie vragen.",
       "hoofdstukken": [],
       "wat": "Feedback in drie vragen: waar werk je naartoe (doel), wat zag ik (gedrag), wat is je volgende stap.",
       "waarom": "Feedback werkt het best als hij antwoord geeft op deze drie vragen en over taak, proces of zelfsturing gaat, niet over de persoon. Zonder volgende stap verandert er weinig.",
@@ -174,7 +174,7 @@
       "bronnen": ["hattie2007", "wisniewski2020", "kluger1996"]
     },
     {
-      "id": "medecadet", "titel": "Feedback van medecadetten", "waar": "Boekje: + Nieuw → Feedback geven, inbox.",
+      "id": "medecadet", "apps": ["boek"], "titel": "Feedback van medecadetten", "waar": "Boekje: + Nieuw → Feedback geven, inbox.",
       "hoofdstukken": [],
       "wat": "Cadetten geven elkaar korte feedbackkaarten (situatie, feit, effect, V, volgende stap). De ontvanger kiest wat hij ermee doet.",
       "waarom": "Feedback van medestudenten verhoogt prestaties, ook omdat je leert door zelf goed te kijken en te formuleren. Feedback van meerdere kanten (360 graden) helpt alleen als de ontvanger er doelen en acties aan verbindt; daarom de vraag 'Wat ga je ermee doen?'.",
@@ -183,7 +183,7 @@
       "bronnen": ["double2020", "smither2005", "hattie2007"]
     },
     {
-      "id": "nabespreking", "titel": "Nabespreking (After Action Review)", "waar": "Boekje: + Nieuw → Nabespreking. CVS: Nabespreking oefening.",
+      "id": "nabespreking", "apps": ["boek","cvs"], "titel": "Nabespreking (After Action Review)", "waar": "Boekje: + Nieuw → Nabespreking. CVS: Nabespreking oefening.",
       "hoofdstukken": [],
       "wat": "Vier vragen kort na een oefening: wat was de bedoeling, wat gebeurde er echt, waarom ging het zo, wat doe je volgende keer.",
       "waarom": "Een gestructureerde nabespreking zet ervaring om in een concrete verbetering. Dit is een van de best onderbouwde leermethoden in militaire en medische opleidingen.",
@@ -192,7 +192,7 @@
       "bronnen": ["tannenbaum2013", "keiser2021"]
     },
     {
-      "id": "datapunten", "titel": "Datapunten en programmatisch toetsen", "waar": "Boekje: Voorbereiding Cadetbeoordeling (mijn datapunten). CVS: datapunten per V, beoordelingsformulier, onderbouwing delen.",
+      "id": "datapunten", "apps": ["boek","cvs"], "titel": "Datapunten en programmatisch toetsen", "waar": "Boekje: Voorbereiding Cadetbeoordeling (mijn datapunten). CVS: datapunten per V, beoordelingsformulier, onderbouwing delen.",
       "hoofdstukken": ["Voorbereiding Cadetbeoordeling", "Zelfbeoordelingsformulier KMA"],
       "wat": "Elke observatie (DTF, feedback, nabespreking) is een datapunt met lage inzet: bedoeld om van te leren. Een beoordeling rust op veel datapunten uit meerdere bronnen. De app waarschuwt bij minder dan 5 datapunten of minder dan 2 bronnen per V.",
       "waarom": "Eén meting is nooit betrouwbaar genoeg voor een zware beslissing. Door veel kleine observaties uit verschillende bronnen te combineren wordt het oordeel betrouwbaarder en kan de cadet er tussendoor van leren. Dit sluit aan op de OER (relevante observaties).",
@@ -201,7 +201,7 @@
       "bronnen": ["schuwirth2011", "vleuten2012", "vleuten2018"]
     },
     {
-      "id": "kalibreren", "titel": "Kalibreren (oefenen met beoordelen)", "waar": "CVS: Oefenen met beoordelen.",
+      "id": "kalibreren", "apps": ["cvs"], "titel": "Kalibreren (oefenen met beoordelen)", "waar": "CVS: Oefenen met beoordelen.",
       "hoofdstukken": [],
       "wat": "Teamleiders beoordelen dezelfde voorbeeldcasussen en vergelijken hun oordeel met een voorbeeldoordeel per V.",
       "waarom": "Frame-of-reference-training geeft beoordelaars een gedeeld beeld van wat goed en minder goed gedrag is. Daardoor worden oordelen nauwkeuriger en lopen ze minder uiteen tussen beoordelaars.",
@@ -210,7 +210,7 @@
       "bronnen": ["woehr1994", "roch2012"]
     },
     {
-      "id": "coaching", "titel": "Coaching en gesprekken met de teamleider", "waar": "Boekje: Bereid je gesprek voor, afspraken op Vandaag. CVS: gespreksverslagen.",
+      "id": "coaching", "apps": ["boek","cvs"], "titel": "Coaching en gesprekken met de teamleider", "waar": "Boekje: Bereid je gesprek voor, afspraken op Vandaag. CVS: gespreksverslagen.",
       "hoofdstukken": [],
       "wat": "Regelmatige gesprekken waarin de teamleider vragen stelt, de cadet zelf een doel en een afspraak kiest, en die afspraak in het volgende gesprek terugkomt.",
       "waarom": "Coaching in organisaties heeft positieve effecten op prestaties, welbevinden, omgaan met druk en vooral op doelgerichte zelfsturing. Leiderschap ontwikkelt zich over jaren via ervaring, feedback en zelfbeeld; gesprekken verbinden die.",
@@ -219,7 +219,7 @@
       "bronnen": ["theeboom2014", "day2014"]
     },
     {
-      "id": "zelfregulatie", "titel": "Zelfregulerend leren (de cyclus in het boekje)", "waar": "Boekje: Vandaag, leervraag, check-in, DTF en terugblik.",
+      "id": "zelfregulatie", "apps": ["boek"], "titel": "Zelfregulerend leren (de cyclus in het boekje)", "waar": "Boekje: Vandaag, leervraag, check-in, DTF en terugblik.",
       "hoofdstukken": ["Mijn groei & ontwikkeling", "Introductie & Drijfveren"],
       "wat": "Vooruitdenken (doel kiezen), uitvoeren en bijhouden (DTF, check-in) en terugkijken (reflectie). Het boekje is rond die cyclus gebouwd.",
       "waarom": "Wie leert zijn eigen leren te plannen, te volgen en te evalueren, presteert beter. De grootste effecten komen van metacognitieve strategieën: weten wat je doet en waarom.",

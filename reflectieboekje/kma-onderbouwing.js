@@ -52,20 +52,23 @@
     if (!B()) return;
     close();
     var D = B().data;
+    // Alleen de onderdelen die bij deze app horen (4.18.1: boekje voor de cadet, CVS voor teamleider en instructeur).
+    var app = document.body.classList.contains('kma-volg') ? 'cvs' : 'boek';
+    var lijst = D.onderdelen.filter(function (o) { return !o.apps || o.apps.indexOf(app) >= 0; });
     ov = document.createElement('div');
     ov.className = 'kma-ob'; ov.id = 'kma-ob';
     ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Wetenschappelijke onderbouwing');
     ov.innerHTML = '<div class="kma-ob-bar"><strong>Wetenschappelijke onderbouwing</strong><span class="kma-ob-sp"></span>' +
       '<button type="button" class="kma-ob-btn" data-ob-x aria-label="Sluiten">' + (icon('x') || '×') + '</button></div>' +
       '<div class="kma-ob-scroll"><div class="kma-ob-in">' +
-      '<p class="kma-ob-intro">Waarom werken de apps zo? Per onderdeel: wat het is, waarom het werkt, hoe groot het effect is in onderzoek en wat de grenzen zijn. ' +
+      '<p class="kma-ob-intro">Waarom werkt ' + (app === 'cvs' ? 'het CadetVolgSysteem' : 'het Reflectieboekje') + ' zo? Per onderdeel: wat het is, waarom het werkt, hoe groot het effect is in onderzoek en wat de grenzen zijn. ' +
       'Effecten zijn gemiddelden uit meta-analyses (d of g: 0,2 klein, 0,5 middelgroot, 0,8 groot). Ze gelden niet automatisch voor de KMA; daarom wordt het effect hier zelf ook onderzocht.</p>' +
       '<label class="kma-ob-zoek"><span class="sr-only">Zoeken in de onderbouwing</span>' + icon('search') +
       '<input type="search" id="kma-ob-q" placeholder="Zoek, bijv. feedback, stress of Gollwitzer" autocomplete="off" data-nomic></label>' +
       '<p class="kma-ob-meta"><span class="kma-ob-tel"></span> · <button type="button" class="kma-ob-link" data-ob-alles>Alles openklappen</button></p>' +
-      D.onderdelen.map(itemHtml).join('') +
+      lijst.map(itemHtml).join('') +
       '<p class="kma-ob-leeg" hidden>Niets gevonden. Probeer een ander woord.</p>' +
-      '<p class="kma-ob-voet">Bronnen nagelopen op ' + esc(D.versie.split('-').reverse().join('-')) + '. Dezelfde bronnen staan in de handleiding en het onderzoeksvoorstel.</p>' +
+      '<p class="kma-ob-voet">Bronnen nagelopen op ' + esc(D.versie.split('-').reverse().join('-')) + '. Alle onderdelen van beide apps staan in de handleiding (C4); de bronnen ook in het onderzoeksvoorstel.</p>' +
       '</div></div>';
     ov.__kmaClose = close;
     document.body.appendChild(ov);
