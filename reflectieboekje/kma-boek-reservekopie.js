@@ -81,7 +81,7 @@
     var l = get(LOCAL); if (l) try { var e = JSON.parse(l); out.push({ at: e.at, bron: 'in de app', env: e }); } catch (er) {}
     return out.sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
   }
-  function fmt(iso) { var d = new Date(iso); return isNaN(d) ? iso : d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) + ' ' + d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }); }
+  function fmt(iso) { var d = new Date(iso); return isNaN(d.getTime()) ? iso : d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) + ' ' + d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }); }
   function restore(env) {
     return open(env).then(function (text) {
       var f = new File([text], 'reservekopie.json', { type: 'application/json' });

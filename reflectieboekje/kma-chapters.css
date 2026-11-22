@@ -1638,3 +1638,9 @@ body.dark-theme .kma-pill.ok { color: #7cc69a; }
 .kma-pf-doc .pf-chart, .kma-pf-doc .pf-qa, .kma-pf-doc .pf-swot, .kma-pf-doc .pf-kk, .kma-pf-doc .pf-v4, .kma-pf-doc .pf-table tr, .kma-pf-doc figure, .kma-pf-doc svg, .kma-pf-doc img { break-inside: avoid; page-break-inside: avoid; }
 .kma-pf-doc h2, .kma-pf-doc h3, .kma-pf-doc h4, .kma-pf-doc h5, .kma-pf-doc .pf-sec-head { break-after: avoid; page-break-after: avoid; }
 .kma-pf-doc p { orphans: 3; widows: 3; }
+.kma-koppel-torch[hidden] { display: none !important; }
+/* Probleem melden (4.15.0, kma-melden.js) */
+.kma-pm .kma-code-body { display: grid; gap: 12px; }
+.kma-pm label.kma-field { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
+.kma-pm textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-widget); color: var(--text-primary); font: inherit; font-size: 15px; box-sizing: border-box; }
+.kma-pm label.kma-check { display: flex; align-items: center; gap: 10px; font-size: 15px; min-height: 40px; }

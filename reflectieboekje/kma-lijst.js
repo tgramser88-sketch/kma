@@ -24,7 +24,7 @@
   function monthLabel(k, short) {
     if (k === 'zz') return 'Zonder datum';
     var m = /^(\d{4})-(\d{2})$/.exec(k); if (!m) return k;
-    return short ? KORT[m[2] - 1] + ' \'' + m[1].slice(2) : MAANDEN[m[2] - 1] + ' ' + m[1];
+    return short ? KORT[Number(m[2]) - 1] + ' \'' + m[1].slice(2) : MAANDEN[Number(m[2]) - 1] + ' ' + m[1];
   }
   function S(id) { return state[id] || (state[id] = { shown: PAGE, open: null }); }
   function sorted(id) {

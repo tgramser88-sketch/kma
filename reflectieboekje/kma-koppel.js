@@ -145,7 +145,7 @@
   /** Groene status: gekoppeld, deelmap, laatste synchronisatie. */
   function statusHtml(cur) {
     var d = window.kmaDeelStatus ? kmaDeelStatus() : null, last = d && d.last ? new Date(d.last) : null;
-    var lastTxt = last && !isNaN(last) ? last.toLocaleString('nl-NL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+    var lastTxt = last && !isNaN(last.getTime()) ? last.toLocaleString('nl-NL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
     return '<div class="kma-koppel-status"><div class="kma-koppel-ok"><span class="kma-koppel-check">✓</span><div><strong>Gekoppeld' + (cur.g ? ' met groep ' + esc(cur.g) : '') + (cur.p ? ' (' + esc(cur.p) + ')' : '') + '</strong>' + (cur.t ? '<span>Teamleider: ' + esc(cur.t) + '</span>' : '') + '</div></div>' +
       (d ? (d.on ? '<p class="kma-koppel-line ok">✓ Deelmap: ' + esc(d.name || 'gekoppeld') + (lastTxt ? ' · laatst gesynchroniseerd ' + esc(lastTxt) : '') + '</p>' : '<p class="kma-koppel-line warn">Nog geen deelmap gekozen</p>') : '') +
       (d && d.err ? '<p class="kma-koppel-line warn">' + esc(d.err) + '</p>' : '') + '</div>';
