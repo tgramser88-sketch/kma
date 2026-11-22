@@ -1633,3 +1633,8 @@ body.dark-theme .kma-pill.ok { color: #7cc69a; }
 .kma-koppel-reader { min-height: 240px; }
 .kma-koppel-torch { margin-top: 6px; }
 .kma-koppel-torch.on { background: var(--accent-gold); color: #111; }
+
+/* ---- 4.14.0 (blok G): portfolio-pdf netjes over pagina's ---- */
+.kma-pf-doc .pf-chart, .kma-pf-doc .pf-qa, .kma-pf-doc .pf-swot, .kma-pf-doc .pf-kk, .kma-pf-doc .pf-v4, .kma-pf-doc .pf-table tr, .kma-pf-doc figure, .kma-pf-doc svg, .kma-pf-doc img { break-inside: avoid; page-break-inside: avoid; }
+.kma-pf-doc h2, .kma-pf-doc h3, .kma-pf-doc h4, .kma-pf-doc h5, .kma-pf-doc .pf-sec-head { break-after: avoid; page-break-after: avoid; }
+.kma-pf-doc p { orphans: 3; widows: 3; }
