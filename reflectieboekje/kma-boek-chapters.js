@@ -1357,9 +1357,19 @@
     casesKorthagen.forEach(function (c) { if (c.actie || c.uitproberen) out.push({ id: 'kort:' + c.id, kind: 'Korthagen', label: c.title, hint: (c.uitproberen || c.actie || '').slice(0, 80) }); });
     return out;
   }
+  /** 4.17.0 (M1): je eigen datapunten per V: wat weet je teamleider van je? Eigen feiten, medecadetten en gedeelde waarnemingen van staf. */
+  function mijnDatapunten() {
+    var D = window.KMADatapunten; if (!D) return '';
+    var p = [];
+    (dtfItems || []).forEach(function (x) { var d = D.vanDtf(x, x && x.bron === 'medecadet' ? 'medecadet' : 'zelf'); if (d) p.push(d); });
+    try { (window.kmaKameraad ? kmaKameraad._S().inbox || [] : []).forEach(function (k) { if (!k.inDtf && k.v4) p.push(D.vanDtf({ datum: k.datum, feit: k.feit, v4: [k.v4] }, 'medecadet')); }); } catch (e) {}
+    var seen = {};
+    try { (window.kmaFeedback ? kmaFeedback.all() : []).forEach(function (r) { (r.dtfNotes || []).forEach(function (n) { if (seen[n.id]) return; seen[n.id] = 1; var d = D.vanDtf(n, /instructeur/i.test(n.role || '') ? 'instructeur' : 'teamleider'); if (d) p.push(d); }); }); } catch (e) {}
+    return cardHtml('Wat weet je teamleider van je?', '<p class="muted small">Elk DTF-feit, elke feedback van een medecadet en elke waarneming die je teamleider met je deelde, is een datapunt. Je beoordeling steunt op deze punten, niet op één moment.</p>' + D.html(D.perV(p), { zelf: true }), 'chart');
+  }
   R['beoordeling-prep'] = function (c) {
     var sel = getX('gesprek', { ids: [] }).ids, ev = evidenceItems();
-    c.innerHTML =
+    c.innerHTML = mijnDatapunten() +
       cardHtml('Bewijs voor je gesprek', '<p class="muted">Kies de feiten en reflecties die je wilt bespreken. Ze komen in je antwoord en in je gesprekssamenvatting.</p>' +
         (ev.length ? '<div class="kma-evidence">' + ev.map(function (it) {
           return '<label class="kma-ev"><input type="checkbox" data-ev="' + esc(it.id) + '"' + (sel.indexOf(it.id) >= 0 ? ' checked' : '') + '/><span><em>' + it.kind + '</em> ' + esc(String(it.label).slice(0, 90)) + '<small>' + esc(it.hint) + '</small></span></label>';
@@ -1754,6 +1764,19 @@
           '<p class="muted small">Deze twee eigenschappen liggen het dichtst bij de assen van de roos, maar hangen er maar matig mee samen. Een test meet hoe je jezelf in het algemeen ziet; de roos laat gedrag in concrete situaties zien. Leg ze naast elkaar en kijk waar ze verschillen; trek geen conclusies uit één van beide.</p>';
       } else hex = '<p class="muted small">Maak de persoonlijkheidstest (hoofdstuk 3) om je uitkomsten hier naast de roos te zien.</p>';
     } catch (e) {}
+    // 4V-denkhulp (goedgekeurd door de gebruiker 22-11). Bewust NIET in de gegevens: de cadet kiest de V zelf.
+    var V4 = [['Leidend', 'Verantwoordelijkheid, Vertrouwen', 'Verbondenheid (de groep wordt passief)'],
+      ['Helpend', 'Verbondenheid, Veiligheid', 'Verantwoordelijkheid (werk van anderen overnemen)'],
+      ['Meewerkend', 'Verbondenheid', 'Verantwoordelijkheid (meegaan in plaats van kiezen)'],
+      ['Volgend', 'Verantwoordelijkheid (opdracht goed uitvoeren)', 'Verantwoordelijkheid (afwachten)'],
+      ['Teruggetrokken', 'Veiligheid (rust, zorgvuldigheid)', 'Verbondenheid'],
+      ['Opstandig', 'Verbondenheid (elkaar aanspreken), Veiligheid (kritisch zijn)', 'Vertrouwen'],
+      ['Aanvallend', 'Veiligheid (grenzen stellen)', 'Vertrouwen, Veiligheid van anderen'],
+      ['Concurrerend', 'Verantwoordelijkheid (eigen prestatie)', 'Verbondenheid']];
+    var denk = '<details class="kma-leary-theory kma-leary-4v"><summary>' + icon('idea') + 'De roos en de 4V\'s (denkhulp)</summary>' +
+      '<p class="small">Dit is een denkhulp, geen regel. Hetzelfde gedrag kan in de ene situatie helpen en in de andere doorschieten. Welke V bij een feit hoort, kies je altijd zelf.</p>' +
+      '<div class="kma-dp" tabindex="0" role="region" aria-label="Roos en 4V\'s"><table class="kma-dp-tab"><thead><tr><th>Gedrag</th><th>Kan helpen bij</th><th>Als het doorschiet</th></tr></thead><tbody>' +
+      V4.map(function (r) { return '<tr><th scope="row">' + r[0] + '</th><td>' + r[1] + '</td><td>' + r[2] + '</td></tr>'; }).join('') + '</tbody></table></div></details>';
     var uitleg = '<details class="kma-leary-theory"><summary>' + icon('book') + 'Uitleg: hoe werkt de roos?</summary>' +
       '<p>De Roos van Leary (Timothy Leary, 1957) beschrijft gedrag tussen mensen op twee assen. De verticale as gaat over <b>invloed</b>: neem je de leiding (boven) of laat je de ander bepalen (onder)? De horizontale as gaat over <b>verbondenheid</b>: werk je samen met de ander of zet je je ertegen af?</p>' +
       '<p>Samen geven die assen acht soorten gedrag. Geen enkel gedrag is goed of fout: leidend gedrag helpt bij een snelle beslissing, maar maakt de groep passief als het te lang duurt. Opstandig gedrag kan precies het kritische geluid zijn dat een plan veiliger maakt.</p>' +
@@ -1764,7 +1787,7 @@
       cardHtml('Jouw gedrag op de roos', beeld + bron, 'target') +
       cardHtml('Per soort gedrag', secs, 'list') +
       cardHtml('Naast je persoonlijkheidstest', hex, 'user') +
-      uitleg + '</div>';
+      denk + uitleg + '</div>';
   };
   document.addEventListener('click', function (e) {
     var p = e.target.closest && e.target.closest('[data-learyp]');

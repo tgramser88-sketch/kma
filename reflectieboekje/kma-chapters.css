@@ -1676,3 +1676,21 @@ body.dark-theme .kma-pill.ok { color: #7cc69a; }
 .kma-leary-sec summary { cursor: pointer; display: flex; gap: 8px; align-items: baseline; }
 .kma-leary-sec summary em { margin-left: auto; font-style: normal; font-size: 12px; color: var(--text-muted, #666); }
 .kma-leary-note { font-size: 13px; padding: 8px 10px; border-left: 3px solid #3f7cac; background: rgba(63, 124, 172, .08); border-radius: 0 6px 6px 0; margin: 8px 0; }
+/* Datapunten per V (4.17.0, kma-datapunten.js) */
+.kma-dp { overflow-x: auto; }
+.kma-dp-tab { width: 100%; border-collapse: collapse; font-size: 13px; }
+.kma-dp-tab th, .kma-dp-tab td { padding: 6px 5px; border-bottom: 1px solid var(--border-color); text-align: left; vertical-align: top; }
+.kma-dp-tab thead th { font-size: 12px; color: var(--text-muted, #666); font-weight: 600; }
+.kma-dp-tab td:last-child span { display: inline-block; padding: 2px 7px; border-radius: 6px; font-weight: 600; color: #fff; }
+.kma-dp-tab tr.warn td:last-child span { background: #a3232a; }
+.kma-dp-tab tr.ok td:last-child span { background: #23663f; }
+/* Nabespreking (4.17.0) en "Wat ga je ermee doen?" */
+.kma-nb .kma-code-body { display: grid; gap: 12px; }
+.kma-nb label.kma-field, .kma-nb div.kma-field { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
+.kma-nb textarea, .kma-nb input[type=text], .kma-nb input[type=date] { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-widget); color: var(--text-primary); font: inherit; font-size: 15px; box-sizing: border-box; }
+.kma-nb .kma-inline-form { display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; }
+.kma-nb label.kma-check, .kma-kam-actie label.kma-check { display: flex; align-items: center; gap: 10px; font-size: 15px; min-height: 40px; }
+.kma-nb [hidden], .kma-kam-actie [hidden] { display: none !important; }
+.kma-kam-actie { border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 10px; }
+.kma-leary-theory { margin: 10px 0; } .kma-leary-theory summary { min-height: 40px; display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; }
+.kma-leary-sec summary, .kma-leary-open summary { min-height: 32px; }

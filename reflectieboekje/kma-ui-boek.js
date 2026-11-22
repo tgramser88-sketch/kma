@@ -103,6 +103,7 @@
           setTimeout(function () { try { inp.scrollIntoView({ block: 'center', behavior: 'smooth' }); inp.focus({ preventScroll: true }); } catch (e) { inp.focus(); } }, 320);
         } },
         { icon: 'file', label: 'Portfolio (PDF)', hint: 'Download al je producten als opgemaakt portfolio', onClick: function () { window.kmaPortfolio && kmaPortfolio(); } },
+        window.kmaNabespreking ? { icon: 'talk', label: 'Nabespreking na een oefening', hint: 'Vier vragen, wordt een DTF-feit en zo nodig een als-dan-plan', onClick: function () { kmaNabespreking.open(); } } : null,
         { icon: 'users', label: 'Bereid je gesprek voor', hint: 'Eén pagina voor het gesprek met je teamleider', onClick: function () { window.kmaGesprek && kmaGesprek.open(); } },
         { icon: 'bell', label: 'Herinneringen', hint: window.kmaReminders && kmaReminders.anyOn() ? 'Aan' : 'Uit: meldingen voor je check-in, evaluatie en back-up', onClick: function () { window.kmaReminders && kmaReminders.open(); } },
         { icon: 'shield', label: 'Mijlpalen', hint: window.kmaMilestones ? kmaMilestones.summary() : 'Je insignes', onClick: function () { window.kmaMilestones && kmaMilestones.open(); } },

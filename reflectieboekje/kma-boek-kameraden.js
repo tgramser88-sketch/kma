@@ -279,7 +279,7 @@
         '<div class="kma-code-lab">Soort feedback<div class="kma-kam-chips" role="radiogroup" aria-label="Soort feedback">' +
           '<label class="kma-kam-chip is-keep"><input type="radio" name="kk-soort" value="vasthouden"' + (p.soort !== 'verbeteren' ? ' checked' : '') + '><span>Vasthouden</span></label>' +
           '<label class="kma-kam-chip is-grow"><input type="radio" name="kk-soort" value="verbeteren"' + (p.soort === 'verbeteren' ? ' checked' : '') + '><span>Verbeteren</span></label></div></div>' +
-        '<label class="kma-code-lab">Tip voor de volgende keer <small>Eén concrete suggestie</small><textarea id="kk-tip" maxlength="400" rows="2" placeholder="bijv. Noem eerst het doel en de tijd, dan pas wie wat doet.">' + esc(p.tip || '') + '</textarea></label>' +
+        '<label class="kma-code-lab">Volgende stap <small>Verplicht: wat kan je medecadet de volgende keer doen?</small><textarea id="kk-tip" maxlength="400" rows="2" placeholder="bijv. Noem eerst het doel en de tijd, dan pas wie wat doet.">' + esc(p.tip || '') + '</textarea></label>' +
         (req ? '' : '<p class="muted small">' + icon('idea') + ' Ongevraagd: nog ' + leftThisWeek() + ' van ' + MAX_WEEK + ' deze week. Je medecadet ziet dat de kaart van jou komt.</p>') +
         '<p class="kma-code-err" id="kk-err" role="alert"></p>' +
         '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-x="close">Annuleren</button><button type="button" class="kma-icon-btn is-primary" data-k="send">' + icon('send') + 'Versturen</button></div>';
@@ -298,6 +298,8 @@
       var naam = req ? req.van : target ? target.naam : v('#kk-naam');
       if (!req && !naam) { err.textContent = sel ? 'Kies aan wie je feedback geeft.' : 'Vul de naam van je medecadet in.'; return; }
       if (feit.length < 15) { err.textContent = 'Beschrijf wat je zag of hoorde (minstens één zin).'; return; }
+      // 4.17.0 (M2, feed-forward): feedback werkt pas als er een volgende stap in staat (Hattie & Timperley 2007)
+      if (v('#kk-tip').length < 10) { err.textContent = 'Geef één concrete volgende stap: wat kan je medecadet de volgende keer doen of vasthouden?'; return; }
       if (!req && leftThisWeek() <= 0) { err.textContent = 'Je hebt deze week al ' + MAX_WEEK + ' keer ongevraagd feedback gegeven.'; return; }
       if (!me()) { err.textContent = 'Vul eerst je naam in bij je profiel (hoofdstuk 0): je medecadet ziet van wie de feedback komt.'; return; }
       var soortEl = ov.querySelector('input[name="kk-soort"]:checked'), v4El = ov.querySelector('input[name="kk-v4"]:checked');
@@ -393,7 +395,7 @@
       (c.situatie ? '<div class="kma-kam-sit">' + esc(c.situatie) + '</div>' : '') +
       '<p class="kma-kam-feit">' + esc(full ? c.feit : (c.feit.length > 110 ? c.feit.slice(0, 110) + '…' : c.feit)) + '</p>' +
       (full && c.effect ? '<p><b>Effect</b> ' + esc(c.effect) + '</p>' : '') +
-      (full && c.tip ? '<p><b>Tip</b> ' + esc(c.tip) + '</p>' : '') +
+      (full && c.tip ? '<p><b>Volgende stap</b> ' + esc(c.tip) + '</p>' : '') +
       '<div class="kma-kam-tags"><span class="kma-kam-tag ' + (c.soort === 'verbeteren' ? 'is-grow' : 'is-keep') + '">' + (c.soort === 'verbeteren' ? 'Verbeteren' : 'Vasthouden') + '</span>' +
       (c.v4 ? '<span class="kma-kam-tag">' + esc(c.v4) + '</span>' : '') + (c.leary && window.KMALeary ? '<span class="kma-kam-tag">Roos: ' + esc(KMALeary.label(c.leary)) + '</span>' : '') + (c.req ? '<span class="kma-kam-tag">Op jouw vraag</span>' : '') + (c.nieuw ? '<span class="kma-kam-tag is-new">nieuw</span>' : '') + (c.inDtf ? '<span class="kma-kam-tag">In je DTF-logboek</span>' : '') + '</div></div>';
   }
@@ -408,6 +410,9 @@
     var s = S(), c = s.inbox.find(function (x) { return x.id === id; }); if (!c) return;
     if (c.nieuw) { c.nieuw = false; save(s); }
     var body = cardHtml(c, true) +
+      '<div class="kma-kam-actie"><label class="kma-code-lab">Wat ga je ermee doen? <small>Eén zin; zonder deze stap verandert er weinig</small><textarea id="kk-actie" maxlength="300" rows="2" placeholder="bijv. Bij de volgende opdracht noem ik eerst het doel.">' + esc(c.actie || '') + '</textarea></label>' +
+        (window.kmaPlannen ? '<label class="kma-check"><input type="checkbox" id="kk-actie-plan"> Maak er een als-dan-plan van</label><div class="kma-kam-plan" hidden><label class="kma-code-lab">Als …<input type="text" id="kk-actie-als" maxlength="160" value="' + esc(c.situatie || '') + '"></label></div>' : '') +
+        '<div class="kma-row-btns"><button type="button" class="kma-icon-btn is-primary" data-k="actie">' + icon('check') + 'Opslaan</button></div></div>' +
       '<p class="muted small">' + icon('lock') + ' Deze kaart is alleen van jou. Je teamleider ziet hem pas als je hem in je DTF-logboek zet en dat hoofdstuk deelt.</p>' +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-k="del">' + icon('trash') + 'Verwijderen</button>' +
       (c.inDtf ? '' : '<button type="button" class="kma-icon-btn is-primary" data-k="dtf">' + icon('calendar') + 'In mijn DTF-logboek</button>') + '</div>' +
@@ -415,6 +420,16 @@
     sheet('Feedback van ' + c.van, body, function (e) {
       if (e.target.closest('[data-k="back"]')) { listInbox(); return; }
       if (e.target.closest('[data-k="dtf"]')) { toDtf(c.id); return; }
+      if (e.target.id === 'kk-actie-plan') { var pl = e.target.closest('.kma-kam-actie').querySelector('.kma-kam-plan'); if (pl) pl.hidden = !e.target.checked; return; }
+      if (e.target.closest('[data-k="actie"]')) {
+        var box = e.target.closest('.kma-kam-actie'), txt = String(box.querySelector('#kk-actie').value || '').trim();
+        if (!txt) { toast('Schrijf in één zin wat je ermee gaat doen', 'error'); return; }
+        var pc = box.querySelector('#kk-actie-plan'), planOk = false;
+        if (pc && pc.checked) { planOk = kmaPlannen.add({ als: box.querySelector('#kk-actie-als').value, dan: txt, from: 'feedback medecadet' }); if (!planOk) return; }
+        var s4 = S(); s4.inbox.forEach(function (x) { if (x.id === c.id) { x.actie = txt; x.actieAt = new Date().toISOString(); } }); save(s4);
+        toast('Opgeslagen' + (planOk ? ', met een als-dan-plan' : ''));
+        return;
+      }
       if (e.target.closest('[data-k="del"]')) {
         var snap = JSON.stringify(S().inbox), s2 = S(); s2.inbox = s2.inbox.filter(function (x) { return x.id !== c.id; }); save(s2); listInbox();
         if (window.kmaUndoToast) kmaUndoToast('Kaart verwijderd', function () { var s3 = S(); s3.inbox = JSON.parse(snap); save(s3); });
