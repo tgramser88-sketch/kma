@@ -6,6 +6,7 @@
  *  2. Laatste keuzes: de V's van je vorige DTF-feit en de medecadet en situatie van je vorige
  *     feedback staan alvast klaar.
  *  3. Inbox (alleen boekje): alles wat binnenkomt op één plek; teller op de knop ⋮, Inbox bovenaan in dat menu.
+ *  4. Startwizard (alleen boekje, 4.12.0): naam → koppelen → deelmap → pincode, in één doorlopende reeks.
  * Copyright (c) 2026 T.T.W. Gramser. Alle rechten voorbehouden.
  */
 (function () {
@@ -139,5 +140,53 @@
     setInterval(badge, 20000);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) badge(); });
   }
+  /* ---------------- 4. Startwizard (alleen boekje) ---------------- */
+  // Eén doorlopende reeks voor nieuwe gebruikers: naam → koppelen met de teamleider → deelmap → pincode.
+  // Na elke stap komt de lijst vanzelf terug tot alles klaar is of de gebruiker "Later" kiest.
+  /* global answers */
+  var WKEY = 'kma-x-startwizard', busy = false, wiv = null;
+  function wState() { try { return st().getItem(WKEY) || ''; } catch (e) { return ''; } }
+  function wSet(v) { try { st().setItem(WKEY, v); } catch (e) {} }
+  function naam() { try { return typeof answers !== 'undefined' && String(answers['Voornaam & Achternaam:'] || '').trim(); } catch (e) { return ''; } }
+  function stappen() {
+    var K = window.KMAKoppel, D = window.kmaDeelStatus, P = window.kmaPin;
+    return [
+      { k: 'naam', done: !!naam(), icon: 'user', label: 'Je naam', hint: naam() || 'Vul je naam in bij Introductie', go: function () { window.goToStep && goToStep(0); setTimeout(function () { var i = document.querySelector('input[data-q="Voornaam & Achternaam:"], #widget-container input[type=text]'); if (i) i.focus(); }, 300); } },
+      { k: 'koppel', done: !!(K && K.info && K.info()), icon: 'users', label: 'Koppelen met je teamleider', hint: K && K.info && K.info() ? 'Gekoppeld' : 'Scan de QR-code van je teamleider', go: function () { K && K.scanDialog && K.scanDialog(); } },
+      { k: 'deel', done: !!(D && D().on), icon: 'folder', label: 'Deelmap kiezen', hint: D && D().on ? 'Aan: ' + D().name : 'De gedeelde map van je teamleider (OneDrive of Teams)', go: function () { window.kmaDeelDialog && kmaDeelDialog(); } },
+      { k: 'pin', done: !!(P && P.isSet && P.isSet('reflectie')), icon: 'lock', label: 'Pincode instellen', hint: P && P.isSet && P.isSet('reflectie') ? 'Ingesteld' : 'Beveilig je boekje', go: function () { typeof window.openPinSetupModal === 'function' && openPinSetupModal(); } }
+    ];
+  }
+  function overlayOpen() { return !!document.querySelector('.kma-sheet-overlay, .kma-sheet, .kma-dlg, .modal-overlay.active, #kma-intro, #kma-eula, .kma-eula, #pin-lock-screen:not([style*="none"]), #kma-scan, .kma-scan'); }
+  function openWizard() {
+    if (!window.kmaSheet) return;
+    var l = stappen(), klaar = l.filter(function (x) { return x.done; }).length;
+    if (klaar === l.length) { wSet('klaar'); busy = false; toast('Klaar: je boekje is ingesteld.'); return; }
+    busy = true; wSet('bezig');
+    kmaSheet({ title: 'Aan de slag (' + klaar + ' van ' + l.length + ' klaar)', items: l.map(function (x) {
+      return { icon: x.done ? 'check' : x.icon, label: (x.done ? '✓ ' : '') + x.label, hint: x.hint, onClick: function () { x.go(); } };
+    }).concat([{ icon: 'close', label: 'Later', hint: 'Je vindt deze stappen terug in het menu ⋮ → Aan de slag', onClick: function () { busy = false; wSet('later'); } }]) });
+  }
+  function watch() {
+    clearInterval(wiv);
+    wiv = setInterval(function () {
+      if (!busy || document.hidden || overlayOpen()) return;
+      openWizard();
+    }, 1500);
+  }
+  if (!CVS) {
+    window.kmaStart = { open: function () { busy = true; openWizard(); watch(); }, steps: stappen, state: wState };
+    // Eerste keer: na de intro en de gebruiksvoorwaarden vanzelf openen (één keer).
+    // (Geautomatiseerde tests sturen de app zelf aan; daar opent de reeks alleen als de test erom vraagt.)
+    var t0 = Date.now(), first = setInterval(function () {
+      if (navigator.webdriver && !window.__kmaWizardForce) return;
+      if (Date.now() - t0 > 120000 || wState()) { clearInterval(first); if (wState() === 'bezig') { busy = true; watch(); } return; }
+      if (!window.kmaIntro || !kmaIntro.seen() || overlayOpen()) return;
+      clearInterval(first);
+      if (stappen().every(function (x) { return x.done; })) { wSet('klaar'); return; }
+      busy = true; openWizard(); watch();
+    }, 1500);
+  }
+
   window.kmaGemak = { drafts: drafts, keuze: keuze, _ids: IDS };
 })();

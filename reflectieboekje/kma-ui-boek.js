@@ -96,6 +96,7 @@
       title: 'Meer',
       items: [
         // 4.8.3: zoeken in het hele boekje, ook vanuit het menu te vinden
+        window.kmaStart && kmaStart.state() !== 'klaar' ? { icon: 'right', label: 'Aan de slag', hint: (function () { var l = kmaStart.steps(); return l.filter(function (x) { return x.done; }).length + ' van ' + l.length + ' stappen klaar: naam, koppelen, deelmap, pincode'; })(), onClick: function () { kmaStart.open(); } } : null,
         window.kmaInbox ? { icon: 'message', label: 'Inbox', hint: kmaInbox.hint(), onClick: function () { kmaInbox.open(); } } : null,
         { icon: 'search', label: 'Zoeken in je boekje', hint: 'Antwoorden, DTF, reflecties, levenslijn, plannen en begrippen', onClick: function () {
           var inp = document.getElementById('search-input'); if (!inp) return;

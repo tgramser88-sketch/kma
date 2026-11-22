@@ -1600,3 +1600,24 @@ body.dark-theme .kma-pill.ok { color: #7cc69a; }
 /* ---- 4.11.0: teller van de inbox op de knop ⋮ ---- */
 #kma-more-btn { position: relative; }
 #kma-more-btn .kma-inbox-n { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent-red, #a91f2b); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px var(--bg-main, #fff); }
+
+/* ---- 4.12.0: notitie voor meerdere cadetten (CVS) ---- */
+.sr-only { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.kma-gn .kma-code-body { display: grid; gap: 10px; }
+.kma-gn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kma-gn label, .kma-gn-lab { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
+.kma-gn input[type=text], .kma-gn input[type=date], .kma-gn input[type=time], .kma-gn textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-widget); color: var(--text-primary); font: inherit; font-size: 15px; box-sizing: border-box; }
+.kma-gn-group { border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 10px; display: grid; gap: 4px; }
+.kma-gn-gh { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.kma-gn label.kma-gn-cad { display: flex; align-items: center; gap: 10px; font-weight: 400; font-size: 15px; min-height: 40px; }
+.kma-gn-cad input { width: 20px; height: 20px; }
+.kma-gn-per { border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; display: grid; gap: 8px; }
+.kma-gn .kma-chips label.kma-chip-btn { display: inline-flex; font-weight: 600; }
+/* ---- 4.12.0: waarnemingen per V in het beoordelingsformulier ---- */
+.kcb-obs { border: 1px solid var(--border-color); border-radius: 10px; padding: 6px 10px; margin: 8px 0; }
+.kcb-obs > summary { cursor: pointer; font-weight: 600; font-size: 14px; min-height: 40px; display: flex; align-items: center; gap: 6px; }
+.kcb-obs > summary em { font-style: normal; background: var(--border-color); border-radius: 999px; padding: 0 7px; font-size: 12px; }
+.kcb-obs-it { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; border-top: 1px solid var(--border-color); padding: 8px 0; font-size: 14px; }
+.kcb-obs-it p { margin: 0; flex: 1; }
+.kcb-obs-it.pos { box-shadow: inset 3px 0 0 #2f9e5b; padding-left: 8px; }
+.kcb-obs-it.neg { box-shadow: inset 3px 0 0 #c8463a; padding-left: 8px; }
