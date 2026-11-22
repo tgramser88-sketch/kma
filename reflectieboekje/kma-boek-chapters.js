@@ -1724,12 +1724,84 @@
     } }) : '<p class="muted">Niets in deze categorie.</p>');
   }
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-groeis]'); if (!b) return; groeiSoort = b.getAttribute('data-groeis'); var c = document.getElementById('kma-groei-tl'); if (c) c.innerHTML = groeiTimeline(groeiData()); });
+
+  /* ---------------- 4.23.0 (P8): één leerlijn per opleidingsjaar ----------------
+     "Dit wilde ik, dit deed ik, dit zagen anderen" en de beoordeling, per V naast elkaar. Opleidingsjaar = 1 september
+     t/m 31 augustus. Alleen gegevens die al in het boekje staan; er wordt niets nieuws opgeslagen. */
+  function ojaar(d) { var m = /^(\d{4})-(\d{2})/.exec(d || ''); return m ? (Number(m[2]) >= 9 ? Number(m[1]) : Number(m[1]) - 1) : null; }
+  function ojaarLabel(y) { return y + '-' + (y + 1); }
+  var leerJaar = null;
+  function leerlijnData(y) {
+    var inJ = function (d) { return ojaar(String(d || '').slice(0, 10)) === y; };
+    var D = window.KMADatapunten, g = groeiData();
+    var eigen = dtfItems.filter(function (d) { return d && d.bron !== 'medecadet' && inJ(d.datum); });
+    var nab = eigen.filter(function (d) { return d.aar || d.aspect === 'Nabespreking na een oefening'; }).length;
+    var mede = [], staf = [];
+    try { mede = (window.kmaKameraad ? kmaKameraad._S().inbox || [] : []).filter(function (c) { return c && inJ(c.datum || c.at); }); } catch (e) {}
+    try { (window.kmaFeedback ? kmaFeedback.all() : []).forEach(function (r) { (r.dtfNotes || []).forEach(function (n) { if (n && inJ(n.datum) && !staf.some(function (x) { return String(x.id) === String(n.id); })) staf.push(n); }); }); } catch (e) {}
+    var perV = VS.map(function (v) {
+      var heeft = function (x) { var p = D ? D.vanDtf(x) : null; return p && p.v.indexOf(v) >= 0; };
+      var mV = mede.filter(function (c) { return c.v4 === v; }).length + dtfItems.filter(function (d) { return d && d.bron === 'medecadet' && inJ(d.datum) && heeft(d) && !mede.some(function (c) { return String(c.feit || '') && String(d.feit || '').indexOf(String(c.feit)) >= 0; }); }).length;
+      return { v: v, zelf: eigen.filter(heeft).length, anderen: mV + staf.filter(heeft).length };
+    });
+    var tl = g.tl.filter(function (t) { return inJ(t.date); }), self = g.self.filter(function (t) { return inJ(t.date); });
+    var ci = getX('smart-checkins', []).filter(function (x) { return inJ(weekDate(x.week)); });
+    var plannen = window.kmaPlannen ? kmaPlannen.list() : [];
+    return { eigen: eigen.length, nab: nab, mede: mede.length, staf: staf.length, perV: perV, tl: tl[tl.length - 1] || null, self: self[self.length - 1] || null,
+      ci: ci.length, ciOk: ci.filter(function (x) { return x.r === 2; }).length, plannen: plannen };
+  }
+  function leerlijnHtml() {
+    var jaren = {};
+    dtfItems.forEach(function (d) { var y = d && ojaar(d.datum); if (y) jaren[y] = 1; });
+    (groeiData().tl || []).forEach(function (t) { var y = ojaar(t.date); if (y) jaren[y] = 1; });
+    var nu = ojaar(today()); jaren[nu] = 1;
+    var lijst = Object.keys(jaren).map(Number).sort(function (a, b) { return b - a; });
+    if (leerJaar == null || lijst.indexOf(leerJaar) < 0) leerJaar = nu;
+    var L = leerlijnData(leerJaar), stp = steps[byTitle(/SMART/)];
+    var vraag = '';
+    try { vraag = stp && smartParts(stp)[0] ? smartSentence(stp) : ''; } catch (e) {}   // HTML: smartSentence escapet zelf
+    var chips = lijst.length > 1 ? '<div class="kma-chips kma-filter">' + lijst.map(function (y) { return '<button type="button" class="kma-chip-btn' + (y === leerJaar ? ' on' : '') + '" data-leerjaar="' + y + '" aria-pressed="' + (y === leerJaar) + '">' + ojaarLabel(y) + '</button>'; }).join('') + '</div>' : '<p class="muted small">Opleidingsjaar ' + ojaarLabel(leerJaar) + '</p>';
+    var plan = L.plannen.length ? '<ul class="plain small">' + L.plannen.map(function (p) { var st = kmaPlannen.stats ? kmaPlannen.stats(p.id) : null; return '<li>Als ' + esc(String(p.als).replace(/^als\s+/i, '')) + ', dan ' + esc(String(p.dan).replace(/^dan\s+/i, '')) + (st && st.n ? ' <span class="muted">(' + st.gelukt + ' van ' + st.n + ' weken gelukt)</span>' : '') + '</li>'; }).join('') + '</ul>' : '<p class="muted small">Nog geen als-dan-plan.</p>';
+    var beo = function (r, i) { return r && r.vals && r.vals[i] != null ? String(r.vals[i]) : '-'; };
+    var tab = '<div class="kma-dp" tabindex="0" role="region" aria-label="Leerlijn per V"><table class="kma-dp-tab"><thead><tr><th>V</th><th>Ik deed (DTF)</th><th>Anderen zagen</th><th>Zelf</th><th>Teamleider</th></tr></thead><tbody>' +
+      L.perV.map(function (r, i) { return '<tr><th scope="row">' + r.v + '</th><td>' + r.zelf + '</td><td>' + r.anderen + '</td><td>' + beo(L.self, i) + '</td><td>' + beo(L.tl, i) + '</td></tr>'; }).join('') + '</tbody></table></div>';
+    return chips +
+      '<div class="kma-leerlijn"><div><h5>' + icon('target') + 'Dit wilde ik</h5>' + (vraag ? '<p class="small kma-leerlijn-vraag">' + vraag + '</p>' : '<p class="muted small">Nog geen leervraag (hoofdstuk SMART-leervraag).</p>') + plan + '</div>' +
+      '<div><h5>' + icon('calendar') + 'Dit deed ik</h5><p class="small">' + L.eigen + ' DTF-feiten, waarvan ' + L.nab + ' nabespreking' + (L.nab === 1 ? '' : 'en') + (L.ci ? '. Leervraag: ' + L.ciOk + ' van ' + L.ci + ' weken gelukt' : '') + '.</p></div>' +
+      '<div><h5>' + icon('users') + 'Dit zagen anderen</h5><p class="small">' + L.mede + ' feedbackkaart' + (L.mede === 1 ? '' : 'en') + ' van medecadetten, ' + L.staf + ' waarneming' + (L.staf === 1 ? '' : 'en') + ' van je teamleider of instructeurs.</p></div>' +
+      '<div><h5>' + icon('form') + 'Beoordeling</h5><p class="small">' + (L.tl ? 'Teamleider ' + esc(fmtDate(L.tl.date)) + (L.tl.oordeel ? ': ' + esc(L.tl.oordeel) : '') : 'Nog geen beoordeling van je teamleider dit jaar') + (L.self ? '. Zelfbeoordeling ' + esc(fmtDate(L.self.date)) : '') + '.</p></div></div>' +
+      tab + '<p class="muted small">Per V naast elkaar: wat je zelf vastlegde, wat anderen zagen en hoe jij en je teamleider het beoordeelden. Zie je een V met veel eigen feiten maar weinig van anderen, vraag dan feedback op die V.</p>';
+  }
+
+  /* ---------------- 4.23.0 (P10): wat doe je met feedback? ---------------- */
+  function feedbackKwaliteit() {
+    var inbox = []; try { inbox = window.kmaKameraad ? kmaKameraad._S().inbox || [] : []; } catch (e) {}
+    var n = inbox.length, tip = inbox.filter(function (c) { return String(c.tip || '').trim(); }).length, actie = inbox.filter(function (c) { return String(c.actie || '').trim(); }).length;
+    var plannen = (window.kmaPlannen ? kmaPlannen.list() : []).filter(function (p) { return /feedback|roos|nabespreking/.test(p.from || ''); }).length;
+    var rep = {}; try { rep = JSON.parse(kmaStore.getItem('kma-x-fb-reply') || '{}') || {}; } catch (e) {}
+    var rk = Object.keys(rep), ok = rk.filter(function (k) { return rep[k] && rep[k].ok; }).length, rt = rk.filter(function (k) { return rep[k] && rep[k].t; }).length;
+    return { n: n, tip: tip, actie: actie, plannen: plannen, ok: ok, rt: rt };
+  }
+  function pct(a, b) { return b ? Math.round(a / b * 100) + '%' : '-'; }
+  function feedbackKwaliteitHtml() {
+    var k = feedbackKwaliteit();
+    if (!k.n && !k.ok && !k.rt) return '<p class="muted small">Nog geen feedback ontvangen. Vraag een medecadet om feedback (menu ⋮ → Feedback van medecadetten).</p>';
+    var bar = function (label, a, b, uitleg) { var p = b ? Math.round(a / b * 100) : 0; return '<div class="kma-fbq"><div class="kma-fbq-top"><span>' + label + '</span><b>' + a + ' van ' + b + ' (' + pct(a, b) + ')</b></div><i><b style="width:' + p + '%"></b></i>' + (uitleg ? '<small class="muted">' + uitleg + '</small>' : '') + '</div>'; };
+    return (k.n ? bar('Kaarten met een volgende stap', k.tip, k.n, 'Feedback met een concrete volgende stap helpt het meest.') +
+        bar('Kaarten waar jij een actie bij schreef', k.actie, k.n, k.actie < k.n ? 'Schrijf bij elke kaart wat je ermee gaat doen; zonder die stap verandert er weinig.' : 'Bij elke kaart weet je wat je ermee doet.') : '') +
+      '<p class="small">' + (k.plannen ? k.plannen + ' als-dan-plan' + (k.plannen === 1 ? '' : 'nen') + ' kwam' + (k.plannen === 1 ? '' : 'en') + ' uit feedback of een nabespreking. ' : '') +
+      (k.ok || k.rt ? 'Feedback van je teamleider: ' + k.ok + ' keer verwerkt, ' + k.rt + ' keer gereageerd.' : '') + '</p>';
+  }
+  window.kmaFeedbackKwaliteit = feedbackKwaliteit;
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-leerjaar]'); if (!b) return; leerJaar = Number(b.getAttribute('data-leerjaar')); var c = document.getElementById('kma-leerlijn'); if (c) c.innerHTML = leerlijnHtml(); });
   R['groei'] = function (c) {
     var g = groeiData();
     c.innerHTML = groeiTiles(g) +
       cardHtml('Beoordelingen over tijd', groeiV(g) || '<p class="muted">Nog geen beoordelingen. Na je zelfbeoordeling (hoofdstuk Zelfbeoordelingsformulier) en de beoordeling van je teamleider zie je hier per V hoe je groeit.</p>', 'chart') +
       (g.v4.length > 1 ? cardHtml('Eigen score per V (1-10)', V.lineChart(g.v4.map(function (h) { return fmtDate(h.date).replace(/ \d{4}$/, ''); }), VS.map(function (v, i) { return { label: v, color: VCOL[v], values: g.v4.map(function (h) { return h.s[i]; }) }; }), { yMin: 0, yMax: 10, ticks: [0, 5, 10], label: 'Eigen score per V', connect: true }) + V.legend(VS.map(function (v) { return { label: v, color: VCOL[v] }; })), 'activity') : '') +
       (Object.keys(g.months).length ? cardHtml('DTF-feiten per maand', groeiDtf(g), 'calendar') : '') +
+      cardHtml('Mijn leerlijn', '<div id="kma-leerlijn">' + leerlijnHtml() + '</div>', 'trend') +
+      cardHtml('Wat doe je met feedback?', feedbackKwaliteitHtml(), 'message') +
       cardHtml('Jouw groei op een tijdlijn', '<div id="kma-groei-tl">' + groeiTimeline(g) + '</div>', 'activity');
   };
   window.kmaGroeiData = groeiData;
