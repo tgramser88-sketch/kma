@@ -221,9 +221,9 @@
      eerst de kern (in de volgorde van de lijst steps), dan de verdieping en dan naslag (allebei in de volgorde
      hieronder). Intern blijft elk hoofdstuk zijn eigen index houden, zodat opgeslagen antwoorden, koppelingen en
      gedeelde dossiers niet veranderen. Een hoofdstuk met verborgen: true (zie de hoofdstukkenlijst) telt nergens mee.
-     Nummering sinds 4.3.9: kern 0 t/m 8, verdieping 9 t/m 13, naslag en overzicht 14 t/m 16. */
+     Nummering sinds 4.3.9: kern 0 t/m 8, verdieping 9 t/m 13, naslag en overzicht 14 t/m 17 (Roos van Leary sinds 4.16.0). */
   var GROUPS = { verdieping: ['Zelfbeoordelingsformulier KMA', 'Voorbereiding Cadetbeoordeling', 'Probleem- en Behoefteanalyse', 'Fitheid & stress', 'Curriculum vitae'],
-    naslag: ['Toetsing en examinering DKOO', 'Begrippenlijst & Vakjargon', 'Mijn groei & ontwikkeling'] };
+    naslag: ['Toetsing en examinering DKOO', 'Begrippenlijst & Vakjargon', 'Mijn groei & ontwikkeling', 'Roos van Leary'] };
   var GROUP_INFO = { kern: ['Kern', 'Hiermee werk je de hele opleiding'], verdieping: ['Verdieping', 'Rond een beoordeling, als er iets speelt of als het past'], naslag: ['Naslag en overzicht', 'Niets invullen: opzoeken en terugkijken'] };
   function hidden(idx) { return !!(steps[idx] && steps[idx].verborgen); }
   window.kmaChapterHidden = hidden;

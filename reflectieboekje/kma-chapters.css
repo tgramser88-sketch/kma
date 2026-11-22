@@ -1644,3 +1644,35 @@ body.dark-theme .kma-pill.ok { color: #7cc69a; }
 .kma-pm label.kma-field { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
 .kma-pm textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-widget); color: var(--text-primary); font: inherit; font-size: 15px; box-sizing: border-box; }
 .kma-pm label.kma-check { display: flex; align-items: center; gap: 10px; font-size: 15px; min-height: 40px; }
+/* Roos van Leary (4.16.0, kma-leary.js) */
+.kma-leary-pick { border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; margin: 8px 0; background: var(--bg-widget); }
+.kma-leary-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; font-weight: 600; }
+.kma-leary-head .kma-leary-cur { margin-left: auto; font-weight: 600; color: var(--accent-gold, #8a7a3a); }
+.kma-leary-head [hidden] { display: none !important; }
+.kma-leary-svg, .kma-leary-rose { width: 100%; max-width: 340px; display: block; margin: 4px auto; touch-action: manipulation; }
+.kma-leary-w { fill: transparent; stroke: var(--border-color); stroke-width: 1; cursor: pointer; }
+.kma-leary-w:hover, .kma-leary-w:focus { fill: rgba(216, 203, 146, .25); outline: none; }
+.kma-leary-w.on { fill: #c79a2a; stroke: #8a6a14; }
+.kma-leary-ax line { stroke: var(--text-muted, #888); stroke-width: 1; stroke-dasharray: 3 3; }
+.kma-leary-ax text, .kma-leary-lab { font-size: 10px; fill: var(--text-muted, #666); font-family: inherit; }
+.kma-leary-ax text { font-weight: 700; letter-spacing: .08em; font-size: 9px; }
+.kma-leary-lab { fill: var(--text-primary); font-size: 11px; }
+.kma-leary-grid { fill: none; stroke: var(--border-color); stroke-width: 1; }
+.kma-leary-a { fill: rgba(199, 154, 42, .55); stroke: #8a6a14; stroke-width: 1; }
+.kma-leary-b { fill: rgba(63, 124, 172, .12); stroke: #3f7cac; stroke-width: 2; }
+.kma-leary-a-m { fill: #8a6a14; stroke: #fff; stroke-width: 1.5; }
+.kma-leary-b-m { fill: #3f7cac; stroke: #fff; stroke-width: 1.5; }
+.kma-leary-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; justify-content: center; }
+.kma-leary-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 5px; }
+.kma-leary-legend .a { background: rgba(199, 154, 42, .7); } .kma-leary-legend .b { border: 2px solid #3f7cac; }
+.kma-leary-axes { margin: 8px 0; font-size: 12px; } .kma-leary-axes small { font-weight: 600; }
+.kma-leary-axis { display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; gap: 6px; margin: 3px 0; }
+.kma-leary-axis span:last-child { text-align: right; }
+.kma-leary-axis i { position: relative; height: 6px; border-radius: 3px; background: var(--border-color); }
+.kma-leary-axis i::after { content: ''; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--text-muted, #888); }
+.kma-leary-axis b { position: absolute; top: -4px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: #c79a2a; }
+.kma-leary-dot { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: 700; background: #5b4b8a; color: #fff; }
+.kma-leary-sec { border-top: 1px solid var(--border-color); padding: 8px 0; }
+.kma-leary-sec summary { cursor: pointer; display: flex; gap: 8px; align-items: baseline; }
+.kma-leary-sec summary em { margin-left: auto; font-style: normal; font-size: 12px; color: var(--text-muted, #666); }
+.kma-leary-note { font-size: 13px; padding: 8px 10px; border-left: 3px solid #3f7cac; background: rgba(63, 124, 172, .08); border-radius: 0 6px 6px 0; margin: 8px 0; }

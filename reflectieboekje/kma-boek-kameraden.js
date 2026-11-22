@@ -65,6 +65,7 @@
       req: clip(o.req, 40), datum: /^\d{4}-\d{2}-\d{2}$/.test(o.datum) ? o.datum : '', tijd: /^\d{2}:\d{2}$/.test(o.tijd) ? o.tijd : '',
       situatie: clip(o.situatie, 140), feit: clip(o.feit, 500), effect: clip(o.effect, 400), v4: V4.indexOf(o.v4) >= 0 ? o.v4 : '',
       soort: o.soort === 'verbeteren' ? 'verbeteren' : 'vasthouden', tip: clip(o.tip, 400), at: clip(o.at, 40) };
+    var lr = window.KMALeary ? KMALeary.clean(o.leary) : null; if (lr) c.leary = lr;
     return c.feit ? c : null;
   }
   function cleanReq(o) {
@@ -274,6 +275,7 @@
         '<details class="kma-ex"><summary>' + icon('idea') + 'Voorbeeld</summary><div class="kma-ex-good"><b>Goed</b> Bij het uitzetten van de wachten noemde je eerst het doel en de tijden, en vroeg je of iemand nog een vraag had.</div><div class="kma-ex-bad"><b>Minder goed</b> Je bent een goede leider.</div></details>' +
         '<label class="kma-code-lab">Wat was het effect? <small>Op jou, de groep of de taak</small><textarea id="kk-eff" maxlength="400" rows="2" placeholder="bijv. Iedereen wist meteen wat er moest gebeuren; we waren 5 minuten eerder klaar.">' + esc(p.effect || '') + '</textarea></label>' +
         '<div class="kma-code-lab">Welke V past erbij? <small>Optioneel</small>' + v4Chips(p.v4) + '</div>' +
+        (window.KMALeary ? '<details class="kma-leary-open"><summary class="muted small">Roos van Leary (optioneel): welk gedrag zag je?</summary>' + KMALeary.picker('kk-leary', p.leary, 'Gedrag van je medecadet') + '</details>' : '') +
         '<div class="kma-code-lab">Soort feedback<div class="kma-kam-chips" role="radiogroup" aria-label="Soort feedback">' +
           '<label class="kma-kam-chip is-keep"><input type="radio" name="kk-soort" value="vasthouden"' + (p.soort !== 'verbeteren' ? ' checked' : '') + '><span>Vasthouden</span></label>' +
           '<label class="kma-kam-chip is-grow"><input type="radio" name="kk-soort" value="verbeteren"' + (p.soort === 'verbeteren' ? ' checked' : '') + '><span>Verbeteren</span></label></div></div>' +
@@ -300,7 +302,7 @@
       if (!me()) { err.textContent = 'Vul eerst je naam in bij je profiel (hoofdstuk 0): je medecadet ziet van wie de feedback komt.'; return; }
       var soortEl = ov.querySelector('input[name="kk-soort"]:checked'), v4El = ov.querySelector('input[name="kk-v4"]:checked');
       var card = cleanCard({ type: 'kma-kameraad', id: uid(), van: me(), vanPs: myPs(), aan: naam, aanPs: req ? req.vanPs : viaPs, req: req ? req.id : '',
-        datum: v('#kk-d'), tijd: v('#kk-t'), situatie: v('#kk-sit'), feit: feit, effect: v('#kk-eff'), v4: v4El ? v4El.value : '', soort: soortEl ? soortEl.value : 'vasthouden', tip: v('#kk-tip'), at: new Date().toISOString() });
+        datum: v('#kk-d'), tijd: v('#kk-t'), situatie: v('#kk-sit'), feit: feit, effect: v('#kk-eff'), v4: v4El ? v4El.value : '', soort: soortEl ? soortEl.value : 'vasthouden', tip: v('#kk-tip'), at: new Date().toISOString(), leary: window.KMALeary ? KMALeary.value(ov.querySelector('#kk-leary')) : null });
       var go = function () {
         var s = S(); s.sent.push({ id: card.id, week: week(), aan: card.aan, req: card.req, at: card.at }); if (s.sent.length > 200) s.sent = s.sent.slice(-200);
         if (req) s.open.forEach(function (r) { if (r.id === req.id) r.done = true; });
@@ -393,7 +395,7 @@
       (full && c.effect ? '<p><b>Effect</b> ' + esc(c.effect) + '</p>' : '') +
       (full && c.tip ? '<p><b>Tip</b> ' + esc(c.tip) + '</p>' : '') +
       '<div class="kma-kam-tags"><span class="kma-kam-tag ' + (c.soort === 'verbeteren' ? 'is-grow' : 'is-keep') + '">' + (c.soort === 'verbeteren' ? 'Verbeteren' : 'Vasthouden') + '</span>' +
-      (c.v4 ? '<span class="kma-kam-tag">' + esc(c.v4) + '</span>' : '') + (c.req ? '<span class="kma-kam-tag">Op jouw vraag</span>' : '') + (c.nieuw ? '<span class="kma-kam-tag is-new">nieuw</span>' : '') + (c.inDtf ? '<span class="kma-kam-tag">In je DTF-logboek</span>' : '') + '</div></div>';
+      (c.v4 ? '<span class="kma-kam-tag">' + esc(c.v4) + '</span>' : '') + (c.leary && window.KMALeary ? '<span class="kma-kam-tag">Roos: ' + esc(KMALeary.label(c.leary)) + '</span>' : '') + (c.req ? '<span class="kma-kam-tag">Op jouw vraag</span>' : '') + (c.nieuw ? '<span class="kma-kam-tag is-new">nieuw</span>' : '') + (c.inDtf ? '<span class="kma-kam-tag">In je DTF-logboek</span>' : '') + '</div></div>';
   }
   function listInbox() {
     var l = S().inbox;
@@ -423,7 +425,7 @@
     var s = S(), c = s.inbox.find(function (x) { return x.id === id; }); if (!c || typeof dtfItems === 'undefined') return;
     var feit = 'Feedback van ' + c.van + ' (' + (c.soort === 'verbeteren' ? 'verbeteren' : 'vasthouden') + ')' + (c.situatie ? ', ' + c.situatie : '') + ': ' + c.feit +
       (c.effect ? ' Effect: ' + c.effect : '') + (c.tip ? ' Tip: ' + c.tip : '');
-    dtfItems.unshift({ id: Date.now(), datum: c.datum || today(), tijd: c.tijd || '', feit: feit, vValues: c.v4 ? [c.v4] : [], aspect: 'Feedback van een medecadet', bron: 'medecadet' });
+    dtfItems.unshift({ id: Date.now(), datum: c.datum || today(), tijd: c.tijd || '', feit: feit, vValues: c.v4 ? [c.v4] : [], aspect: 'Feedback van een medecadet', bron: 'medecadet', leary: c.leary || undefined });
     try { kmaStore.setItem(DTF_KEY, JSON.stringify(dtfItems)); } catch (e) {}
     if (typeof dbSet === 'function') dbSet(DTF_KEY, dtfItems);
     c.inDtf = true; save(s);

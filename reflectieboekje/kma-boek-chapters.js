@@ -1077,6 +1077,7 @@
       if ('swot' in d) { var ok = Array.isArray(d.swot) ? d.swot.filter(function (t) { return t && (t.k === 's' || t.k === 'w') && t.t; }) : []; if (!Array.isArray(d.swot) || ok.length !== d.swot.length) { d.swot = ok; ch = true; } }
       if (d.vValues && !Array.isArray(d.vValues)) { d.vValues = []; ch = true; }
       if (d.feit != null && typeof d.feit !== 'string') { d.feit = String(d.feit); ch = true; }
+      if ('leary' in d && window.KMALeary) { var lc = KMALeary.clean(d.leary); if (!lc) { delete d.leary; ch = true; } else if (lc.b !== d.leary.b || lc.s !== d.leary.s) { d.leary = lc; ch = true; } }
     });
     if (ch) { try { kmaStore.setItem(DTF_KEY, JSON.stringify(dtfItems)); } catch (e) {} }
   })();
@@ -1104,9 +1105,10 @@
       if (dtfFilter !== 'Alle' && (d.vValues || []).indexOf(dtfFilter) < 0) return false;
       if (dtfTeken !== 'alle' && (d.teken || '') !== dtfTeken) return false;
       if (dtfBron !== 'alle' && (d.bron === 'medecadet' ? 'medecadet' : 'zelf') !== dtfBron) return false;
+      if (dtfLeary !== 'alle' && (!window.KMALeary || (KMALeary.sector(d.leary) || {}).k !== dtfLeary)) return false;
       return !window.KMALijst || KMALijst.inPeriod(d.datum, dtfPeriode, since);
     });
-    var nMore = (dtfTeken !== 'alle') + (dtfBron !== 'alle') + (dtfPeriode !== 'alles');
+    var nMore = (dtfTeken !== 'alle') + (dtfBron !== 'alle') + (dtfPeriode !== 'alles') + (dtfLeary !== 'alle');
     var form = '<div class="kma-card-block kma-dtf-form' + (dtfFormOpen ? '' : ' closed') + '"><h4>' + icon('plus') + 'Nieuw feit</h4>' +
       '<div class="kma-inline-form"><input type="date" id="dtf-date" value="' + today() + '"/><input type="time" id="dtf-time" value="' + nowTime() + '"/></div>' +
       '<textarea id="dtf-feit" placeholder="Wat gebeurde er precies? Wie was erbij, wat deed je feitelijk?"></textarea><div class="kma-field-hint" id="kma-dtf-hint"></div>' +
@@ -1116,6 +1118,7 @@
       '<p class="muted small">Was dit positief of negatief?</p><div class="kma-chips kma-dtf-sign">' +
         '<button type="button" class="kma-chip-btn pos' + (dtfSign === '+' ? ' on' : '') + '" data-dtfsign-new="+" aria-pressed="' + (dtfSign === '+') + '">Positief</button>' +
         '<button type="button" class="kma-chip-btn neg' + (dtfSign === '-' ? ' on' : '') + '" data-dtfsign-new="-" aria-pressed="' + (dtfSign === '-') + '">Negatief</button></div>' +
+      (window.KMALeary ? '<details class="kma-leary-open"><summary class="muted small">Roos van Leary (optioneel): welk gedrag liet je zien?</summary>' + KMALeary.picker('dtf-leary', null, 'Jouw gedrag op de roos') + '</details>' : '') +
       '<div id="kma-dtf-swot-box">' + swotPicker() + '</div>' +
       '<textarea id="dtf-aspect" placeholder="Waarom is dit belangrijk voor je beoordeling of leervraag? (optioneel)"></textarea>' +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-act="dtf-cancel">Annuleren</button><button type="button" class="kma-icon-btn is-primary" onclick="addDTFItem()">' + icon('save') + 'Opslaan</button></div></div>';
@@ -1128,31 +1131,41 @@
       (window.KMALijst ? '<details class="kma-filter-more"' + (nMore ? ' open' : '') + '><summary>' + icon('list') + 'Meer filters' + (nMore ? ' <em>' + nMore + '</em>' : '') + '</summary>' +
         '<div class="kma-filter-lab">Positief of negatief</div><div class="kma-chips">' + KMALijst.chips('data-dtft', [['alle', 'Alle'], ['+', 'Positief'], ['-', 'Negatief']], dtfTeken) + '</div>' +
         '<div class="kma-filter-lab">Van wie</div><div class="kma-chips">' + KMALijst.chips('data-dtfb', [['alle', 'Alle'], ['zelf', 'Zelf'], ['medecadet', 'Medecadet']], dtfBron) + '</div>' +
+        (window.KMALeary && dtfItems.some(function (d) { return KMALeary.clean(d.leary); }) ? '<div class="kma-filter-lab">Roos van Leary</div><div class="kma-chips">' + KMALijst.chips('data-dtfl', [['alle', 'Alle']].concat(KMALeary.SECT.map(function (x) { return [x.k, x.n]; })), dtfLeary) + '</div>' : '') +
         '<div class="kma-filter-lab">Periode</div><div class="kma-chips">' + KMALijst.chips('data-dtfp', [['alles', 'Alles'], ['30d', 'Laatste 30 dagen'], ['gesprek', since ? 'Sinds laatste gesprek (' + fmtDate(since) + ')' : 'Sinds laatste gesprek']], dtfPeriode) + '</div></details>' : '') +
-      (list.length ? (window.KMALijst ? KMALijst.render('dtf', list, { key: dtfFilter + dtfTeken + dtfBron + dtfPeriode, date: function (d) { return d.datum; }, row: dtfRow }) : list.map(function (d) { return dtfRow(d).body; }).join(''))
+      (list.length ? (window.KMALijst ? KMALijst.render('dtf', list, { key: dtfFilter + dtfTeken + dtfBron + dtfPeriode + dtfLeary, date: function (d) { return d.datum; }, row: dtfRow }) : list.map(function (d) { return dtfRow(d).body; }).join(''))
         : (dtfItems.length ? '<p class="muted">Geen feiten met deze filters.</p>' : kmaEmpty({ icon: 'calendar', title: 'Nog geen DTF-feiten', text: 'Leg vast wat er gebeurde: datum, tijd en het feit, zonder oordeel. Zo heb je later voorbeelden voor je gesprek en je beoordeling.', btn: 'Eerste feit vastleggen', attrs: 'data-act="dtf-open"' }))) +
       '<button type="button" class="kma-fab kma-dtf-fab" data-act="dtf-open">' + icon('plus') + '<span>Nieuw feit</span></button></div>';
   };
-  var dtfSign = '', dtfTeken = 'alle', dtfBron = 'alle', dtfPeriode = 'alles';
+  var dtfLeary = 'alle', dtfSign = '', dtfTeken = 'alle', dtfBron = 'alle', dtfPeriode = 'alles';
   var VKL = { Verbondenheid: '#c79a2a', Veiligheid: '#3f7cac', Vertrouwen: '#2f9e5b', Verantwoordelijkheid: '#a91f2b' };
   function dtfRow(d) {
     var sg = d.teken === '+' ? ' pos' : d.teken === '-' ? ' neg' : '';
     var t = String(d.feit || '').replace(/\s+/g, ' ').trim();
     return { cls: sg.trim(), when: esc(fmtDate(d.datum).replace(/ \d{4}$/, '')) + (d.tijd ? ' · ' + esc(d.tijd) : ''),
       title: esc(t.length > 90 ? t.slice(0, 88) + '…' : t) + (d.bron === 'medecadet' ? ' <span class="muted small">(medecadet)</span>' : ''),
-      badges: (d.vValues || []).map(function (v) { return '<span class="kma-vdot" style="background:' + (VKL[v] || '#777') + '" title="' + esc(v) + '">' + esc(v.charAt(0)) + '</span>'; }).join(''),
+      badges: (d.vValues || []).map(function (v) { return '<span class="kma-vdot" style="background:' + (VKL[v] || '#777') + '" title="' + esc(v) + '">' + esc(v.charAt(0)) + '</span>'; }).join('') + (window.KMALeary ? KMALeary.dot(d.leary) : ''),
       body: '<div class="kma-dtf-item' + sg + '"><div class="kma-dtf-when">' + esc(fmtDate(d.datum)) + (d.tijd ? '<br>' + esc(d.tijd) : '') + '</div><div class="kma-dtf-body"><p>' + esc(d.feit) + '</p>' +
         ((d.vValues || []).length ? '<div class="kma-chips small">' + d.vValues.map(function (v) { return '<span class="kma-chip-btn on">' + esc(v) + '</span>'; }).join('') + '</div>' : '') +
         ((d.swot || []).length ? '<div class="kma-chips small">' + d.swot.map(function (t) { return '<span class="kma-chip-btn kma-swtag on ' + t.k + '"><i>' + (t.k === 's' ? 'S' : 'V') + '</i>' + esc(t.t) + '</span>'; }).join('') + '</div>' : '') +
         (d.aspect ? '<p class="muted small">' + esc(d.aspect) + '</p>' : '') +
+        (window.KMALeary && KMALeary.clean(d.leary) ? '<p class="muted small">Roos van Leary: ' + esc(KMALeary.label(d.leary)) + '</p>' : '') +
         '<div class="kma-row-btns"><button type="button" class="kma-chip-btn" onclick="kmaStart5GTFromDtf(' + d.id + ')">' + icon('refresh') + 'Maak 5G-T</button>' +
         '<button type="button" class="kma-chip-btn" data-dtflink="' + d.id + '">' + icon('target') + 'Sterkte/valkuil</button>' +
+        (window.KMALeary ? '<button type="button" class="kma-chip-btn" data-dtfleary="' + d.id + '">Roos</button>' : '') +
         '<button type="button" class="kma-chip-btn kma-signbtn' + sg + '" data-dtfsign="' + d.id + '" title="Tik om te wisselen: positief, negatief, geen">' + (d.teken === '+' ? 'Positief' : d.teken === '-' ? 'Negatief' : '+/−') + '</button>' +
         '<button type="button" class="kma-chip-btn" onclick="deleteDTFItem(' + d.id + ')">' + icon('trash') + 'Verwijder</button></div></div></div>' };
   }
   document.addEventListener('click', function (e) {
-    var b = e.target.closest && e.target.closest('[data-dtft],[data-dtfb],[data-dtfp]'); if (!b) return;
-    if (b.hasAttribute('data-dtft')) dtfTeken = b.getAttribute('data-dtft');
+    var lb = e.target.closest && e.target.closest('[data-dtfleary]');
+    if (lb) {
+      var it = dtfItems.find(function (x) { return String(x.id) === lb.getAttribute('data-dtfleary'); }); if (!it) return;
+      KMALeary.edit(it.leary, 'Roos van Leary bij dit feit', function (v) { if (v) it.leary = v; else delete it.leary; saveDtf(); renderWidgets(); });
+      return;
+    }
+    var b = e.target.closest && e.target.closest('[data-dtft],[data-dtfb],[data-dtfp],[data-dtfl]'); if (!b) return;
+    if (b.hasAttribute('data-dtfl')) dtfLeary = b.getAttribute('data-dtfl');
+    else if (b.hasAttribute('data-dtft')) dtfTeken = b.getAttribute('data-dtft');
     else if (b.hasAttribute('data-dtfb')) dtfBron = b.getAttribute('data-dtfb');
     else dtfPeriode = b.getAttribute('data-dtfp');
     renderWidgets();
@@ -1174,12 +1187,14 @@
   });
   var origAddDtf = window.addDTFItem;
   window.addDTFItem = function () {
+    var lv = window.KMALeary ? KMALeary.value('dtf-leary') : null;
     var sign = dtfSign, n = dtfItems.length, sel = dtfTags().filter(function (t) { return dtfSel[P.tagKey(t)]; }).map(function (t) { return { k: t.k, t: t.t, trait: t.trait }; });
     origAddDtf();
     if (dtfItems.length > n) {
       if (sel.length) dtfItems[0].swot = sel;
       if (sign) dtfItems[0].teken = sign;
-      if (sel.length || sign) saveDtf();
+      if (lv) dtfItems[0].leary = lv;
+      if (sel.length || sign || lv) saveDtf();
       dtfSign = '';
       dtfSel = {}; dtfSug = []; dtfFormOpen = false; renderWidgets();
     }
@@ -1695,6 +1710,68 @@
   };
   window.kmaGroeiData = groeiData;
 
+  /* ======================= 17. Roos van Leary (4.16.0) =======================
+     Inzicht en uitleg op één plek (groep Naslag en overzicht). Bronnen:
+     - zelf: DTF-feiten met een plek op de roos (niet die van een medecadet);
+     - anderen: feedbackkaarten van medecadetten (inbox) en waarnemingen die de teamleider deelde (dtfNotes).
+     Een verdeling verschijnt pas vanaf KMALeary.MIN items per bron. Geen koppeling met de 4V's in de gegevens. */
+  var learyPer = 'alles';
+  function learyData() {
+    var L = window.KMALeary, since = window.kmaLaatsteGesprek ? kmaLaatsteGesprek() : '';
+    var inP = function (d) { return !window.KMALijst || KMALijst.inPeriod(d, learyPer, since); };
+    var zelf = (dtfItems || []).filter(function (d) { return d && d.bron !== 'medecadet' && L.clean(d.leary) && inP(d.datum); });
+    var mede = [];
+    try { mede = (window.kmaKameraad ? kmaKameraad._S().inbox || [] : []).filter(function (c) { return L.clean(c.leary) && inP(c.datum); }); } catch (e) {}
+    var staf = [];
+    try { (window.kmaFeedback ? kmaFeedback.all() : []).forEach(function (r) { (r.dtfNotes || []).forEach(function (n) { if (L.clean(n.leary) && inP(n.datum) && !staf.some(function (x) { return String(x.id) === String(n.id); })) staf.push(n); }); }); } catch (e) {}
+    return { zelf: zelf, mede: mede, staf: staf, since: since };
+  }
+  R['leary'] = function (c) {
+    var L = window.KMALeary;
+    if (!L) { c.innerHTML = '<p class="muted">De roos is niet geladen.</p>'; return; }
+    var g = learyData(), dz = L.dist(g.zelf), da = L.dist(g.mede.concat(g.staf));
+    var nodig = function (d) { return d.ok ? '' : ' <span class="muted">(nog ' + (L.MIN - d.n) + ' voor een verdeling)</span>'; };
+    var per = window.KMALijst ? '<div class="kma-chips kma-filter">' + KMALijst.chips('data-learyp', [['alles', 'Alles'], ['30d', 'Laatste 30 dagen'], ['gesprek', g.since ? 'Sinds laatste gesprek (' + fmtDate(g.since) + ')' : 'Sinds laatste gesprek']], learyPer) + '</div>' : '';
+    var beeld = (dz.ok || da.ok)
+      ? L.rose(dz, da, { label: 'Roos van Leary: jij en anderen' }) + '<div class="kma-leary-legend"><span><i class="a"></i>Zelf (' + dz.n + ')</span><span><i class="b"></i>Anderen (' + da.n + ')</span></div>' +
+        L.axisBars(dz, 'Zelf: gemiddelde plek') + L.axisBars(da, 'Anderen: gemiddelde plek')
+      : kmaEmpty({ icon: 'target', title: 'Nog te weinig om een beeld te geven', text: 'Kies bij een DTF-feit (knop Roos) of bij feedback aan een medecadet welk gedrag je zag. Vanaf ' + L.MIN + ' keer zie je hier hoe je gedrag over de roos verdeeld is.', btn: 'Naar het DTF-logboek', attrs: 'data-leary-go="dtf"' });
+    var bron = '<ul class="plain small"><li>Je eigen DTF-feiten: ' + dz.n + nodig(dz) + '</li><li>Medecadetten: ' + g.mede.length + '</li><li>Teamleider en instructeurs: ' + g.staf.length + '</li></ul>' +
+      (da.n && !da.ok ? '<p class="muted small">Feedback van anderen: nog ' + (L.MIN - da.n) + ' nodig voor een verdeling.</p>' : '');
+    var secs = L.SECT.map(function (x) {
+      var mine = g.zelf.filter(function (d) { return L.sector(d.leary).k === x.k; }), oth = dz.counts && da.counts ? da.counts[x.k] : 0;
+      var tags = {}; mine.forEach(function (d) { (d.swot || []).forEach(function (t) { var k = (t.k === 's' ? 'Sterkte: ' : 'Valkuil: ') + t.t; tags[k] = (tags[k] || 0) + 1; }); });
+      return '<details class="kma-leary-sec"><summary><b>' + x.n + '</b><em>zelf ' + mine.length + ' · anderen ' + oth + '</em></summary>' +
+        '<p class="small">' + esc(x.d) + ' <span class="muted">Lokt vaak ' + esc(x.lokt) + ' uit.</span></p>' +
+        (Object.keys(tags).length ? '<p class="muted small">Gekoppeld aan: ' + Object.keys(tags).map(function (k) { return esc(k) + (tags[k] > 1 ? ' (' + tags[k] + '×)' : ''); }).join(', ') + '</p>' : '') +
+        (mine.length ? '<ul class="plain small">' + mine.slice(0, 5).map(function (d) { var t = String(d.feit || '').replace(/\s+/g, ' '); return '<li><span class="muted">' + esc(fmtDate(d.datum)) + '</span> ' + esc(t.length > 110 ? t.slice(0, 108) + '…' : t) + '</li>'; }).join('') + '</ul>' : '') + '</details>';
+    }).join('');
+    var hex = '';
+    try {
+      if (H && hexDone()) {
+        var sc = selfScores();
+        hex = '<p class="small">Uit je persoonlijkheidstest: <b>Extraversie ' + (sc.X != null ? Math.round(sc.X) : '-') + '</b> en <b>Verdraagzaamheid ' + (sc.A != null ? Math.round(sc.A) : '-') + '</b> (schaal 0-100).</p>' +
+          '<p class="muted small">Deze twee eigenschappen liggen het dichtst bij de assen van de roos, maar hangen er maar matig mee samen. Een test meet hoe je jezelf in het algemeen ziet; de roos laat gedrag in concrete situaties zien. Leg ze naast elkaar en kijk waar ze verschillen; trek geen conclusies uit één van beide.</p>';
+      } else hex = '<p class="muted small">Maak de persoonlijkheidstest (hoofdstuk 3) om je uitkomsten hier naast de roos te zien.</p>';
+    } catch (e) {}
+    var uitleg = '<details class="kma-leary-theory"><summary>' + icon('book') + 'Uitleg: hoe werkt de roos?</summary>' +
+      '<p>De Roos van Leary (Timothy Leary, 1957) beschrijft gedrag tussen mensen op twee assen. De verticale as gaat over <b>invloed</b>: neem je de leiding (boven) of laat je de ander bepalen (onder)? De horizontale as gaat over <b>verbondenheid</b>: werk je samen met de ander of zet je je ertegen af?</p>' +
+      '<p>Samen geven die assen acht soorten gedrag. Geen enkel gedrag is goed of fout: leidend gedrag helpt bij een snelle beslissing, maar maakt de groep passief als het te lang duurt. Opstandig gedrag kan precies het kritische geluid zijn dat een plan veiliger maakt.</p>' +
+      '<p><b>Actie lokt reactie uit.</b> Gedrag boven lokt vaak gedrag onder uit, en omgekeerd. Gedrag samen lokt samen uit, gedrag tegen lokt tegen uit. Wil je ander gedrag van je groep, kijk dan eerst naar je eigen plek op de roos.</p>' +
+      '<p><b>Zo gebruik je het:</b> kies bij een DTF-feit welk gedrag je liet zien, en vraag medecadetten bij hun feedback hetzelfde. Na een tijd zie je waar je vaak zit, en of anderen dat ook zo zien. Bespreek verschillen in het gesprek met je teamleider.</p>' +
+      '<p class="muted small">Let op: de twee assen zijn in onderzoek goed terug te vinden; de precieze indeling in acht gelijke sectoren minder (Wiggins, 1979). Daarom bewaart de app de plek op beide assen en toont hij pas een verdeling bij genoeg waarnemingen.</p></details>';
+    c.innerHTML = '<div class="kma-leary-ch">' + per +
+      cardHtml('Jouw gedrag op de roos', beeld + bron, 'target') +
+      cardHtml('Per soort gedrag', secs, 'list') +
+      cardHtml('Naast je persoonlijkheidstest', hex, 'user') +
+      uitleg + '</div>';
+  };
+  document.addEventListener('click', function (e) {
+    var p = e.target.closest && e.target.closest('[data-learyp]');
+    if (p) { learyPer = p.getAttribute('data-learyp'); renderWidgets(); return; }
+    var go = e.target.closest && e.target.closest('[data-leary-go]');
+    if (go) { var i = steps.findIndex(function (s) { return s.widget === 'dtf-logbook'; }); if (i >= 0) goToStep(i); }
+  });
   /* ======================= 15. Curriculum vitae ======================= */
   var CV_LISTS = {
     loopbaan: { l: 'Militaire loopbaan en werkervaring', f: [['van', 'Van', 'month'], ['tot', 'Tot', 'month'], ['functie', 'Functie', 'text'], ['organisatie', 'Eenheid / organisatie', 'text'], ['omschrijving', 'Wat deed je, wat bereikte je?', 'area']] },
