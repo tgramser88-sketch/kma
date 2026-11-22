@@ -1694,3 +1694,93 @@ body.dark-theme .kma-pill.ok { color: #7cc69a; }
 .kma-kam-actie { border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 10px; }
 .kma-leary-theory { margin: 10px 0; } .kma-leary-theory summary { min-height: 40px; display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; }
 .kma-leary-sec summary, .kma-leary-open summary { min-height: 32px; }
+/* Wetenschappelijke onderbouwing (4.18.0, kma-onderbouwing.js) */
+.kma-ob { position: fixed; inset: 0; z-index: 99970; display: flex; flex-direction: column; background: var(--bg-main, #f6f4ec); color: var(--text-primary); }
+.kma-ob-bar { display: flex; align-items: center; gap: 8px; padding: calc(env(safe-area-inset-top) + 8px) 12px 8px; background: var(--header-bg, #18251d); color: #f1f0e9; }
+.kma-ob-bar strong { font-size: 17px; }
+.kma-ob-sp { flex: 1; }
+.kma-ob-btn { min-height: 44px; min-width: 44px; border-radius: 10px; border: 1px solid rgba(255,255,255,.25); background: transparent; color: #f1f0e9; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.kma-ob-btn svg { width: 20px; height: 20px; }
+.kma-ob-scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.kma-ob-in { max-width: 760px; margin: 0 auto; padding: 14px 16px calc(32px + env(safe-area-inset-bottom)); }
+.kma-ob-intro { font-size: 15px; line-height: 1.5; margin: 0 0 12px; }
+.kma-ob-zoek { display: flex; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card, var(--bg-widget)); }
+.kma-ob-zoek svg { width: 18px; height: 18px; flex: none; color: var(--text-muted); }
+.kma-ob-zoek input { flex: 1; min-height: 46px; border: 0 !important; background: transparent !important; color: inherit; font: inherit; font-size: 16px; outline-offset: 2px; padding: 0 !important; }
+.kma-ob-meta { font-size: 13px; color: var(--text-muted); margin: 8px 0 10px; }
+.kma-ob-link { border: 0; background: none; padding: 6px 0; min-height: 32px; color: var(--kma-action-text, var(--text-primary)); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+.kma-ob-item { border: 1px solid var(--border-color); border-radius: 14px; background: var(--bg-card, var(--bg-widget)); margin: 0 0 8px; scroll-margin-top: 8px; }
+.kma-ob-item[hidden] { display: none; }
+.kma-ob-item > summary { list-style: none; cursor: pointer; padding: 12px 14px; min-height: 48px; display: grid; gap: 2px; }
+.kma-ob-item > summary::-webkit-details-marker { display: none; }
+.kma-ob-t { font-weight: 700; font-size: 16px; }
+.kma-ob-t::after { content: '+'; float: right; color: var(--text-muted); font-weight: 400; }
+.kma-ob-item[open] .kma-ob-t::after { content: '−'; }
+.kma-ob-item summary small { font-size: 13px; color: var(--text-muted); }
+.kma-ob-body { padding: 0 14px 12px; font-size: 15px; line-height: 1.5; }
+.kma-ob-body h4 { margin: 12px 0 2px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--kma-action-text, var(--text-muted)); }
+.kma-ob-body p { margin: 0; }
+.kma-ob-effect { display: flex; gap: 8px; align-items: flex-start; margin: 10px 0 0 !important; padding: 8px 10px; border-radius: 10px; background: color-mix(in srgb, var(--accent-gold, #c9b46a) 16%, transparent); }
+.kma-ob-effect svg { width: 18px; height: 18px; flex: none; margin-top: 2px; }
+.kma-ob-bronnen { margin: 4px 0 0; padding-left: 20px; font-size: 13px; line-height: 1.45; }
+.kma-ob-bronnen li { margin-bottom: 6px; overflow-wrap: anywhere; }
+.kma-ob-bronnen a { color: var(--kma-action-text, inherit); }
+.kma-ob-leeg, .kma-ob-voet { font-size: 13px; color: var(--text-muted); }
+.kma-waarom { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border-color); background: transparent; color: var(--kma-action-text, var(--text-primary)); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.kma-waarom svg { width: 16px; height: 16px; }
+@media print { .kma-ob { display: none !important; } }
+/* Vaste opbouw per hoofdstuk (4.18.0, kma-boek-opbouw.js): wat is dit, wat doe je hier, waarom */
+body.kma-met-opbouw #step-desc::before { content: 'Wat is dit? '; font-weight: 700; color: var(--text-primary); }
+.kma-opbouw { display: grid; gap: 6px; margin: 4px 0 16px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--border-color); background: var(--bg-card, var(--bg-widget)); font-size: 15px; line-height: 1.45; }
+.kma-opbouw .kma-ob-rij b { margin-right: 4px; }
+.kma-opbouw .kma-ob-knop { margin-top: 2px; }
+@media print { .kma-opbouw { display: none !important; } body.kma-met-opbouw #step-desc::before { content: none; } }
+/* Vandaag als cockpit (4.18.0): hooguit drie dingen in beeld, de rest onder Later */
+.kma-vd-meer { border-top: 1px solid rgba(255,255,255,.12); margin-top: 2px; }
+.kma-vd-meer > summary { cursor: pointer; min-height: 40px; display: flex; align-items: center; color: #e7dca6; font-size: 13px; font-weight: 700; }
+.kma-vd-meer .kma-vd-item:first-of-type { border-top: 1px solid rgba(255,255,255,.12); }
+.kma-vd-leeg { margin: 6px 0 2px; color: #d7dcd6; font-size: 14px; line-height: 1.45; }
+/* Drie tabbladen onderaan (4.18.0, kma-boek-tabs.js): Vandaag, Mijn ontwikkeling, Naslag */
+.kma-boektabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 940; display: flex; background: var(--header-bg, #18251d); border-top: 1px solid rgba(216,203,146,.35); padding: 0 4px env(safe-area-inset-bottom); }
+.kma-bt { flex: 1 1 0; min-width: 0; min-height: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 0; background: none; color: #c9cfc8; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; padding: 6px 2px; }
+.kma-bt .ki { width: 22px; height: 22px; }
+.kma-bt span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.kma-bt.on { color: #e7dca6; box-shadow: inset 0 3px 0 #d8cb92; }
+.kma-bt:focus-visible { outline: 3px solid #f1f0e9; outline-offset: -3px; }
+body.kma-tabs-on { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
+body.kma-tabs-on.kma-boek .form-navigation { bottom: calc(59px + env(safe-area-inset-bottom)); }
+body.kma-tabs-on .kma-quick-fab { bottom: calc(152px + env(safe-area-inset-bottom)); }
+body.kma-tabs-on[data-boek-tab="vandaag"] .kma-quick-fab { bottom: calc(76px + env(safe-area-inset-bottom)); }
+body.kma-tabs-on .kma-toast-host { bottom: calc(148px + env(safe-area-inset-bottom)); }
+body.kma-tabs-on .kma-top { bottom: calc(160px + env(safe-area-inset-bottom)); }
+/* Vandaag: alleen de cockpit en de voortgang */
+body.kma-tabs-on[data-boek-tab="vandaag"] #step-nav,
+body.kma-tabs-on[data-boek-tab="vandaag"] .content-panel > :not(#kma-vandaag) { display: none !important; }
+body.kma-tabs-on[data-boek-tab="vandaag"] .content-panel { min-height: 0; }
+body.kma-tabs-on:not([data-boek-tab="vandaag"]) #kma-vandaag { display: none !important; }
+/* Mijn ontwikkeling: Kern en Verdieping; Naslag: alleen Naslag */
+body.kma-tabs-on[data-boek-tab="ontwikkeling"] #step-nav > [data-group="naslag"],
+body.kma-tabs-on[data-boek-tab="naslag"] #step-nav > [data-group="kern"],
+body.kma-tabs-on[data-boek-tab="naslag"] #step-nav > [data-group="verdieping"] { display: none !important; }
+.step-nav.kma-acc > .step-link.kma-ongebruikt { display: none !important; }
+.step-nav.kma-acc > .kma-nav-meer { display: none; }
+.step-nav.kma-acc[data-open="verdieping"] > .kma-nav-meer { display: flex; align-items: center; width: 100%; min-height: 44px; padding: 8px 16px; border: 1px solid var(--border-color); border-top: 0; border-radius: 0 0 12px 12px; background: var(--bg-card, #fff); color: var(--kma-action-text, var(--text-primary)); font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; cursor: pointer; }
+.step-nav.kma-acc.kma-met-meer > .step-link.is-last[data-group="verdieping"] { border-radius: 0; }
+@media print { .kma-boektabs { display: none !important; } }
+/* OER-verwijzing (4.18.0, kma-oer.js): klein label, tik voor uitleg */
+.kma-oer { display: inline-flex; align-items: center; min-height: 24px; padding: 1px 7px; margin: 0 2px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent; color: var(--text-muted); font: inherit; font-size: 12px; font-weight: 600; letter-spacing: .02em; cursor: pointer; vertical-align: middle; white-space: nowrap; }
+.kma-oer:hover, .kma-oer:focus-visible { color: var(--text-primary); border-color: var(--accent-gold); }
+.kma-oer-sig { margin: 8px 0; padding: 8px 10px; border-radius: 10px; font-size: 13px; line-height: 1.4; border-left: 3px solid #b07a12; background: rgba(176,122,18,.10); }
+.kma-oer-sig.hoog { border-left-color: #a3232a; background: rgba(163,35,42,.08); }
+.kma-oer-cyclus { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; font-size: 13px; }
+.kma-oer-cyclus span { padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border-color); }
+.kma-oer-cyclus span.ok { border-color: #23663f; color: #23663f; }
+body.dark-theme .kma-oer-cyclus span.ok { color: #7fcf9b; border-color: #7fcf9b; }
+.kma-vb { border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; margin: 10px 0; background: var(--bg-card, var(--bg-widget)); }
+.kma-vb p { margin: 4px 0; font-size: 14px; }
+@media print { .kma-oer { border: 0; padding: 0; } }
+.kma-boektabs .kma-bt[data-bt="ontwikkeling"] { flex-grow: 1.45; }
+/* Leertaken DKOO (4.18.0, kma-leertaken.js): zelfde kleine labels als de OER-verwijzingen */
+.kma-lt-rij { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 4px 0; }
+.kma-lt-kop { font-size: 12px; color: var(--text-muted); margin-right: 2px; }
+.kma-ob-lt { margin-top: 2px; }

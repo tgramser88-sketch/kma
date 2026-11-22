@@ -1,0 +1,255 @@
+/*
+ * Wetenschappelijke onderbouwing: één bronnenbestand voor de apps, de handleiding en het onderzoeksvoorstel (4.18.0, blok O2).
+ * Per onderdeel van de apps: wat het is, waarom het werkt (met het effect uit meta-analyses waar die er zijn),
+ * de grenzen, en de bronnen in APA-stijl. De pagina (kma-onderbouwing.js), de handleiding (docs/handleiding/build.py)
+ * en het onderzoeksvoorstel (tools/bronnen.py → docs/onderzoek/voorstel.md) lezen het blok tussen JSON-START en
+ * JSON-END. Dat blok moet dus geldige JSON blijven (dubbele aanhalingstekens, geen komma na het laatste element).
+ * Alle DOI's zijn op 22-11-2026 nagelopen via Crossref (jaar = jaar van het tijdschriftnummer, zoals APA vraagt).
+ * Taalregel: geen gedachtestreepjes; paginabereiken met een gewoon streepje.
+ * Copyright (c) 2026 T.T.W. Gramser. Alle rechten voorbehouden.
+ */
+(function () {
+  'use strict';
+  var DATA = /*JSON-START*/{
+  "versie": "2026-11-22",
+  "bronnen": {
+    "ashton2007": { "apa": "Ashton, M. C., & Lee, K. (2007). Empirical, theoretical, and practical advantages of the HEXACO model of personality structure. *Personality and Social Psychology Review, 11*(2), 150-166.", "doi": "10.1177/1088868306294907" },
+    "ashton2007ipip": { "apa": "Ashton, M. C., Lee, K., & Goldberg, L. R. (2007). The IPIP-HEXACO scales: An alternative, public-domain measure of the personality constructs in the HEXACO model. *Personality and Individual Differences, 42*(8), 1515-1526.", "doi": "10.1016/j.paid.2006.10.027" },
+    "lee2004": { "apa": "Lee, K., & Ashton, M. C. (2004). Psychometric properties of the HEXACO Personality Inventory. *Multivariate Behavioral Research, 39*(2), 329-358.", "doi": "10.1207/s15327906mbr3902_8" },
+    "lee2018": { "apa": "Lee, K., & Ashton, M. C. (2018). Psychometric properties of the HEXACO-100. *Assessment, 25*(5), 543-556.", "doi": "10.1177/1073191116659134" },
+    "pletzer2019": { "apa": "Pletzer, J. L., Bentvelzen, M., Oostrom, J. K., & de Vries, R. E. (2019). A meta-analysis of the relations between personality and workplace deviance: Big Five versus HEXACO. *Journal of Vocational Behavior, 112*, 369-383.", "doi": "10.1016/j.jvb.2019.04.004" },
+    "judge2002": { "apa": "Judge, T. A., Bono, J. E., Ilies, R., & Gerhardt, M. W. (2002). Personality and leadership: A qualitative and quantitative review. *Journal of Applied Psychology, 87*(4), 765-780.", "doi": "10.1037/0021-9010.87.4.765" },
+    "johnson2005": { "apa": "Johnson, J. A. (2005). Ascertaining the validity of individual protocols from Web-based personality inventories. *Journal of Research in Personality, 39*(1), 103-129.", "doi": "10.1016/j.jrp.2004.09.009" },
+    "meade2012": { "apa": "Meade, A. W., & Craig, S. B. (2012). Identifying careless responses in survey data. *Psychological Methods, 17*(3), 437-455.", "doi": "10.1037/a0028085" },
+    "roberts2006": { "apa": "Roberts, B. W., Walton, K. E., & Viechtbauer, W. (2006). Patterns of mean-level change in personality traits across the life course: A meta-analysis of longitudinal studies. *Psychological Bulletin, 132*(1), 1-25.", "doi": "10.1037/0033-2909.132.1.1" },
+    "jackson2012": { "apa": "Jackson, J. J., Thoemmes, F., Jonkmann, K., Lüdtke, O., & Trautwein, U. (2012). Military training and personality trait development: Does the military make the man, or does the man make the military? *Psychological Science, 23*(3), 270-277.", "doi": "10.1177/0956797611423545" },
+    "vazire2010": { "apa": "Vazire, S. (2010). Who knows what about a person? The self-other knowledge asymmetry (SOKA) model. *Journal of Personality and Social Psychology, 98*(2), 281-300.", "doi": "10.1037/a0017908" },
+    "helms2010": { "apa": "Helms, M. M., & Nixon, J. (2010). Exploring SWOT analysis, where are we now? A review of academic research from the last decade. *Journal of Strategy and Management, 3*(3), 215-251.", "doi": "10.1108/17554251011064837" },
+    "leary1957": { "apa": "Leary, T. (1957). *Interpersonal diagnosis of personality*. Ronald Press." },
+    "wiggins1979": { "apa": "Wiggins, J. S. (1979). A psychological taxonomy of trait-descriptive terms: The interpersonal domain. *Journal of Personality and Social Psychology, 37*(3), 395-412.", "doi": "10.1037/0022-3514.37.3.395" },
+    "kiesler1983": { "apa": "Kiesler, D. J. (1983). The 1982 interpersonal circle: A taxonomy for complementarity in human transactions. *Psychological Review, 90*(3), 185-214.", "doi": "10.1037/0033-295X.90.3.185" },
+    "barford2015": { "apa": "Barford, K. A., Zhao, K., & Smillie, L. D. (2015). Mapping the interpersonal domain: Translating between the Big Five, HEXACO, and Interpersonal Circumplex. *Personality and Individual Differences, 86*, 232-237.", "doi": "10.1016/j.paid.2015.05.038" },
+    "defensie2019": { "apa": "Defensie. (2019). *Gedragsregels Defensie: Sociale veiligheid & integriteit* (versie 1.0)." },
+    "cohen1983": { "apa": "Cohen, S., Kamarck, T., & Mermelstein, R. (1983). A global measure of perceived stress. *Journal of Health and Social Behavior, 24*(4), 385-396.", "doi": "10.2307/2136404" },
+    "cohen1988": { "apa": "Cohen, S., & Williamson, G. (1988). Perceived stress in a probability sample of the United States. In S. Spacapan & S. Oskamp (Red.), *The social psychology of health* (pp. 31-67). Sage." },
+    "cohen2012": { "apa": "Cohen, S., & Janicki-Deverts, D. (2012). Who's stressed? Distributions of psychological stress in the United States in probability samples from 1983, 2006, and 2009. *Journal of Applied Social Psychology, 42*(6), 1320-1334.", "doi": "10.1111/j.1559-1816.2012.00900.x" },
+    "lee2012": { "apa": "Lee, E.-H. (2012). Review of the psychometric evidence of the Perceived Stress Scale. *Asian Nursing Research, 6*(4), 121-127.", "doi": "10.1016/j.anr.2012.08.004" },
+    "jacobson1991": { "apa": "Jacobson, N. S., & Truax, P. (1991). Clinical significance: A statistical approach to defining meaningful change in psychotherapy research. *Journal of Consulting and Clinical Psychology, 59*(1), 12-19.", "doi": "10.1037/0022-006X.59.1.12" },
+    "topp2015": { "apa": "Topp, C. W., Østergaard, S. D., Søndergaard, S., & Bech, P. (2015). The WHO-5 Well-Being Index: A systematic review of the literature. *Psychotherapy and Psychosomatics, 84*(3), 167-176.", "doi": "10.1159/000376585" },
+    "flanagan1954": { "apa": "Flanagan, J. C. (1954). The critical incident technique. *Psychological Bulletin, 51*(4), 327-358.", "doi": "10.1037/h0061470" },
+    "hattie2007": { "apa": "Hattie, J., & Timperley, H. (2007). The power of feedback. *Review of Educational Research, 77*(1), 81-112.", "doi": "10.3102/003465430298487" },
+    "wisniewski2020": { "apa": "Wisniewski, B., Zierer, K., & Hattie, J. (2020). The power of feedback revisited: A meta-analysis of educational feedback research. *Frontiers in Psychology, 10*, Artikel 3087.", "doi": "10.3389/fpsyg.2019.03087" },
+    "kluger1996": { "apa": "Kluger, A. N., & DeNisi, A. (1996). The effects of feedback interventions on performance: A historical review, a meta-analysis, and a preliminary feedback intervention theory. *Psychological Bulletin, 119*(2), 254-284.", "doi": "10.1037/0033-2909.119.2.254" },
+    "ellis1962": { "apa": "Ellis, A. (1962). *Reason and emotion in psychotherapy*. Lyle Stuart." },
+    "david2018": { "apa": "David, D., Cotet, C., Matu, S., Mogoase, C., & Stefan, S. (2018). 50 years of rational-emotive and cognitive-behavioral therapy: A systematic review and meta-analysis. *Journal of Clinical Psychology, 74*(3), 304-318.", "doi": "10.1002/jclp.22514" },
+    "mann2009": { "apa": "Mann, K., Gordon, J., & MacLeod, A. (2009). Reflection and reflective practice in health professions education: A systematic review. *Advances in Health Sciences Education, 14*(4), 595-621.", "doi": "10.1007/s10459-007-9090-2" },
+    "korthagen2005": { "apa": "Korthagen, F., & Vasalos, A. (2005). Levels in reflection: Core reflection as a means to enhance professional growth. *Teachers and Teaching, 11*(1), 47-71.", "doi": "10.1080/1354060042000337093" },
+    "locke2002": { "apa": "Locke, E. A., & Latham, G. P. (2002). Building a practically useful theory of goal setting and task motivation: A 35-year odyssey. *American Psychologist, 57*(9), 705-717.", "doi": "10.1037/0003-066X.57.9.705" },
+    "doran1981": { "apa": "Doran, G. T. (1981). There's a S.M.A.R.T. way to write management's goals and objectives. *Management Review, 70*(11), 35-36." },
+    "gollwitzer2006": { "apa": "Gollwitzer, P. M., & Sheeran, P. (2006). Implementation intentions and goal achievement: A meta-analysis of effects and processes. *Advances in Experimental Social Psychology, 38*, 69-119.", "doi": "10.1016/S0065-2601(06)38002-1" },
+    "kiresuk1968": { "apa": "Kiresuk, T. J., & Sherman, R. E. (1968). Goal attainment scaling: A general method for evaluating comprehensive community mental health programs. *Community Mental Health Journal, 4*(6), 443-453.", "doi": "10.1007/BF01530764" },
+    "oettingen2012": { "apa": "Oettingen, G. (2012). Future thought and behaviour change. *European Review of Social Psychology, 23*(1), 1-63.", "doi": "10.1080/10463283.2011.643698" },
+    "wang2021": { "apa": "Wang, G., Wang, Y., & Gai, X. (2021). A meta-analysis of the effects of mental contrasting with implementation intentions on goal attainment. *Frontiers in Psychology, 12*, Artikel 565202.", "doi": "10.3389/fpsyg.2021.565202" },
+    "double2020": { "apa": "Double, K. S., McGrane, J. A., & Hopfenbeck, T. N. (2020). The impact of peer assessment on academic performance: A meta-analysis of control group studies. *Educational Psychology Review, 32*(2), 481-509.", "doi": "10.1007/s10648-019-09510-3" },
+    "smither2005": { "apa": "Smither, J. W., London, M., & Reilly, R. R. (2005). Does performance improve following multisource feedback? A theoretical model, meta-analysis, and review of empirical findings. *Personnel Psychology, 58*(1), 33-66.", "doi": "10.1111/j.1744-6570.2005.514_1.x" },
+    "tannenbaum2013": { "apa": "Tannenbaum, S. I., & Cerasoli, C. P. (2013). Do team and individual debriefs enhance performance? A meta-analysis. *Human Factors, 55*(1), 231-245.", "doi": "10.1177/0018720812448394" },
+    "keiser2021": { "apa": "Keiser, N. L., & Arthur, W., Jr. (2021). A meta-analysis of the effectiveness of the after-action review (or debrief) and factors that influence its effectiveness. *Journal of Applied Psychology, 106*(7), 1007-1032.", "doi": "10.1037/apl0000821" },
+    "schuwirth2011": { "apa": "Schuwirth, L. W. T., & Van der Vleuten, C. P. M. (2011). Programmatic assessment: From assessment of learning to assessment for learning. *Medical Teacher, 33*(6), 478-485.", "doi": "10.3109/0142159X.2011.565828" },
+    "vleuten2012": { "apa": "Van der Vleuten, C. P. M., Schuwirth, L. W. T., Driessen, E. W., Dijkstra, J., Tigelaar, D., Baartman, L. K. J., & van Tartwijk, J. (2012). A model for programmatic assessment fit for purpose. *Medical Teacher, 34*(3), 205-214.", "doi": "10.3109/0142159X.2012.652239" },
+    "vleuten2018": { "apa": "Van der Vleuten, C. P. M., Lindemann, I., & Schmidt, L. (2018). Programmatic assessment: The process, rationale and evidence for modern evaluation approaches in medical education. *Medical Journal of Australia, 209*(9), 386-388.", "doi": "10.5694/mja17.00926" },
+    "woehr1994": { "apa": "Woehr, D. J., & Huffcutt, A. I. (1994). Rater training for performance appraisal: A quantitative review. *Journal of Occupational and Organizational Psychology, 67*(3), 189-205.", "doi": "10.1111/j.2044-8325.1994.tb00562.x" },
+    "roch2012": { "apa": "Roch, S. G., Woehr, D. J., Mishra, V., & Kieszczynska, U. (2012). Rater training revisited: An updated meta-analytic review of frame-of-reference training. *Journal of Occupational and Organizational Psychology, 85*(2), 370-395.", "doi": "10.1111/j.2044-8325.2011.02045.x" },
+    "theeboom2014": { "apa": "Theeboom, T., Beersma, B., & van Vianen, A. E. M. (2014). Does coaching work? A meta-analysis on the effects of coaching on individual level outcomes in an organizational context. *The Journal of Positive Psychology, 9*(1), 1-18.", "doi": "10.1080/17439760.2013.837499" },
+    "zimmerman2002": { "apa": "Zimmerman, B. J. (2002). Becoming a self-regulated learner: An overview. *Theory Into Practice, 41*(2), 64-70.", "doi": "10.1207/s15430421tip4102_2" },
+    "theobald2021": { "apa": "Theobald, M. (2021). Self-regulated learning training programs enhance university students' academic performance, self-regulated learning strategies, and motivation: A meta-analysis. *Contemporary Educational Psychology, 66*, Artikel 101976.", "doi": "10.1016/j.cedpsych.2021.101976" },
+    "day2014": { "apa": "Day, D. V., Fleenor, J. W., Atwater, L. E., Sturm, R. E., & McKee, R. A. (2014). Advances in leader and leadership development: A review of 25 years of research and theory. *The Leadership Quarterly, 25*(1), 63-82.", "doi": "10.1016/j.leaqua.2013.11.004" }
+  },
+  "onderdelen": [
+    {
+      "id": "dtf", "titel": "Datum-Tijd-Feit (DTF)", "waar": "Boekje: DTF-logboek, + Nieuw → DTF-feit. CVS: DTF-notities per cadet.",
+      "hoofdstukken": ["Datum-Tijd-Feit Logboek"],
+      "wat": "Je legt kort na een gebeurtenis vast wanneer het was en wat er feitelijk gebeurde, zonder oordeel. Daarna koppel je het aan een V van de Gedragscode.",
+      "waarom": "Een oordeel ('hij is lui') kun je niet nagaan en niet verbeteren; een feit wel. Vastleggen kort na de gebeurtenis voorkomt dat het geheugen het verhaal bijkleurt. De methode komt uit de critical incident technique: concrete, waargenomen voorvallen als basis voor beoordelen en leren. Feedback over concreet gedrag werkt beter dan feedback over de persoon.",
+      "effect": "Feedback over taak en proces: gemiddeld d = 0,48 (435 studies); feedback over de persoon heeft nauwelijks effect.",
+      "grenzen": "Er is geen onderzoek naar een DTF-logboek als zodanig. Het effect komt pas als de feiten worden besproken en tot een volgende stap leiden. Feiten van één persoon blijven één perspectief.",
+      "bronnen": ["flanagan1954", "hattie2007", "wisniewski2020", "kluger1996"]
+    },
+    {
+      "id": "5gt", "titel": "5G-T-reflectie", "waar": "Boekje: Zelfreflectie Leervraag (5G-T).",
+      "hoofdstukken": ["Zelfreflectie Leervraag (5G-T)"],
+      "wat": "Je ontleedt een situatie in vijf G's (gebeurtenis, gevoel, gedachten, gedrag, gevolg), toetst je belangrijkste gedachte, kijkt wat je kunt beïnvloeden en kiest wat je de volgende keer doet (T van toekomst).",
+      "waarom": "Het 5G-schema komt uit de rationeel-emotieve en cognitieve gedragstherapie: niet de gebeurtenis zelf, maar je gedachte erover bepaalt grotendeels je gevoel en gedrag. Door die gedachte te toetsen aan de feiten krijg je meer keuze in hoe je reageert.",
+      "effect": "Rationeel-emotieve en cognitieve gedragstherapie: in een meta-analyse over 50 jaar onderzoek gemiddeld een middelgroot effect.",
+      "grenzen": "Dat effect geldt voor therapie onder begeleiding, niet voor zelfreflectie in een boekje. Het 5G-T-format zelf is niet onderzocht. Het is geen behandeling: bij aanhoudende klachten hoort een professional.",
+      "bronnen": ["ellis1962", "david2018", "mann2009"]
+    },
+    {
+      "id": "korthagen", "titel": "Procesreflectie (Korthagen)", "waar": "Boekje: Procesreflectie (Korthagen).",
+      "hoofdstukken": ["Procesreflectie (Korthagen)"],
+      "wat": "Reflecteren in vijf fasen (ALACT): handelen, terugblikken, je bewust worden van de kern, alternatieven bedenken en die uitproberen. Daarna begint de cirkel opnieuw.",
+      "waarom": "Het model maakt van reflectie een cyclus die eindigt in ander gedrag, in plaats van alleen nadenken. Het is in de Nederlandse beroepsopleidingen (eerst lerarenopleiding) breed in gebruik.",
+      "effect": "",
+      "grenzen": "Reviews laten zien dat reflectie in opleidingen veel wordt gebruikt, maar dat er weinig onderzoek met een vergelijkingsgroep is naar het effect op gedrag. Reflectie werkt beter met begeleiding en een concrete volgende stap.",
+      "bronnen": ["korthagen2005", "mann2009"]
+    },
+    {
+      "id": "smart", "titel": "SMART-leervraag en als-dan-plannen", "waar": "Boekje: SMART Leervraag (leervraag, als-dan-plannen, wekelijkse check-in).",
+      "hoofdstukken": ["SMART Leervraag"],
+      "wat": "Je maakt van je leerdoel een specifieke, meetbare leervraag met een datum. Daarbij maak je tot drie als-dan-plannen: 'Als situatie X, dan doe ik Y'. Elke week check je in: is het gelukt?",
+      "waarom": "Specifieke, uitdagende doelen leiden tot betere prestaties dan 'doe je best'. Een als-dan-plan koppelt het doel aan een herkenbaar moment, zodat je in die situatie bijna vanzelf handelt. De check-in houdt bij of het werkt.",
+      "effect": "Als-dan-plannen: middelgroot tot groot effect op het bereiken van doelen, d = 0,65 (94 toetsen).",
+      "grenzen": "Werkt vooral als het doel je echt iets zegt. Een SMART-formulering alleen is geen bewezen methode (het acroniem komt uit de managementpraktijk); de kracht zit in specifiek en uitdagend.",
+      "bronnen": ["locke2002", "doran1981", "gollwitzer2006"]
+    },
+    {
+      "id": "gas", "titel": "Doel in vijf niveaus (GAS)", "waar": "Boekje: SMART Leervraag, onderdeel Doel in vijf niveaus.",
+      "hoofdstukken": ["SMART Leervraag"],
+      "wat": "Je beschrijft vooraf vijf niveaus van je doel, van veel slechter (-2) tot veel beter (+2) dan verwacht, en geeft elke week aan waar je staat.",
+      "waarom": "Goal Attainment Scaling maakt een persoonlijk doel meetbaar zonder dat iedereen hetzelfde doel hoeft te hebben. Je ziet je voortgang in een lijn.",
+      "effect": "",
+      "grenzen": "GAS is een meetmethode, geen interventie met een eigen effect. De niveaus zijn zo goed als je ze opschrijft: vaag geformuleerde niveaus maken de meting onbetrouwbaar.",
+      "bronnen": ["kiresuk1968"]
+    },
+    {
+      "id": "woop", "titel": "WOOP (wens, uitkomst, obstakel, plan)", "waar": "Boekje: SMART Leervraag, onderdeel WOOP.",
+      "hoofdstukken": ["SMART Leervraag"],
+      "wat": "Je stelt je de beste uitkomst voor en daarna het belangrijkste obstakel in jezelf. Van dat obstakel maak je een als-dan-plan.",
+      "waarom": "Alleen positief dromen maakt mensen soms minder actief. Het contrast tussen gewenste uitkomst en obstakel (mentaal contrasteren), gecombineerd met een als-dan-plan, helpt juist om in actie te komen.",
+      "effect": "Mentaal contrasteren met als-dan-plannen: een klein tot middelgroot effect op doelbereik in een meta-analyse.",
+      "grenzen": "De meeste studies zijn kort en bij studenten. Het effect hangt af van een concreet en eerlijk benoemd obstakel.",
+      "bronnen": ["oettingen2012", "wang2021", "gollwitzer2006"]
+    },
+    {
+      "id": "hexaco", "titel": "Persoonlijkheidstest (HEXACO, IPIP)", "waar": "Boekje: Persoonlijkheidstest (IPIP), 360-observaties, SWOT. CVS: profiel en KMA-normen.",
+      "hoofdstukken": ["Persoonlijkheidstest (IPIP)"],
+      "wat": "96 stellingen over zes eigenschappen: Integriteit, Emotionaliteit, Extraversie, Verdraagzaamheid, Consciëntieusheid en Openheid. Medecadetten kunnen dezelfde stellingen over jou invullen.",
+      "waarom": "Het HEXACO-model is gevonden in taalonderzoek in veel talen, waaronder het Nederlands. De zesde eigenschap, Integriteit (Honesty-Humility), voorspelt integer en niet-integer gedrag op het werk beter dan de Big Five. Extraversie hangt samen met het ontstaan van leiderschap. Anderen zien sommige eigenschappen beter dan jijzelf; daarom de observaties.",
+      "effect": "Integriteit is in een meta-analyse de sterkste voorspeller van ongewenst gedrag op het werk.",
+      "grenzen": "De app gebruikt een eigen selectie van 96 vrij te gebruiken IPIP-stellingen; de betrouwbaarheid van deze korte versie en de Nederlandse vertaling zijn nog niet onderzocht (de app meet de alfa zodra er genoeg tests zijn). Scores zijn geen percentiel en niet bedoeld voor selectie of beoordeling. Persoonlijkheid verandert langzaam, ook in een militaire opleiding.",
+      "bronnen": ["ashton2007", "ashton2007ipip", "lee2004", "pletzer2019", "judge2002", "vazire2010", "roberts2006", "jackson2012", "johnson2005", "meade2012"]
+    },
+    {
+      "id": "swot", "titel": "SWOT en kernkwadranten", "waar": "Boekje: profiel na de persoonlijkheidstest, koppeling bij DTF-feiten.",
+      "hoofdstukken": [],
+      "wat": "Je sterktes, zwaktes, kansen en bedreigingen, afgeleid uit je testuitslag en aan te vullen met je eigen voorbeelden.",
+      "waarom": "Een SWOT maakt een testuitslag concreet en bespreekbaar, en verbindt hem met gedrag in je DTF-feiten.",
+      "effect": "",
+      "grenzen": "De SWOT is een denkhulp uit de strategische planning. Er is weinig onderzoek naar SWOT als methode, en geen naar SWOT voor persoonlijke ontwikkeling. De afleiding uit de test is een keuze van de ontwikkelaar.",
+      "bronnen": ["helms2010"]
+    },
+    {
+      "id": "leary", "titel": "Roos van Leary", "waar": "Boekje: Roos van Leary (hoofdstuk), roos bij DTF-feiten en feedback. CVS: roos per cadet.",
+      "hoofdstukken": ["Roos van Leary"],
+      "wat": "Interpersoonlijk gedrag op twee assen: boven tegenover onder (invloed) en samen tegenover tegen (verbondenheid). Je zet een gedraging als stip op de roos.",
+      "waarom": "De twee assen van het interpersoonlijk circumplex zijn in veel onderzoek teruggevonden. Gedrag lokt gedrag uit: wie boven gaat zitten, lokt vaak onder-gedrag uit (complementariteit). Zo kun je bewuster kiezen hoe je een ander beïnvloedt.",
+      "effect": "",
+      "grenzen": "De assen zijn goed onderbouwd, de gelijke verdeling in acht sectoren niet; daarom bewaart de app asscores. Eén stip van één beoordelaar zegt weinig: de verdeling verschijnt pas vanaf vijf stippen per bron. HEXACO en de roos hangen maar matig samen. De koppeling met de 4 V's is een denkhulp, geen meting.",
+      "bronnen": ["leary1957", "wiggins1979", "kiesler1983", "barford2015"]
+    },
+    {
+      "id": "pss", "titel": "Stresscheck (PSS-10)", "waar": "Boekje: Fitheid & stress (altijd privé).",
+      "hoofdstukken": ["Fitheid & stress"],
+      "wat": "Tien vragen over hoe onvoorspelbaar, oncontroleerbaar en overbelast je de afgelopen maand je leven ervoer. Score van 0 tot 40.",
+      "waarom": "De Perceived Stress Scale is de meest gebruikte vragenlijst voor ervaren stress en heeft in een overzichtsstudie goede betrouwbaarheid. De app vergelijkt vooral met je eigen vorige meting en meldt een betrouwbare stijging (8 punten of meer).",
+      "effect": "",
+      "grenzen": "Er zijn geen officiële afkappunten; de indeling is afgeleid van Amerikaanse cijfers voor jongvolwassenen. Het is geen diagnose. De uitslag blijft altijd op je eigen toestel.",
+      "bronnen": ["cohen1983", "cohen1988", "cohen2012", "lee2012", "jacobson1991"]
+    },
+    {
+      "id": "who5", "titel": "Welzijnscheck (WHO-5)", "waar": "Boekje: Fitheid & stress (altijd privé).",
+      "hoofdstukken": ["Fitheid & stress"],
+      "wat": "Vijf uitspraken over je welbevinden in de afgelopen twee weken, van 0 tot 100.",
+      "waarom": "De WHO-5 is in een systematisch overzicht van 213 studies valide gebleken als maat voor welbevinden en om te zien wanneer het verstandig is met iemand te praten (50 of lager).",
+      "effect": "",
+      "grenzen": "Een korte vragenlijst, geen diagnose. Een lage score is een reden om met iemand te praten, niet meer en niet minder.",
+      "bronnen": ["topp2015"]
+    },
+    {
+      "id": "feedback", "titel": "Feedback van de teamleider (feed-up, feed-back, feed-forward)", "waar": "Boekje: Feedback van je teamleider, Vandaag. CVS: feedback in drie vragen.",
+      "hoofdstukken": [],
+      "wat": "Feedback in drie vragen: waar werk je naartoe (doel), wat zag ik (gedrag), wat is je volgende stap.",
+      "waarom": "Feedback werkt het best als hij antwoord geeft op deze drie vragen en over taak, proces of zelfsturing gaat, niet over de persoon. Zonder volgende stap verandert er weinig.",
+      "effect": "Gemiddeld d = 0,48 (435 studies). In een oudere meta-analyse verslechterde in een derde van de studies de prestatie na feedback, vooral bij feedback over de persoon.",
+      "grenzen": "Gemiddelden uit onderwijsonderzoek; het effect bij cadetten wordt nog gemeten. De kwaliteit van de feedback bepaalt het effect.",
+      "bronnen": ["hattie2007", "wisniewski2020", "kluger1996"]
+    },
+    {
+      "id": "medecadet", "titel": "Feedback van medecadetten", "waar": "Boekje: + Nieuw → Feedback geven, inbox.",
+      "hoofdstukken": [],
+      "wat": "Cadetten geven elkaar korte feedbackkaarten (situatie, feit, effect, V, volgende stap). De ontvanger kiest wat hij ermee doet.",
+      "waarom": "Feedback van medestudenten verhoogt prestaties, ook omdat je leert door zelf goed te kijken en te formuleren. Feedback van meerdere kanten (360 graden) helpt alleen als de ontvanger er doelen en acties aan verbindt; daarom de vraag 'Wat ga je ermee doen?'.",
+      "effect": "Feedback van medestudenten: g = 0,31 (54 studies). 360-gradenfeedback: gemiddeld klein, groter met doelen en opvolging.",
+      "grenzen": "Eén kaart van één medecadet is één perspectief. Zonder oefening is feedback van medestudenten minder nauwkeurig; vriendschap en groepsdruk kunnen meespelen.",
+      "bronnen": ["double2020", "smither2005", "hattie2007"]
+    },
+    {
+      "id": "nabespreking", "titel": "Nabespreking (After Action Review)", "waar": "Boekje: + Nieuw → Nabespreking. CVS: Nabespreking oefening.",
+      "hoofdstukken": [],
+      "wat": "Vier vragen kort na een oefening: wat was de bedoeling, wat gebeurde er echt, waarom ging het zo, wat doe je volgende keer.",
+      "waarom": "Een gestructureerde nabespreking zet ervaring om in een concrete verbetering. Dit is een van de best onderbouwde leermethoden in militaire en medische opleidingen.",
+      "effect": "Debriefs verbeteren prestaties met gemiddeld 20 tot 25 procent, d = 0,67 (46 studies); een latere meta-analyse bevestigt een groot effect.",
+      "grenzen": "Werkt beter met structuur en begeleiding en als de lessen echt worden toegepast. Een nabespreking die een schuldvraag wordt, werkt averechts.",
+      "bronnen": ["tannenbaum2013", "keiser2021"]
+    },
+    {
+      "id": "datapunten", "titel": "Datapunten en programmatisch toetsen", "waar": "Boekje: Voorbereiding Cadetbeoordeling (mijn datapunten). CVS: datapunten per V, beoordelingsformulier, onderbouwing delen.",
+      "hoofdstukken": ["Voorbereiding Cadetbeoordeling", "Zelfbeoordelingsformulier KMA"],
+      "wat": "Elke observatie (DTF, feedback, nabespreking) is een datapunt met lage inzet: bedoeld om van te leren. Een beoordeling rust op veel datapunten uit meerdere bronnen. De app waarschuwt bij minder dan 5 datapunten of minder dan 2 bronnen per V.",
+      "waarom": "Eén meting is nooit betrouwbaar genoeg voor een zware beslissing. Door veel kleine observaties uit verschillende bronnen te combineren wordt het oordeel betrouwbaarder en kan de cadet er tussendoor van leren. Dit sluit aan op de OER (relevante observaties).",
+      "effect": "",
+      "grenzen": "Programmatisch toetsen is een samenhangend kader met onderbouwing uit de medische opleidingen, geen enkele interventie met één effectgrootte. De drempels (5 en 2) zijn een keuze, geen norm.",
+      "bronnen": ["schuwirth2011", "vleuten2012", "vleuten2018"]
+    },
+    {
+      "id": "kalibreren", "titel": "Kalibreren (oefenen met beoordelen)", "waar": "CVS: Oefenen met beoordelen.",
+      "hoofdstukken": [],
+      "wat": "Teamleiders beoordelen dezelfde voorbeeldcasussen en vergelijken hun oordeel met een voorbeeldoordeel per V.",
+      "waarom": "Frame-of-reference-training geeft beoordelaars een gedeeld beeld van wat goed en minder goed gedrag is. Daardoor worden oordelen nauwkeuriger en lopen ze minder uiteen tussen beoordelaars.",
+      "effect": "Frame-of-reference-training: middelgroot tot groot effect op de nauwkeurigheid van beoordelen (twee meta-analyses).",
+      "grenzen": "De voorbeeldoordelen in de app zijn niet door de KMA vastgesteld. Het effect blijft alleen als er regelmatig opnieuw wordt gekalibreerd.",
+      "bronnen": ["woehr1994", "roch2012"]
+    },
+    {
+      "id": "coaching", "titel": "Coaching en gesprekken met de teamleider", "waar": "Boekje: Bereid je gesprek voor, afspraken op Vandaag. CVS: gespreksverslagen.",
+      "hoofdstukken": [],
+      "wat": "Regelmatige gesprekken waarin de teamleider vragen stelt, de cadet zelf een doel en een afspraak kiest, en die afspraak in het volgende gesprek terugkomt.",
+      "waarom": "Coaching in organisaties heeft positieve effecten op prestaties, welbevinden, omgaan met druk en vooral op doelgerichte zelfsturing. Leiderschap ontwikkelt zich over jaren via ervaring, feedback en zelfbeeld; gesprekken verbinden die.",
+      "effect": "Coaching: van g = 0,43 (omgaan met druk) tot g = 0,74 (doelgerichte zelfsturing).",
+      "grenzen": "De studies gaan vooral over professionele coaches, niet over een teamleider die ook beoordeelt. Die dubbele rol vraagt om duidelijke afspraken over wat wel en niet meetelt.",
+      "bronnen": ["theeboom2014", "day2014"]
+    },
+    {
+      "id": "zelfregulatie", "titel": "Zelfregulerend leren (de cyclus in het boekje)", "waar": "Boekje: Vandaag, leervraag, check-in, DTF en terugblik.",
+      "hoofdstukken": ["Mijn groei & ontwikkeling", "Introductie & Drijfveren"],
+      "wat": "Vooruitdenken (doel kiezen), uitvoeren en bijhouden (DTF, check-in) en terugkijken (reflectie). Het boekje is rond die cyclus gebouwd.",
+      "waarom": "Wie leert zijn eigen leren te plannen, te volgen en te evalueren, presteert beter. De grootste effecten komen van metacognitieve strategieën: weten wat je doet en waarom.",
+      "effect": "Trainingen in zelfregulerend leren in het hoger onderwijs: g = 0,38 op studieprestaties (49 studies).",
+      "grenzen": "Een app is geen training; het effect hangt af van begeleiding en van hoe trouw de cyclus wordt doorlopen.",
+      "bronnen": ["zimmerman2002", "theobald2021", "day2014"]
+    }
+  ],
+  "voorstel": ["ashton2007", "barford2015", "defensie2019", "jackson2012", "kiesler1983", "leary1957", "lee2004", "lee2018", "roberts2006", "vazire2010", "wiggins1979"]
+}/*JSON-END*/;
+
+  /** APA-tekst zonder opmaaktekens (sterretjes = cursief in markdown). */
+  function plain(apa) { return String(apa || '').replace(/\*/g, ''); }
+  /** APA met cursief als HTML; tekst wordt eerst veilig gemaakt. */
+  function html(apa) {
+    var e = String(apa || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+    return e.replace(/\*([^*]+)\*/g, '<i>$1</i>');
+  }
+  function bron(id) { return DATA.bronnen[id] || null; }
+  function onderdeel(id) { return DATA.onderdelen.filter(function (o) { return o.id === id; })[0] || null; }
+  /** Onderdeel dat bij een hoofdstuk (titel) van het boekje hoort, of null. */
+  function voorHoofdstuk(titel) { return DATA.onderdelen.filter(function (o) { return (o.hoofdstukken || []).indexOf(titel) >= 0; })[0] || null; }
+  /** Korte verwijzing in de tekst: "Gollwitzer & Sheeran, 2006". */
+  function kort(id) {
+    var b = bron(id); if (!b) return id;
+    var m = /^(.*?)\s\((\d{4})\)/.exec(b.apa); if (!m) return id;
+    var namen = [], re = /(?:^|,\s|&\s)([^,&]+?),\s(?:[A-Z]\.(?:-[A-Z]\.)?\s?)+/g, x;
+    while ((x = re.exec(m[1]))) namen.push(x[1].trim());
+    if (!namen.length) namen = [m[1].replace(/\.$/, '')];
+    return (namen.length > 2 ? namen[0] + ' e.a.' : namen.join(' & ')) + ', ' + m[2];
+  }
+  window.KMABronnen = { data: DATA, bron: bron, onderdeel: onderdeel, voorHoofdstuk: voorHoofdstuk, kort: kort, plain: plain, html: html };
+})();

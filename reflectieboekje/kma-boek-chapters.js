@@ -1149,6 +1149,8 @@
         ((d.vValues || []).length ? '<div class="kma-chips small">' + d.vValues.map(function (v) { return '<span class="kma-chip-btn on">' + esc(v) + '</span>'; }).join('') + '</div>' : '') +
         ((d.swot || []).length ? '<div class="kma-chips small">' + d.swot.map(function (t) { return '<span class="kma-chip-btn kma-swtag on ' + t.k + '"><i>' + (t.k === 's' ? 'S' : 'V') + '</i>' + esc(t.t) + '</span>'; }).join('') + '</div>' : '') +
         (d.aspect ? '<p class="muted small">' + esc(d.aspect) + '</p>' : '') +
+        // 4.18.0: snel vastgelegd (+ Nieuw) of zonder V: hier alsnog de V kiezen
+        (!(d.vValues || []).length ? '<p class="muted small">Bij welke V hoort dit?</p><div class="kma-chips small kma-dtf-vlater">' + VS.map(function (v) { return '<button type="button" class="kma-chip-btn" data-dtfvset="' + d.id + '" data-v="' + esc(v) + '">' + esc(v) + '</button>'; }).join('') + '</div>' : '') +
         (window.KMALeary && KMALeary.clean(d.leary) ? '<p class="muted small">Roos van Leary: ' + esc(KMALeary.label(d.leary)) + '</p>' : '') +
         '<div class="kma-row-btns"><button type="button" class="kma-chip-btn" onclick="kmaStart5GTFromDtf(' + d.id + ')">' + icon('refresh') + 'Maak 5G-T</button>' +
         '<button type="button" class="kma-chip-btn" data-dtflink="' + d.id + '">' + icon('target') + 'Sterkte/valkuil</button>' +
@@ -1157,6 +1159,15 @@
         '<button type="button" class="kma-chip-btn" onclick="deleteDTFItem(' + d.id + ')">' + icon('trash') + 'Verwijder</button></div></div></div>' };
   }
   document.addEventListener('click', function (e) {
+    var vs = e.target.closest && e.target.closest('[data-dtfvset]');
+    if (vs) {
+      var di = dtfItems.find(function (x) { return String(x.id) === vs.getAttribute('data-dtfvset'); }); if (!di) return;
+      var v = vs.getAttribute('data-v'); if (VS.indexOf(v) < 0) return;
+      di.vValues = [v]; saveDtf(); renderWidgets();
+      if (window.kmaVandaag) kmaVandaag.render();
+      if (window.kmaToast) kmaToast('V gekozen: ' + v);
+      return;
+    }
     var lb = e.target.closest && e.target.closest('[data-dtfleary]');
     if (lb) {
       var it = dtfItems.find(function (x) { return String(x.id) === lb.getAttribute('data-dtfleary'); }); if (!it) return;
@@ -1365,7 +1376,7 @@
     try { (window.kmaKameraad ? kmaKameraad._S().inbox || [] : []).forEach(function (k) { if (!k.inDtf && k.v4) p.push(D.vanDtf({ datum: k.datum, feit: k.feit, v4: [k.v4] }, 'medecadet')); }); } catch (e) {}
     var seen = {};
     try { (window.kmaFeedback ? kmaFeedback.all() : []).forEach(function (r) { (r.dtfNotes || []).forEach(function (n) { if (seen[n.id]) return; seen[n.id] = 1; var d = D.vanDtf(n, /instructeur/i.test(n.role || '') ? 'instructeur' : 'teamleider'); if (d) p.push(d); }); }); } catch (e) {}
-    return cardHtml('Wat weet je teamleider van je?', '<p class="muted small">Elk DTF-feit, elke feedback van een medecadet en elke waarneming die je teamleider met je deelde, is een datapunt. Je beoordeling steunt op deze punten, niet op één moment.</p>' + D.html(D.perV(p), { zelf: true }), 'chart');
+    return cardHtml('Wat weet je teamleider van je?', '<p class="muted small">Elk DTF-feit, elke feedback van een medecadet en elke waarneming die je teamleider met je deelde, is een datapunt. Je beoordeling steunt op deze punten, niet op één moment. ' + (window.kmaOER ? kmaOER.label('3.7.5') + kmaOER.label('3.7.4') : '') + '</p>' + D.html(D.perV(p), { zelf: true }), 'chart');
   }
   R['beoordeling-prep'] = function (c) {
     var sel = getX('gesprek', { ids: [] }).ids, ev = evidenceItems();

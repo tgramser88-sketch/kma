@@ -142,7 +142,7 @@
   }
   function renderBoek(c) {
     c.innerHTML = '<div class="kma-card-block kma-tp"><h4>' + icon('list') + 'Mijn toetsen</h4>' +
-      '<p class="muted">Hier zie je waarop je in de DKOO getoetst wordt. Houd zelf bij wat je hebt behaald. Heeft je teamleider een uitslag vastgelegd, dan zie je die eronder.</p>' +
+      '<p class="muted">Hier zie je waarop je in de DKOO getoetst wordt. Houd zelf bij wat je hebt behaald. Heeft je teamleider een uitslag vastgelegd, dan zie je die eronder. Dit is een eigen overzicht; de officiële registratie loopt via bureau Cadettenbeheer. ' + (window.kmaOER ? kmaOER.label('4.2') : '') + (window.kmaOER ? kmaOER.label('4.10') : '') + '</p>' +
       listHtml({ mine: getJ('kma-x-toetsen', {}), other: teamleiderMarks(), otherLabel: 'Teamleider', filter: boekFilter, edit: true }) + '</div>';
   }
 
@@ -154,7 +154,7 @@
     var sec = document.createElement('div');
     sec.className = 'kma-vis-section kma-tp';
     sec.innerHTML = '<h3>' + icon('list') + 'Toetsing en examinering DKOO</h3>' +
-      '<p class="muted" style="font-size:13px;">' + (edit ? 'Vul na elke toets de uitslag in. De cadet ziet deze uitslag in zijn Reflectieboekje zodra je feedback stuurt of de deelmap bijwerkt.' : 'Alleen de teamleider vult de uitslagen in.') + '</p>' +
+      '<p class="muted" style="font-size:13px;">' + (edit ? 'Vul na elke toets de uitslag in. De cadet ziet deze uitslag in zijn Reflectieboekje zodra je feedback stuurt of de deelmap bijwerkt.' : 'Alleen de teamleider vult de uitslagen in.') + ' Eigen overzicht; de officiële registratie loopt via bureau Cadettenbeheer. ' + (window.kmaOER ? kmaOER.label('4.10') : '') + '</p>' +
       '<div class="kma-tp-host">' + listHtml({ mine: cadet.toetsTL || {}, other: own, otherLabel: 'Cadet zelf', filter: cvsFilter, edit: edit }) + '</div>';
     return sec;
   }

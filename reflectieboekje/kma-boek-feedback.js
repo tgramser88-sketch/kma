@@ -45,7 +45,7 @@
   var RKEY = 'kma-x-receipt';
   function receipt() { try { return JSON.parse(kmaStore.getItem(RKEY)) || null; } catch (e) { return null; } }
   function onlyReceipt(d) {
-    return !Object.keys(d.items || {}).length && !(d.cases5GT || []).length && !(d.casesKorthagen || []).length && !(d.dtfNotes || []).length && !d.form && !(d.plans || []).length && !(d.gesprekken || []).length && !Object.keys(d.drie || {}).length;
+    return !Object.keys(d.items || {}).length && !(d.cases5GT || []).length && !(d.casesKorthagen || []).length && !(d.dtfNotes || []).length && !d.form && !(d.plans || []).length && !(d.gesprekken || []).length && !Object.keys(d.drie || {}).length && !(d.afsprakenGedeeld || []).length && !d.verbeterAkkoord;
   }
   function accept(d, opt) {
     opt = opt || {};
@@ -65,7 +65,10 @@
     }
     var st = load();
     st.received = (st.received || []).filter(function (x) { return x.date !== d.date; });
-    st.received.unshift({ date: d.date || new Date().toISOString(), from: d.from || '', items: d.items || {}, cases5GT: d.cases5GT || [], casesKorthagen: Array.isArray(d.casesKorthagen) ? d.casesKorthagen : [], plans: Array.isArray(d.plans) ? d.plans : [], gesprekken: Array.isArray(d.gesprekken) ? d.gesprekken : [], dtfNotes: d.dtfNotes || [], form: d.form || null, toets: d.toets && typeof d.toets === 'object' ? d.toets : null, drie: d.drie && typeof d.drie === 'object' ? d.drie : {} });
+    st.received.unshift({ date: d.date || new Date().toISOString(), from: d.from || '', items: d.items || {}, cases5GT: d.cases5GT || [], casesKorthagen: Array.isArray(d.casesKorthagen) ? d.casesKorthagen : [], plans: Array.isArray(d.plans) ? d.plans : [], gesprekken: Array.isArray(d.gesprekken) ? d.gesprekken : [], dtfNotes: d.dtfNotes || [], form: d.form || null, toets: d.toets && typeof d.toets === 'object' ? d.toets : null, drie: d.drie && typeof d.drie === 'object' ? d.drie : {},
+      // 4.18.0 (OER 3.7.3c en 3.7.3e): melding dat afspraken gedeeld zijn, akkoord op het verbeterplan
+      afsprakenGedeeld: Array.isArray(d.afsprakenGedeeld) ? d.afsprakenGedeeld.filter(function (x) { return x && typeof x.at === 'string'; }).slice(-10) : [],
+      verbeterAkkoord: d.verbeterAkkoord && typeof d.verbeterAkkoord === 'object' && typeof d.verbeterAkkoord.at === 'string' ? { gesprek: String(d.verbeterAkkoord.gesprek || ''), at: d.verbeterAkkoord.at, by: String(d.verbeterAkkoord.by || '') } : null });
     st.received = st.received.slice(0, 10);
     save(st);
     toast(opt.quiet ? 'Nieuwe feedback van je teamleider' : 'Feedback van je teamleider ingelezen');
@@ -223,7 +226,10 @@
         '<p><strong>Totaaloordeel:</strong> ' + esc(f.totaaloordeel || '-') + '</p>' +
         (f.toelichting1 ? '<p><strong>Toelichting 1e beoordelaar:</strong> ' + esc(f.toelichting1) + '</p>' : '') +
         (f.toelichting2 ? '<p><strong>Toelichting 2e beoordelaar:</strong> ' + esc(f.toelichting2) + '</p>' : '') +
-        (f.beoordelaar ? '<p class="muted">Beoordelaar: ' + esc(f.beoordelaar) + (f.datumGesprek ? ' · gesprek ' + esc(nl(f.datumGesprek)) : '') + '</p>' : '') + '</div>';
+        (f.beoordelaar ? '<p class="muted">Beoordelaar: ' + esc(f.beoordelaar) + (f.datumGesprek ? ' · gesprek ' + esc(nl(f.datumGesprek)) : '') + '</p>' : '') +
+        // 4.18.0 (Q5): bezwaartermijn, OER art. 3.7.6
+        (f.datumKennisneming && window.kmaOER ? '<p class="small">Ben je het er niet mee eens? Je kunt tot en met <b>' + esc(kmaOER.nl(kmaOER.plus(f.datumKennisneming, 5))) + '</b> schriftelijk bezwaar maken bij de tweede beoordelaar' + (f.beoordelaar2 ? ' (' + esc(f.beoordelaar2) + ')' : '') + '. ' + kmaOER.label('3.7.6') + '</p>' : '') +
+        (f.aantekening2 ? '<p><strong>Aantekening 2e beoordelaar:</strong> ' + esc(f.aantekening2) + '</p>' : '') + '</div>';
     }
     return '<div class="kma-fb-form"><table><tr><td></td><th>Niveau 1</th><th>Niveau 2</th></tr>' + V.map(function (v, i) {
       var n = i + 1;

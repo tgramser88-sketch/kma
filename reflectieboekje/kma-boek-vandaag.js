@@ -8,6 +8,10 @@
  *  - een back-up, als je laatste back-up lang geleden is;
  *  - verder gaan waar je gebleven was.
  * De kaart vervangt de oude kaart "Welkom terug" en staat er alleen als er iets te doen is.
+ * Sinds 4.18.0 (blok P1) is de kaart een cockpit: hooguit drie dingen in beeld (op volgorde van belang), de rest
+ * ingeklapt onder "Later". Nieuw: feedback van een medecadet, een snel vastgelegd DTF-feit dat nog een V mist
+ * (+ Nieuw, kma-ux-boek.js) en een herinnering als je een week geen DTF-feit vastlegde. Op het tabblad Vandaag
+ * (kma-boek-tabs.js) staat de kaart er altijd, ook als er niets te doen is.
  * Ook bewaart deze module wanneer je voor het laatst een back-up maakte (kma-x-last-backup).
  * Copyright (c) 2026 T.T.W. Gramser. Alle rechten voorbehouden.
  */
@@ -78,6 +82,15 @@
       var d = kmaFeedback.latest();
       list.push({ k: 'feedback', ic: 'message', t: 'Nieuwe feedback', nieuw: true, s: 'Van ' + (d && d.from ? d.from : 'je teamleider'), b: 'Lezen' });
     }
+    // 2a. Feedback van een medecadet (4.18.0)
+    var nk = window.kmaKameraad && kmaKameraad.newCount ? kmaKameraad.newCount() : 0;
+    if (nk) list.push({ k: 'kameraad', ic: 'users', t: nk === 1 ? 'Feedback van een medecadet' : nk + ' feedbackkaarten van medecadetten', nieuw: true, s: 'Lees hem en kies wat je ermee doet', b: 'Lezen' });
+    // 2b'. Items van andere modules (4.18.0): bijv. het verbeterplan (kma-boek-verbeterplan.js). Elk item: { ic, t, s, b, go }
+    (window.kmaVandaagExtra || []).forEach(function (f) { try { (f() || []).forEach(function (x) { if (x && x.t) { x.k = 'extra'; list.push(x); } }); } catch (e) {} });
+    // 2c. Snel vastgelegde DTF-feiten die nog een V missen (4.18.0, + Nieuw)
+    var dtfIdx = steps.findIndex(function (x) { return x.widget === 'dtf-logbook'; });
+    var open = typeof dtfItems !== 'undefined' && Array.isArray(dtfItems) ? dtfItems.filter(function (x) { return x && x.snel && !(x.vValues || []).length; }) : [];
+    if (open.length && dtfIdx >= 0) list.push({ k: 'aanvullen', step: dtfIdx, ic: 'calendar', t: open.length === 1 ? 'Vul je DTF-feit aan' : 'Vul ' + open.length + ' DTF-feiten aan', s: 'Kies de V en of het positief of negatief was', b: 'Aanvullen' });
     // 2b. De volgende stap uit de feedback in drie vragen, tot de cadet hem op Verwerkt zet (4.5.0)
     var ns = window.kmaFeedback && kmaFeedback.nextStep ? kmaFeedback.nextStep() : null;
     if (ns) list.push({ k: 'stap', step: ns.step, ic: 'right', t: 'Volgende stap: ' + ns.text, s: 'Van ' + (ns.from || 'je teamleider') + ' · zet op Verwerkt als het gelukt is', b: 'Bekijk' });
@@ -89,6 +102,11 @@
     } else {
       var sd = getX('smart-date', ''), n2 = daysTo(sd);
       if (n2 != null && n2 >= -7 && n2 <= 14) list.push({ k: 'gesprek', ic: 'calendar', t: n2 >= 0 ? 'Evaluatie ' + when(n2) : 'Evaluatiedatum was ' + when(n2), s: longDate(sd) + ' · bereid je gesprek voor', b: 'Voorbereiden', datum: sd });
+    }
+    // 3b. Een week geen DTF-feit, terwijl je het logboek wel gebruikt (4.18.0): leg je laatste oefening vast
+    if (typeof dtfItems !== 'undefined' && Array.isArray(dtfItems) && dtfItems.length && !open.length) {
+      var laatste = dtfItems.map(function (x) { return x && x.datum || ''; }).sort().pop(), nd = daysTo(laatste);
+      if (nd != null && nd <= -7) list.push({ k: 'dtf', ic: 'calendar', t: 'Leg een DTF-feit vast', s: 'Je laatste feit is van ' + when(nd) + '. Wat gebeurde er bij je laatste oefening?', b: 'Vastleggen' });
     }
     // 4. Afspraken die bij jou liggen
     afsprakenVoorMij().slice(0, 2).forEach(function (a) {
@@ -115,22 +133,26 @@
   }
 
   /* ---------------- De kaart ---------------- */
+  var MAX = 3;   // 4.18.0: hooguit drie dingen in beeld
+  function row(it, i) {
+    return '<div class="kma-vd-item"><span class="kma-vd-ic" aria-hidden="true">' + icon(it.ic) + '</span><span class="kma-vd-t"><b>' + esc(it.t) + (it.nieuw ? ' <em class="kma-vd-new">nieuw</em>' : '') + '</b><small>' + esc(it.s) + '</small></span>' +
+      '<button type="button" class="kma-vd-btn" data-vd="' + i + '">' + esc(it.b) + '</button></div>';
+  }
   function render() {
     var old = document.getElementById('kma-vandaag'); if (old) old.remove();
-    if (typeof currentStepIndex !== 'undefined' && currentStepIndex !== 0) return;
+    var tab = document.body.getAttribute('data-boek-tab') === 'vandaag';
+    if (!tab && typeof currentStepIndex !== 'undefined' && currentStepIndex !== 0) return;
     var content = document.querySelector('.content-panel'); if (!content) return;
-    var list = items().slice(0, 5);
+    var list = items().slice(0, 8);
     var cont = document.querySelector('.kma-continue'); if (cont) cont.remove();
-    if (!list.length) return;
+    if (!list.length && !tab) return;
     var d = new Date();
     var card = document.createElement('section');
     card.id = 'kma-vandaag'; card.className = 'kma-vandaag'; card.setAttribute('aria-label', 'Vandaag');
     var remOff = window.kmaReminders && !kmaReminders.anyOn();
     card.innerHTML = '<h3>Vandaag</h3><p class="kma-vd-sub">' + DAGEN[d.getDay()].charAt(0).toUpperCase() + DAGEN[d.getDay()].slice(1) + ' ' + d.getDate() + ' ' + MAANDEN[d.getMonth()] + ' · dit staat voor je klaar</p>' +
-      list.map(function (it, i) {
-        return '<div class="kma-vd-item"><span class="kma-vd-ic" aria-hidden="true">' + icon(it.ic) + '</span><span class="kma-vd-t"><b>' + esc(it.t) + (it.nieuw ? ' <em class="kma-vd-new">nieuw</em>' : '') + '</b><small>' + esc(it.s) + '</small></span>' +
-          '<button type="button" class="kma-vd-btn" data-vd="' + i + '">' + esc(it.b) + '</button></div>';
-      }).join('') +
+      (list.length ? list.slice(0, MAX).map(row).join('') : '<p class="kma-vd-leeg">Niets dat nu moet. Leg iets vast met <b>+ Nieuw</b> of werk verder aan je ontwikkeling.</p>') +
+      (list.length > MAX ? '<details class="kma-vd-meer"><summary>Later (' + (list.length - MAX) + ')</summary>' + list.slice(MAX).map(function (it, j) { return row(it, j + MAX); }).join('') + '</details>' : '') +
       (remOff ? '<button type="button" class="kma-vd-link" data-vd-rem>' + icon('bell') + 'Herinneringen aanzetten</button>' : '');
     card.__items = list;
     content.insertBefore(card, content.firstChild);
@@ -150,7 +172,10 @@
       if (window.kmaToast) kmaToast('Afspraak afgevinkt. Je teamleider ziet dit de volgende keer dat je deelt.');
       render();
     } else if (it.k === 'backup') { if (typeof exportAnswers === 'function') exportAnswers(); setTimeout(render, 300); }
-    else if (it.k === 'verder') goToStep(it.step);
+    else if (it.k === 'verder' || it.k === 'aanvullen') goToStep(it.step);
+    else if (it.k === 'kameraad') { if (kmaKameraad.inbox) kmaKameraad.inbox(); else kmaKameraad.open(); }
+    else if (it.k === 'dtf') { if (window.kmaSnel) kmaSnel.dtf(); }
+    else if (it.k === 'extra' && typeof it.go === 'function') { it.go(); setTimeout(render, 300); }
     else if (it.k === 'stap') { goToStep(it.step); setTimeout(function () { var el = document.getElementById('kma-fb-card'); if (el) el.scrollIntoView({ block: 'start' }); }, 250); }
   });
 

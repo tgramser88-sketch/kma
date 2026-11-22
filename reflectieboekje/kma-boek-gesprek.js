@@ -87,7 +87,7 @@
     var row = function (k, l, sub, dis) { return '<label class="kma-rem-row"><span><b>' + l + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span><span class="kma-rem-sw"><input type="checkbox" data-gp="' + k + '" aria-label="' + l + '"' + (p.incl[k] && !dis ? ' checked' : '') + (dis ? ' disabled' : '') + '/><i aria-hidden="true"></i></span></label>'; };
     ov.innerHTML = '<div class="kma-sheet kma-rem kma-gp" role="dialog" aria-modal="true" aria-labelledby="kma-gp-h" style="transform:none"><div class="kma-sheet-grip"></div>' +
       '<h2 id="kma-gp-h">' + icon('users') + 'Bereid je gesprek voor</h2>' +
-      '<p class="kma-rem-intro">Eén pagina voor het gesprek met je teamleider. Kies wat erin komt en schrijf je eigen vragen erbij.</p>' +
+      '<p class="kma-rem-intro">Eén pagina voor het gesprek met je teamleider. Kies wat erin komt en schrijf je eigen vragen erbij. In een functioneringsgesprek geef jij ook je zienswijze. ' + (window.kmaOER ? kmaOER.label('3.7.3') : '') + '</p>' +
       '<div class="kma-rem-sub"><label for="kma-gp-datum">Datum van het gesprek</label><input type="date" id="kma-gp-datum" value="' + esc(p.datum) + '"/></div>' +
       row('smart', 'SMART-leervraag en check-ins') + row('refl', 'Laatste 3 reflecties (5G-T en Korthagen)') + row('fb', 'Feedback en lopende afspraken') +
       row('stress', 'Stresscheck', hasStress ? 'Alleen als je dat wilt. Gaat alleen mee als dit aan staat.' : 'Je hebt nog geen stresscheck ingevuld', !hasStress) +

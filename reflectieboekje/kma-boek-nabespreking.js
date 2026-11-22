@@ -33,7 +33,7 @@
       '<label class="kma-check"><input type="checkbox" id="nb-plan"> Maak er een als-dan-plan van voor mijn leervraag</label>' +
       '<div class="kma-nb-plan" hidden><label class="kma-field"><span>Als …</span><input type="text" id="nb-als" maxlength="160" placeholder="bijv. ik een opdracht geef"></label>' +
       '<label class="kma-field"><span>dan …</span><input type="text" id="nb-dan" maxlength="160"></label></div>' +
-      '<p class="kma-code-err" id="nb-err" role="alert"></p>' +
+      '<p class="kma-code-err" id="nb-err" role="alert"></p>' + (window.kmaLeertaak ? kmaLeertaak.labels(['Ref 04', 'Ref 12', 'Ref 14', 'GV 01', 'LeO 01']) : '') +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-nb="x">Annuleren</button><button type="button" class="kma-icon-btn is-primary" data-nb="ok">Opslaan</button></div></div></div>';
     ov.__kmaClose = close;
     document.body.appendChild(ov);

@@ -281,7 +281,7 @@
           '<label class="kma-kam-chip is-grow"><input type="radio" name="kk-soort" value="verbeteren"' + (p.soort === 'verbeteren' ? ' checked' : '') + '><span>Verbeteren</span></label></div></div>' +
         '<label class="kma-code-lab">Volgende stap <small>Verplicht: wat kan je medecadet de volgende keer doen?</small><textarea id="kk-tip" maxlength="400" rows="2" placeholder="bijv. Noem eerst het doel en de tijd, dan pas wie wat doet.">' + esc(p.tip || '') + '</textarea></label>' +
         (req ? '' : '<p class="muted small">' + icon('idea') + ' Ongevraagd: nog ' + leftThisWeek() + ' van ' + MAX_WEEK + ' deze week. Je medecadet ziet dat de kaart van jou komt.</p>') +
-        '<p class="kma-code-err" id="kk-err" role="alert"></p>' +
+        '<p class="kma-code-err" id="kk-err" role="alert"></p>' + (window.kmaLeertaak ? kmaLeertaak.labels(['IIV 01', 'IIV 03', 'IIV 04', 'GV 06']) : '') +
         '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-x="close">Annuleren</button><button type="button" class="kma-icon-btn is-primary" data-k="send">' + icon('send') + 'Versturen</button></div>';
       var ov = sheet(req ? 'Feedback op een vraag' : 'Feedback geven', body, function (e, ov) {
         if (e.target.closest('[data-k="send"]')) send(ov);

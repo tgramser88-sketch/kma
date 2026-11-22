@@ -1624,7 +1624,7 @@ window.kmaAfter = function (name, fn) {
     return btn;
   }
   function overlayOpen() {
-    return !!document.querySelector('.kma-dlg-ov, .kma-sheet-overlay.in, .modal-overlay.active, #kma-ho, .kma-ws-ov, .kma-plan-ov');
+    return !!document.querySelector('.kma-dlg-ov, .kma-sheet-overlay.in, .modal-overlay.active, #kma-ho, #kma-ob, .kma-ws-ov, .kma-plan-ov');
   }
   function show(on) {
     if (on === shown) return; shown = on;

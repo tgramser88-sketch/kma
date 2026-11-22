@@ -24,21 +24,74 @@
   fab.type = 'button'; fab.id = 'kma-quick-fab'; fab.className = 'kma-quick-fab';
   fab.setAttribute('aria-label', 'Nieuw: snel toevoegen');
   fab.innerHTML = icon('plus') + '<span>Nieuw</span>';
-  fab.addEventListener('click', function () {
-    kmaSheet({ title: 'Snel toevoegen', items: [
-      { icon: 'calendar', label: 'DTF-feit', hint: 'Leg nu vast wat er gebeurde, met datum en tijd', onClick: quickDtf },
+  /* 4.18.0 (blok P2): + vraagt "Wat wil je vastleggen?" met de drie meest gebruikte keuzes bovenaan.
+     Een DTF-feit gaat in een kort formulier (wat gebeurde er, datum en tijd staan al goed); de V en de rest
+     kunnen later, in het logboek of via Vandaag ("Vul je DTF-feit aan"). */
+  function quickSheet() {
+    kmaSheet({ title: 'Wat wil je vastleggen?', items: [
+      { icon: 'calendar', label: 'DTF-feit', hint: 'Kort: wat gebeurde er? De V en de rest kan later', onClick: quickDtf },
+      window.kmaNabespreking ? { icon: 'talk', label: 'Nabespreking na een oefening', hint: 'Vier vragen, wordt een DTF-feit en zo nodig een als-dan-plan', onClick: function () { kmaNabespreking.open(); } } : null,
+      window.kmaKameraad ? { icon: 'users', label: 'Feedback geven aan een medecadet', hint: 'Situatie, wat je zag en een volgende stap', onClick: function () { if (kmaKameraad.give) kmaKameraad.give(); else kmaKameraad.open(); } } : null,
+      { section: 'Meer' },
       { icon: 'refresh', label: '5G-T-reflectie', hint: 'Nieuwe reflectie in 4 stappen', onClick: function () { goToStep(idx('5gt-multi')); after(80, function () { if (typeof add5GTCase === 'function') add5GTCase(); }); } },
       { icon: 'activity', label: 'Korthagen-reflectie', hint: 'Nieuwe ronde door de ALACT-cirkel', onClick: function () { goToStep(idx('korthagen-multi')); after(80, function () { if (typeof addKorthagenCase === 'function') addKorthagenCase(); }); } },
       // 4.9.0: feedback van en voor medecadetten (kma-boek-kameraden.js)
-      window.kmaKameraad ? { icon: 'users', label: 'Feedback van en voor medecadetten', hint: (function () { var n = kmaKameraad.newCount(); return n ? n + ' nieuw in je postvak' : 'Geven, vragen aan je groep, of ontvangen'; })(), onClick: function () { kmaKameraad.open(); } } : null
+      window.kmaKameraad ? { icon: 'message', label: 'Postvak medecadetten', hint: (function () { var n = kmaKameraad.newCount(); return n ? n + ' nieuw in je postvak' : 'Feedback vragen aan je groep of ontvangen kaarten lezen'; })(), onClick: function () { kmaKameraad.open(); } } : null
     ].filter(Boolean) });
-  });
+  }
+  fab.addEventListener('click', quickSheet);
   document.body.appendChild(fab);
   document.body.classList.add('kma-has-quick');
+  /* Het korte DTF-formulier: alleen het feit is verplicht. */
+  var VS4 = ['Verbondenheid', 'Veiligheid', 'Vertrouwen', 'Verantwoordelijkheid'];
+  var qov = null;
+  function pad2(n) { return ('0' + n).slice(-2); }
+  function closeQuick() { if (qov) { qov.remove(); qov = null; } }
   function quickDtf() {
-    goToStep(idx('dtf-logbook'));
-    after(120, function () { var b = document.querySelector('[data-act="dtf-open"]'); if (b) b.click(); });
+    closeQuick();
+    var d = new Date(), dat = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()), tijd = pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    qov = document.createElement('div'); qov.className = 'kma-sheet-overlay in';
+    qov.innerHTML = '<div class="kma-sheet kma-code-sheet kma-nb kma-snel" role="dialog" aria-modal="true" aria-label="Snel een DTF-feit vastleggen" style="transform:none"><div class="kma-sheet-grip"></div>' +
+      '<div class="kma-sheet-title">DTF-feit vastleggen</div><div class="kma-code-body">' +
+      '<label class="kma-field"><span>Wat gebeurde er precies?</span><textarea id="snel-feit" rows="3" data-concept placeholder="Wie, wat, waar: alleen wat je zag en hoorde"></textarea></label>' +
+      '<p class="kma-field-hint" id="snel-hint"></p>' +
+      '<div class="kma-inline-form"><label class="kma-field"><span>Datum</span><input type="date" id="snel-datum" value="' + dat + '"></label>' +
+      '<label class="kma-field"><span>Tijd</span><input type="time" id="snel-tijd" value="' + tijd + '"></label></div>' +
+      '<div class="kma-field"><span>V (mag ook later)</span><div class="kma-chips">' + VS4.map(function (v) { return '<label class="kma-chip-btn"><input type="checkbox" class="sr-only" name="snel-v" value="' + v + '">' + v + '</label>'; }).join('') + '</div></div>' +
+      '<p class="kma-code-err" id="snel-err" role="alert"></p>' +
+      '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-snel="x">Annuleren</button><button type="button" class="kma-icon-btn is-primary" data-snel="ok">Opslaan</button></div></div></div>';
+    qov.__kmaClose = closeQuick;
+    document.body.appendChild(qov);
+    qov.addEventListener('change', function (e) { if (e.target.name === 'snel-v') e.target.closest('label').classList.toggle('on', e.target.checked); });
+    qov.addEventListener('input', function (e) {
+      if (e.target.id !== 'snel-feit') return;
+      var m = /\b(vind|vond|denk|dacht|lijkt|leek|altijd|nooit|lui|slecht|geweldig|irritant|expres)\b/i.exec(e.target.value);
+      qov.querySelector('#snel-hint').textContent = m ? 'Let op: "' + m[1] + '" klinkt als een oordeel. Beschrijf wat je zag en hoorde.' : '';
+    });
+    qov.addEventListener('click', function (e) {
+      if (e.target === qov) { closeQuick(); return; }
+      var b = e.target.closest('[data-snel]'); if (!b) return;
+      if (b.getAttribute('data-snel') === 'ok') saveQuick(); else closeQuick();
+    });
+    setTimeout(function () { var t = qov && qov.querySelector('#snel-feit'); if (t) t.focus(); }, 60);
   }
+  function saveQuick() {
+    var g = function (id) { var e = qov.querySelector('#' + id); return e ? String(e.value || '').trim() : ''; };
+    var feit = g('snel-feit');
+    if (feit.length < 5) { qov.querySelector('#snel-err').textContent = 'Schrijf kort op wat er gebeurde.'; return; }
+    if (typeof dtfItems === 'undefined' || !Array.isArray(dtfItems)) { qov.querySelector('#snel-err').textContent = 'Het DTF-logboek is niet geladen.'; return; }
+    var v = [].map.call(qov.querySelectorAll('input[name="snel-v"]:checked'), function (x) { return x.value; });
+    dtfItems.unshift({ id: Date.now(), datum: g('snel-datum') || new Date().toISOString().slice(0, 10), tijd: g('snel-tijd'), feit: feit, vValues: v, aspect: '', snel: true });
+    try { st().setItem(DTF_KEY, JSON.stringify(dtfItems)); } catch (e) {}
+    if (typeof dbSet === 'function') dbSet(DTF_KEY, dtfItems);
+    if (typeof triggerSavePulse === 'function') triggerSavePulse();
+    try { var dr = window.kmaGemak ? kmaGemak.drafts() : null; if (dr && dr['snel-feit']) { delete dr['snel-feit']; st().setItem('kma-x-concepten', JSON.stringify(dr)); } } catch (e) {}
+    closeQuick();
+    if (window.kmaToast) kmaToast(v.length ? 'DTF-feit opgeslagen' : 'DTF-feit opgeslagen. Kies de V later, Vandaag herinnert je eraan.');
+    try { if (typeof renderWidgets === 'function') renderWidgets(); if (typeof updateProgress === 'function') updateProgress(); } catch (e) {}
+    if (window.kmaVandaag) kmaVandaag.render();
+  }
+  window.kmaSnel = { open: quickSheet, dtf: quickDtf, close: closeQuick };
 
   /* ======================= 2. Voorbeelden ======================= */
   var EX = {
