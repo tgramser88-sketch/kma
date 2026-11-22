@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Koppelen met je teamleider – KMA Reflectieboekje</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #09140F; color: #F3EFE4; display: grid; min-height: 100vh; place-items: center; }
+  main { max-width: 420px; padding: 28px 22px; text-align: center; }
+  img { width: 64px; height: auto; }
+  h1 { font-size: 22px; margin: 14px 0 6px; }
+  p { color: #CFC8B4; line-height: 1.5; font-size: 15px; }
+  a.btn { display: block; margin: 12px 0; padding: 14px 16px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 16px; }
+  .p { background: #C9A227; color: #111; }
+  .s { border: 1px solid #C9A227; color: #F3EFE4; }
+  small { display: block; margin-top: 18px; color: #9E977F; font-size: 13px; }
+  .err { color: #F2A29A; }
+</style>
+</head>
+<body>
+<main>
+  <img src="assets/kma-embleem.svg" alt="KMA">
+  <h1>Koppelen met je teamleider</h1>
+  <p id="msg">Kies waar je je Reflectieboekje gebruikt.</p>
+  <a class="btn p" id="app" href="#">Openen in de app</a>
+  <a class="btn s" id="web" href="#">Koppelen in de web-app</a>
+  <small>De groepscode staat alleen in deze link (na het #-teken) en wordt niet naar de website gestuurd.</small>
+</main>
+<script>
+(function () {
+  var h = location.hash.slice(1);
+  if (!/^(KMAT1|KMAT1%3A)/.test(h)) {
+    document.getElementById('msg').textContent = 'Deze link is niet compleet. Vraag je teamleider om de QR-code of de link opnieuw te delen.';
+    document.getElementById('msg').className = 'err';
+    document.getElementById('app').style.display = document.getElementById('web').style.display = 'none';
+    return;
+  }
+  document.getElementById('app').href = 'kmaapp://koppel#' + h;
+  document.getElementById('web').href = 'reflectieboekje/index.html#koppel=' + h;
+})();
+</script>
+</body>
+</html>

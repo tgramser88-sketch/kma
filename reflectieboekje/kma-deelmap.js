@@ -53,6 +53,8 @@
     write: function (p, t) { try { return !!A.sharedWrite(p, t); } catch (e) { return false; } },
     remove: function (p) { try { return !!A.sharedRemove(p); } catch (e) { return false; } }
   };
+  // Voor de automatische reservekopie (4.13.0): alleen de bestandsfuncties, geen sleutels.
+  window.kmaDeelFS = { ok: F.ok, list: F.list, read: F.read, write: F.write, remove: F.remove };
   var picked = null;
   window.kmaSharedPicked = function (ok, name) { var f = picked; picked = null; if (f) f(!!ok, name || ''); };
   function pick(cb) { if (!F.native()) { alert('De deelmap werkt alleen in de app op je telefoon.'); return; } picked = cb; A.sharedPick(); }

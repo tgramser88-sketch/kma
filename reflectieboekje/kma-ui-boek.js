@@ -106,6 +106,7 @@
         { icon: 'users', label: 'Bereid je gesprek voor', hint: 'Eén pagina voor het gesprek met je teamleider', onClick: function () { window.kmaGesprek && kmaGesprek.open(); } },
         { icon: 'bell', label: 'Herinneringen', hint: window.kmaReminders && kmaReminders.anyOn() ? 'Aan' : 'Uit: meldingen voor je check-in, evaluatie en back-up', onClick: function () { window.kmaReminders && kmaReminders.open(); } },
         { icon: 'shield', label: 'Mijlpalen', hint: window.kmaMilestones ? kmaMilestones.summary() : 'Je insignes', onClick: function () { window.kmaMilestones && kmaMilestones.open(); } },
+        window.KMAKoppel ? { icon: 'qr', label: 'Scan code', hint: 'QR-code van je teamleider of de kaart van een medecadet', onClick: function () { KMAKoppel.scanDialog({ rescan: true }); } } : null,
         { icon: 'users', label: 'Koppelen met je teamleider', hint: window.KMAKoppel && KMAKoppel.info() && window.KMAX && KMAX.myCode() ? 'Gekoppeld' + (KMAKoppel.info().g ? ' met groep ' + KMAKoppel.info().g : '') + ': opnieuw scannen' : 'Scan de QR-code van je teamleider', onClick: function () { window.KMAKoppel && KMAKoppel.scanDialog(); } },
         { icon: 'folder', label: 'Deelmap', hint: window.kmaDeelStatus && kmaDeelStatus().on ? 'Aan: ' + kmaDeelStatus().name + ' · automatisch delen' : 'Uit: koppel de gedeelde map van je teamleider', onClick: function () { window.kmaDeelDialog && kmaDeelDialog(); } },
         { icon: 'lock', label: 'Versleuteld delen', hint: window.KMAX && KMAX.myCode() ? 'Aan: je dossier wordt versleuteld met de groepscode' : 'Uit: vul de groepscode van je teamleider in', onClick: function () { window.KMAX && KMAX.codeDialog(); } },
@@ -116,6 +117,7 @@
         { icon: 'book', label: 'Uitleg', hint: 'De drie introschermen opnieuw bekijken', onClick: function () { window.kmaIntro && kmaIntro.open(); } },
         // 4.6.0: back-up maken en terugzetten staan samen hier (voor jezelf), niet meer bij Delen (naar je teamleider)
         { icon: 'download', label: 'Back-up maken', hint: (function () { var a = window.kmaVandaag && kmaVandaag.backupAge ? kmaVandaag.backupAge() : null; return (a == null ? 'Nog nooit gemaakt' : a === 0 ? 'Laatste back-up: vandaag' : 'Laatste back-up: ' + a + (a === 1 ? ' dag' : ' dagen') + ' geleden') + ' · back-up (.json) en tekstbestand naar Downloads'; })(), onClick: function () { exportAnswers(); } },
+        window.kmaReserve ? { icon: 'refresh', label: 'Reservekopie terugzetten', hint: (function () { var a = kmaReserve.age(); return 'Elke week vanzelf, versleuteld' + (a == null ? '' : ' · laatste: ' + (a === 0 ? 'vandaag' : a + (a === 1 ? ' dag' : ' dagen') + ' geleden')); })(), onClick: function () { kmaReserve.open(); } } : null,
         { icon: 'folder', label: 'Back-up terugzetten', hint: 'Een eerder gemaakte back-up terugzetten, bijvoorbeeld op een nieuwe telefoon', onClick: function () { triggerImportBackup(); } },
         // 4.5.4: alleen in de web-app (kma-web-veilig.js)
         window.kmaWebSafe ? { icon: 'shield', label: 'Gegevens veilig bewaren', hint: kmaWebSafe.hint(), onClick: function () { kmaWebSafe.open(); } } : null,

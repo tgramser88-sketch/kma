@@ -1621,3 +1621,15 @@ body.dark-theme .kma-pill.ok { color: #7cc69a; }
 .kcb-obs-it p { margin: 0; flex: 1; }
 .kcb-obs-it.pos { box-shadow: inset 3px 0 0 #2f9e5b; padding-left: 8px; }
 .kcb-obs-it.neg { box-shadow: inset 3px 0 0 #c8463a; padding-left: 8px; }
+
+/* ---- 4.13.0: koppelen met QR-code ---- */
+.kma-qr-big { position: fixed; inset: 0; z-index: 100000; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #111; font-size: 15px; }
+.kma-qr-big-box img, .kma-qr-big-box canvas { display: block; }
+.kma-koppel-status { display: grid; gap: 6px; }
+.kma-koppel-line { margin: 0; font-size: 14px; }
+.kma-koppel-line.ok { color: var(--kma-ok-text, #2f7d4f); }
+.kma-koppel-line.warn { color: var(--kma-warn-text, #a5521a); }
+.kma-koppel-step { margin: 8px 0 0; font-size: 13px; color: var(--text-muted); }
+.kma-koppel-reader { min-height: 240px; }
+.kma-koppel-torch { margin-top: 6px; }
+.kma-koppel-torch.on { background: var(--accent-gold); color: #111; }
