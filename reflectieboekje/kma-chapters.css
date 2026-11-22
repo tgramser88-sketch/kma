@@ -1834,3 +1834,15 @@ body.dark-theme .kma-oer-cyclus span.ok { color: #7fcf9b; border-color: #7fcf9b;
 .kma-reactie-opts .kma-chip-btn { text-align: left; white-space: normal; justify-content: flex-start; min-height: 44px; height: auto; padding: 8px 12px; }
 .kma-reactie-opts .kma-chip-btn.on { border-color: var(--accent-gold); background: rgba(201, 168, 76, .15); }
 .kma-reactie-sit.goed .kma-reactie-uit b { color: #2e7d32; }
+
+/* 4.22.0 (P6, S4): gespreksmodus */
+.kma-gm-blok { border: 1px solid var(--border-color); border-radius: 10px; padding: 4px 12px; margin: 8px 0; }
+.kma-gm-blok > summary { min-height: 44px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.kma-gm-blok > summary svg { width: 18px; height: 18px; }
+.kma-gm-in { padding-bottom: 8px; }
+.kma-gm-in ul.plain li { margin: 4px 0; }
+.kma-gm-tip { display: flex; gap: 8px; align-items: flex-start; border: 1px solid var(--accent-gold); border-radius: 8px; padding: 10px; font-size: 14px; }
+.kma-gm-tip svg { width: 18px; height: 18px; flex: none; margin-top: 2px; }
+.kma-gm-acts { display: grid; gap: 6px; margin-bottom: 6px; }
+.kma-gm-act { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 6px; align-items: center; }
+@media (max-width: 520px) { .kma-gm-act { grid-template-columns: minmax(0, 1fr) auto; } .kma-gm-act input[type=text] { grid-column: 1 / -1; } }
