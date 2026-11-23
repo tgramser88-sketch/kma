@@ -1875,3 +1875,93 @@ body.dark-theme .kma-oer-cyclus span.ok { color: #7fcf9b; border-color: #7fcf9b;
 .kma-kam-bruik { margin: 10px 0; } .kma-kam-bruik > span { display: block; font-size: 14px; margin-bottom: 4px; }
 /* 4.27.0 (M9): pijlen in het overzicht van de hele opleiding */
 .kma-up { color: #2f9e5b; font-size: 11px; } .kma-down { color: #a91f2b; font-size: 11px; }
+/* ===== 4.28.0 (blok T): Dashboard-weergave (body.kma-dash). Klassiek verandert niet. ===== */
+body.kma-dash .kma-quick-fab { display: none !important; }
+body.kma-dash .side-panel { display: none !important; }
+body.kma-dash .workspace { grid-template-columns: minmax(0, 1fr) !important; }
+body.kma-dash .content-panel > div:first-child:has(#quick-chapter-select) { display: none !important; }
+/* Vandaag: de tegels boven de kaart Vandaag */
+body.kma-dash[data-boek-tab="vandaag"] .content-panel { display: flex; flex-direction: column; }
+body.kma-dash[data-boek-tab="vandaag"] .content-panel > #kma-dash-vandaag { display: block !important; order: -1; }
+body.kma-dash:not([data-boek-tab="vandaag"]) #kma-dash-vandaag { display: none !important; }
+/* Werkboek en Postvak als lijst: alleen het paneel */
+body.kma-dash[data-dash-lijst] .content-panel > :not(.kma-dash-paneel) { display: none !important; }
+body.kma-dash:not([data-dash-lijst]) #kma-dash-werkboek, body.kma-dash:not([data-dash-lijst]) #kma-dash-postvak,
+body.kma-dash[data-boek-tab="werkboek"] #kma-dash-postvak, body.kma-dash[data-boek-tab="postvak"] #kma-dash-werkboek { display: none !important; }
+/* Onderbalk met zes knoppen en de plusknop in het midden */
+.kma-boektabs-dash .kma-bt { font-size: 12px; position: relative; }
+.kma-boektabs-dash .kma-bt[data-bt="ontwikkeling"] { flex-grow: 1; }
+.kma-bt-plus { flex: 0 0 64px !important; }
+.kma-bt-plus .ki { width: 26px; height: 26px; }
+.kma-bt-plus::before { content: ''; position: absolute; width: 48px; height: 48px; border-radius: 50%; background: #c5b983; z-index: -1; }
+.kma-bt-plus { color: #172019 !important; isolation: isolate; }
+.kma-bt-badge { position: absolute; top: 6px; left: 50%; margin-left: 6px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: #c82837; color: #fff; font-style: normal; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+/* Panelen */
+.kma-dash-paneel { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.kma-dash-kop h2 { margin: 0 0 4px; font-family: 'KMA Tekst', sans-serif; font-size: 22px; color: var(--text-primary); }
+.kma-dash-kaart { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.kma-dash-kaart h3 { margin: 0; font-size: 15px; display: flex; gap: 8px; align-items: center; color: var(--text-primary); }
+.kma-dash-kaart p { margin: 0; }
+.kma-startpad ol { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; width: 100%; }
+.kma-startpad button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; border: 0; background: none; color: var(--text-primary); font: inherit; font-size: 14px; text-align: left; cursor: pointer; padding: 0; }
+.kma-sp-nr { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--accent-gold); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+.kma-startpad li.ok .kma-sp-nr { background: #2f9e5b; border-color: #2f9e5b; color: #fff; }
+.kma-startpad li.ok button { color: var(--text-muted); text-decoration: line-through; }
+.kma-tegels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.kma-tegel { position: relative; }
+.kma-tegel-knop { width: 100%; min-height: 98px; box-sizing: border-box; text-align: left; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; color: var(--text-primary); font: inherit; cursor: pointer; }
+.kma-tegel.is-actie .kma-tegel-knop { border-color: var(--accent-red); }
+.kma-tegel-l { display: flex; gap: 6px; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-muted); padding-right: 30px; }
+.kma-tegel-l .ki { width: 16px; height: 16px; color: var(--accent-gold-text); }
+.kma-tegel-v { font-size: 24px; font-weight: 700; line-height: 1.1; }
+.kma-tegel.is-actie .kma-tegel-v { color: var(--accent-red-text); }
+.kma-tegel-s { font-size: 12px; color: var(--text-muted); }
+.kma-tegel-waarom { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border-color); background: var(--bg-widget); color: var(--text-muted); font: inherit; font-weight: 700; cursor: pointer; }
+.kma-dash-zoek { display: flex; align-items: center; gap: 8px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 0 12px; min-height: 46px; color: var(--text-muted); }
+.kma-dash-zoek input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 15px; color: var(--text-primary); outline: none; }
+.kma-dash-zoek:focus-within { outline: 3px solid var(--accent-gold); outline-offset: 1px; }
+.kma-wb-fase h3 { margin: 6px 2px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-gold-text); display: flex; gap: 8px; align-items: center; }
+.kma-wb-fase h3 span { width: 20px; height: 20px; border-radius: 50%; background: var(--accent-gold); color: #172019; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
+.kma-wb-lijst, .kma-pv-lijst { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden; }
+.kma-wb-rij, .kma-pv-item { width: 100%; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px; border: 0; border-top: 1px solid var(--border-color); background: none; color: var(--text-primary); font: inherit; text-align: left; cursor: pointer; box-sizing: border-box; }
+.kma-wb-rij:first-child, .kma-pv-item:first-child { border-top: 0; }
+.kma-wb-t { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; display: flex; gap: 8px; align-items: baseline; }
+.kma-wb-t small { color: var(--text-muted); font-weight: 600; min-width: 18px; }
+.kma-wb-rij > .ki, .kma-pv-item > .ki { width: 16px; height: 16px; color: var(--text-muted); }
+.kma-wb-meer summary { cursor: pointer; font-weight: 600; min-height: 44px; display: flex; align-items: center; }
+/* T12: één statusweergave: klaar, bezig, open */
+.kma-status { flex: none; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 9px; }
+.kma-status.is-klaar { background: #e0f0e6; color: #1f6b3f; }
+.kma-status.is-bezig { background: #f3efde; color: #6f6430; }
+.kma-status.is-open { background: #f8e3e5; color: #a91f2b; }
+body.dark-theme .kma-status.is-klaar { background: rgba(47,158,91,.2); color: #8fd3a3; }
+body.dark-theme .kma-status.is-bezig { background: rgba(216,203,146,.16); color: #d8cb92; }
+body.dark-theme .kma-status.is-open { background: rgba(200,40,55,.18); color: #ec7680; }
+.kma-pv-ic { flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--bg-widget); display: inline-flex; align-items: center; justify-content: center; color: var(--accent-gold-text); }
+.kma-pv-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.kma-pv-t b { font-size: 14px; } .kma-pv-t small { font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kma-dash-terug { margin-bottom: 10px; align-self: flex-start; }
+/* CVS */
+body.kma-cvs-dash { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
+body.kma-cvs-dash:not([data-cvs-tab="cadetten"]) #dashboard-view > :not(#kma-cvs-paneel) { display: none !important; }
+body.kma-cvs-dash[data-cvs-tab="cadetten"] #kma-cvs-paneel { display: none !important; }
+.kma-tegels-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.kma-tegels-3 .kma-tegel-v { font-size: 22px; }
+.kma-heat { border-collapse: separate; border-spacing: 4px; width: 100%; font-size: 13px; }
+.kma-heat th[scope="row"] { text-align: left; font-weight: 600; max-width: 120px; }
+.kma-heat td { height: 26px; border-radius: 6px; text-align: center; font-weight: 700; font-size: 12px; }
+.kma-heat td.is-0 { background: var(--bg-widget); } .kma-heat td.is-1 { background: #ece3bd; color: #3c3410; } .kma-heat td.is-2 { background: #c5b983; color: #172019; } .kma-heat td.is-3 { background: #6f6430; color: #fff; }
+.kma-heat-naam { border: 0; background: none; color: var(--text-primary); font: inherit; font-weight: 600; text-align: left; cursor: pointer; padding: 6px 0; min-height: 32px; }
+.kma-vdot { display: inline-flex; width: 22px; height: 22px; border-radius: 6px; color: #fff; font-size: 11px; font-weight: 700; align-items: center; justify-content: center; }
+/* 4.28.0: verfijning Dashboard */
+body.kma-dash .hero { display: none !important; }
+.kma-boektabs-dash .kma-bt span { font-size: 11px; letter-spacing: -.01em; }
+.kma-boektabs-dash .kma-bt-plus { flex: 0 0 58px !important; }
+.kma-tegels-3 .kma-tegel-l .ki { display: none; }
+.kma-tegels-3 .kma-tegel-l { padding-right: 26px; }
+.kma-tegels-3 .kma-tegel-waarom { width: 26px; height: 26px; top: 4px; right: 4px; font-size: 13px; }
+.kma-tegels-3 .kma-tegel-knop { padding: 10px; }
+.kma-heat td.is-0 { background: transparent; box-shadow: inset 0 0 0 1px var(--border-color); }
+body.kma-cvs-dash:not([data-cvs-tab="cadetten"]) #kma-fab { display: none !important; }
+body.kma-cvs-dash #kma-fab { bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
+.kma-heat .kma-vdot { width: auto; padding: 0 5px; font-size: 10px; }

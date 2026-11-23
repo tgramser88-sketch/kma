@@ -968,6 +968,16 @@ window.kmaAfter = function (name, fn) {
     loading.catch(function () { loading = null; });
     return loading;
   }
+  /** 4.28.0 (blok T): in de Dashboard-weergave volgt de handleiding mee: "Meer → …" in plaats van "⋮ → …" en
+   *  bovenaan een verwijzing naar het deel over de Dashboard-weergave (A26 in het boekje, B13 in het CVS). */
+  function weergaveHtml(data) {
+    var h = String(data.html || '');
+    if (!window.kmaWeergave || !kmaWeergave.dash()) return h;
+    h = h.replace(/(<(?:b|i)>)⋮(\s*→)/g, '$1Meer$2').replace(/menu ⋮/g, 'menu Meer');
+    var doel = data.app === 'cvs' ? 'B13' : 'A26';
+    var kop = '<p class="lead" style="background:#f3efde;border-radius:10px;padding:10px 12px">Je gebruikt de <b>Dashboard-weergave</b>. De weg naar een onderdeel loopt via de knoppen onderin; <i>Meer</i> is het menu. Uitleg: <a class="ref" href="#' + doel + '">' + doel + '</a>.</p>';
+    return h.replace('</h1>', '</h1>' + kop);
+  }
   var ESC = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var EXTRA = 'html{background:#fff}body{margin:0;padding:16px 16px 48px;max-width:760px;margin:0 auto;font-family:"KMA Tekst",system-ui,sans-serif;color:#172019;font-size:15px;line-height:1.55;-webkit-text-size-adjust:100%}' +
     '.sec{page-break-before:auto!important;break-before:auto!important;margin:28px 0 0;padding:0;min-height:0!important;height:auto!important}' +
@@ -1034,7 +1044,7 @@ window.kmaAfter = function (name, fn) {
     load().then(function (data) {
       if (!sid && !isCvs() && typeof currentStepIndex !== 'undefined') sid = sidForStep(data, currentStepIndex);
       var fr = document.createElement('iframe'); fr.className = 'kma-ho-frame'; fr.title = 'Handleiding';
-      fr.srcdoc = '<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="fonts/fonts.css"><style>' + data.css + EXTRA + '</style></head><body>' + data.html + '</body></html>';
+      fr.srcdoc = '<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="fonts/fonts.css"><style>' + data.css + EXTRA + '</style></head><body>' + weergaveHtml(data) + '</body></html>';
       var body = ov.querySelector('.kma-ho-body'); body.innerHTML = ''; body.appendChild(fr);
       fr.addEventListener('load', function () {
         var d = fr.contentDocument; if (!d) return;

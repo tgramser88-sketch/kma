@@ -1,7 +1,7 @@
-/* KMA web-app met wachtwoord. Versie: 515e7e26c60c
+/* KMA web-app met wachtwoord. Versie: d60cb7b92f1a
    De app-bestanden staan versleuteld op de server (*.enc). Deze service worker ontsleutelt ze op het toestel
    met de sleutel die bij het inloggen is afgeleid van het wachtwoord. Zonder sleutel: naar login.html. */
-const APP = 'onderzoek', CACHE = 'kma-' + APP + '-515e7e26c60c', START = 'onderzoek.html';
+const APP = 'onderzoek', CACHE = 'kma-' + APP + '-d60cb7b92f1a', START = 'onderzoek.html';
 const ENC = new Set(["fonts/DejaVuSans-Bold.ttf","fonts/DejaVuSans.ttf","fonts/LICENSE-DejaVu.txt","fonts/fonts.css","kma-bridge.js","kma-embleem.svg","kma-oanalyse.js","kma-odata.js","kma-oexport.js","kma-onderzoek-core.js","kma-oui.js","kma-stats.js","kma-versie.js","kma-web-veilig.js","kma-web.js","onderzoek.html","qrcode.min.js"]);
 const PLAIN = ["login.html","manifest.webmanifest","icon-192.png","icon-512.png","icon-maskable.png","apple-touch-icon.png"];
 const TYPES = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8', svg: 'image/svg+xml', json: 'application/json',

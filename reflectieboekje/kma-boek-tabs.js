@@ -7,6 +7,8 @@
  * Een hoofdstuk openen (ook via Vandaag of een link) kiest vanzelf het juiste tabblad. De keuze wordt onthouden
  * (kma-ui-tab). De indeling van de hoofdstukken (kma-ui-boek.js, onderdeel 8b) verandert niet.
  * In automatische tests staat dit uit, tenzij window.__kmaTabsForce vóór het laden gezet is (zoals de intro).
+ * 4.28.0 (blok T): in de Dashboard-weergave (kmaWeergave.dash()) zijn er zes knoppen: Vandaag, Groei, + (vastleggen),
+ * Werkboek, Postvak en Meer; de schermen zelf staan in kma-boek-dashboard.js. Klassiek blijft zoals het was.
  * Copyright (c) 2026 T.T.W. Gramser. Alle rechten voorbehouden.
  */
 (function () {
@@ -14,21 +16,28 @@
   if (typeof steps === 'undefined' || typeof goToStep !== 'function' || !window.kmaChapterGroup) return;
   if (navigator.webdriver && !window.__kmaTabsForce) return;
   var KEY = 'kma-ui-tab', ALLES = 'kma-ui-alle-hoofdstukken';
-  var TABS = [['vandaag', 'Vandaag', 'calendar'], ['ontwikkeling', 'Mijn ontwikkeling', 'trend'], ['naslag', 'Naslag', 'book']];
+  var DASH = !!(window.kmaWeergave && kmaWeergave.dash() && window.kmaDash);
+  var TABS = DASH ? [['vandaag', 'Vandaag', 'calendar'], ['groei', 'Groei', 'trend'], ['plus', 'Vastleggen', 'plus'], ['werkboek', 'Werkboek', 'book'], ['postvak', 'Postvak', 'message'], ['meer', 'Meer', 'more']]
+    : [['vandaag', 'Vandaag', 'calendar'], ['ontwikkeling', 'Mijn ontwikkeling', 'trend'], ['naslag', 'Naslag', 'book']];
   function store() { return window.kmaStore || window.localStorage; }
   function get(k) { try { return store().getItem(k); } catch (e) { return null; } }
   function set(k, v) { try { store().setItem(k, v); } catch (e) {} }
   function icon(n) { return window.kmaIcon ? kmaIcon(n) : ''; }
-  function tabVan(idx) { return kmaChapterGroup(idx) === 'naslag' ? 'naslag' : 'ontwikkeling'; }
-  var laatste = { ontwikkeling: null, naslag: null }, bezig = false;
+  function tabVan(idx) {
+    if (DASH) return idx === kmaDash.groeiIdx() ? 'groei' : 'werkboek';
+    return kmaChapterGroup(idx) === 'naslag' ? 'naslag' : 'ontwikkeling';
+  }
+  var laatste = { ontwikkeling: null, naslag: null, werkboek: null, groei: null }, bezig = false;
 
   var bar = document.createElement('nav');
   bar.id = 'kma-tabs'; bar.className = 'kma-boektabs'; bar.setAttribute('aria-label', 'Onderdelen van het boekje');
   bar.innerHTML = TABS.map(function (t) {
+    if (t[0] === 'plus') return '<button type="button" class="kma-bt kma-bt-plus" data-bt="plus" aria-label="Wat wil je vastleggen?">' + icon('plus') + '</button>';
     return '<button type="button" class="kma-bt" data-bt="' + t[0] + '">' + icon(t[2]) + '<span>' + t[1] + '</span></button>';
   }).join('');
   document.body.appendChild(bar);
   document.body.classList.add('kma-tabs-on');
+  if (DASH) bar.classList.add('kma-boektabs-dash');
 
   function huidig() { return document.body.getAttribute('data-boek-tab') || 'ontwikkeling'; }
   function markeer(t) {
@@ -41,8 +50,34 @@
     });
   }
   function naarBoven() { try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch (e) { window.scrollTo(0, 0); } }
+  /* ---------------- Dashboard (4.28.0) ---------------- */
+  function lijst(aan) { if (aan) document.body.setAttribute('data-dash-lijst', '1'); else document.body.removeAttribute('data-dash-lijst'); }
+  function terugKnop() {
+    var oud = document.getElementById('kma-dash-terug'); if (oud) oud.remove();
+    if (!DASH || huidig() !== 'werkboek' || document.body.hasAttribute('data-dash-lijst')) return;
+    var c = document.querySelector('.content-panel'); if (!c) return;
+    var b = document.createElement('button'); b.type = 'button'; b.id = 'kma-dash-terug'; b.className = 'kma-chip-btn kma-dash-terug';
+    b.innerHTML = icon('left') + 'Werkboek'; b.addEventListener('click', function () { kies('werkboek'); });
+    c.insertBefore(b, c.firstChild);
+  }
+  function kiesDash(t, stil) {
+    if (t === 'plus') { var f = document.getElementById('kma-quick-fab'); if (f) f.click(); return; }
+    if (t === 'meer') { var m = document.getElementById('kma-more-btn'); if (m) m.click(); return; }
+    set(KEY, t);
+    if (t === 'groei') {
+      var g = kmaDash.groeiIdx(); lijst(false);
+      if (g >= 0 && currentStepIndex !== g) { bezig = true; try { goToStep(g); } finally { bezig = false; } }
+    } else lijst(t === 'werkboek' || t === 'postvak');
+    markeer(t);
+    if (t === 'vandaag') { if (window.kmaVandaag) try { kmaVandaag.render(); } catch (e) {} kmaDash.vandaag(); }
+    if (t === 'werkboek') kmaDash.werkboek();
+    if (t === 'postvak') kmaDash.postvak();
+    terugKnop(); kmaDash.badge();
+    if (!stil) naarBoven();
+  }
   /** Kiest een tabblad. Bij Mijn ontwikkeling en Naslag opent zo nodig een hoofdstuk uit die groep. */
   function kies(t, stil) {
+    if (DASH) return kiesDash(TABS.some(function (x) { return x[0] === t; }) ? t : 'vandaag', stil);
     if (TABS.every(function (x) { return x[0] !== t; })) t = 'ontwikkeling';
     set(KEY, t);
     if (t !== 'vandaag' && typeof currentStepIndex !== 'undefined' && tabVan(currentStepIndex) !== t) {
@@ -69,6 +104,7 @@
     var t = tabVan(currentStepIndex);
     laatste[t] = currentStepIndex;
     if (bezig) return;
+    if (DASH) { lijst(false); set(KEY, t); markeer(t); terugKnop(); kmaDash.badge(); return; }
     set(KEY, t); markeer(t); ongebruikt();
     if (window.kmaVandaag) try { kmaVandaag.render(); } catch (e) {}
   });
@@ -102,5 +138,7 @@
   // Start: het laatst gekozen tabblad; nieuwe gebruikers beginnen op Vandaag.
   var start = get(KEY) || 'vandaag';
   try { kies(start, true); } catch (e) { console.error(e); }
-  window.kmaTabs = { kies: kies, huidig: huidig, ongebruikt: ongebruikt };
+  window.kmaTabs = { kies: kies, huidig: huidig, ongebruikt: ongebruikt, dash: DASH,
+    toon: function () { lijst(false); markeer('werkboek'); terugKnop(); } };
+  if (DASH) setInterval(function () { try { kmaDash.badge(); } catch (e) {} }, 20000);
 })();

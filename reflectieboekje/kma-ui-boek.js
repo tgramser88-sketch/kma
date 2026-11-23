@@ -128,6 +128,8 @@
         window.kmaWebSafe ? { icon: 'shield', label: 'Gegevens veilig bewaren', hint: kmaWebSafe.hint(), onClick: function () { kmaWebSafe.open(); } } : null,
         { icon: 'users', label: 'Demodossier', hint: 'Het boekje van een fictieve cadet bekijken (alleen in een leeg boekje)', onClick: function () { window.kmaDemo && kmaDemo.boek(); } },
         { section: 'Weergave' },
+        window.kmaWeergave ? { icon: 'list', label: 'Indeling: Klassiek', hint: 'Menu en hoofdstukken zoals je gewend bent', checked: !kmaWeergave.dash(), onClick: function () { if (kmaWeergave.dash()) kmaWeergave.set('klassiek'); } } : null,
+        window.kmaWeergave ? { icon: 'chart', label: 'Indeling: Dashboard', hint: 'Overzichten met tegels en vaste knoppen onderin; je gegevens blijven hetzelfde', checked: kmaWeergave.dash(), onClick: function () { if (!kmaWeergave.dash()) kmaWeergave.set('dashboard'); } } : null,
         { icon: 'search', label: 'Grotere tekst', hint: 'Alles iets groter, handig buiten en in het veld', checked: window.kmaDisplayPref && kmaDisplayPref('large'), onClick: function () { kmaDisplayToggle('large'); } },
         { icon: 'eye', label: 'Hoog contrast', hint: 'Donkerdere tekst en duidelijkere randen', checked: window.kmaDisplayPref && kmaDisplayPref('contrast'), onClick: function () { kmaDisplayToggle('contrast'); } },
         { icon: 'auto', label: 'Automatisch', hint: 'Volgt de instelling van je telefoon', checked: mode === 'auto', onClick: function () { setThemeMode('auto'); } },
