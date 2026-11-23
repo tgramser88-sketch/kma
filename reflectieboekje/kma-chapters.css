@@ -1856,3 +1856,13 @@ body.dark-theme .kma-oer-cyclus span.ok { color: #7fcf9b; border-color: #7fcf9b;
 .kma-fbq-top { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
 .kma-fbq > i { display: block; height: 8px; border-radius: 4px; background: var(--border-color); overflow: hidden; margin: 4px 0; }
 .kma-fbq > i > b { display: block; height: 100%; background: var(--accent-gold); }
+.kma-ofga { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--accent-gold); color: var(--text-primary); font-size: 11px; font-weight: 700; margin-right: 6px; vertical-align: 1px; }
+.kma-smart-hki { display: flex; gap: 6px; align-items: baseline; margin: 6px 0 2px; }
+.kma-smart-hki .kma-ofga { width: auto; padding: 0 4px; }
+/* 4.24.0 (R2): CLX-kwadranten */
+.kma-clx { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
+.kma-clx-q { border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; display: grid; gap: 2px; font-size: 13px; }
+.kma-clx-q b { font-size: 14px; }
+.kma-clx-q small { color: var(--text-muted, #666); }
+.kma-clx-bs, .kma-clx-os { border-left: 3px solid #2f9e5b; }
+.kma-clx-bt, .kma-clx-ot { border-left: 3px solid #a91f2b; }

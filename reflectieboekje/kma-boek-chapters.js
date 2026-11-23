@@ -641,6 +641,13 @@
     return 'Ik wil ' + f(p[0], '[wat precies]') + '. Dat merk je aan ' + f(p[1], '[welk gedrag]') + '. Dit is belangrijk omdat ' + f(p[2], '[waarom]') +
       '. Deze week ' + f(p[3], '[eerste stap]') + '. Ik evalueer ' + f(p[4], '[met wie]') + (date ? ' op <mark>' + fmtDate(date) + '</mark>' : '') + '.';
   }
+  /** 4.24.0 (R3): dezelfde leervraag als HKI-vraag ("Hoe kan ik ...?"), zoals in de leerlijn IIV van de KMA. */
+  function hkiVraag(step) {
+    var v = String(smartParts(step)[0] || '').replace(/\s+/g, ' ').trim().replace(/^ik (wil|ga|zou)\s+/i, '').replace(/^hoe kan ik\s+/i, '').replace(/[.?!\s]+$/, '');
+    if (!v) return '<span class="ph">Hoe kan ik [wat precies]?</span>';
+    v = v.replace(/^(Leren|Beter|Meer|Minder|Mijn|Een|De|Het)\b/, function (w) { return w.toLowerCase(); });
+    return 'Hoe kan ik <mark>' + esc(v) + '</mark>?';
+  }
   QR['SMART Leervraag'] = {
     widget: function (c, step) {
       var p = smartParts(step), letters = ['S', 'M', 'A', 'R', 'T'], names = ['Specifiek', 'Meetbaar', 'Acceptabel', 'Realistisch', 'Tijdgebonden'];
@@ -648,6 +655,8 @@
       c.innerHTML = cardHtml('Jouw leervraag in één zin', '<div class="kma-smart-letters">' + letters.map(function (l, i) {
         return '<div class="kma-smart-l' + (p[i] ? ' ok' : '') + '" title="' + names[i] + '"><b>' + l + '</b><small>' + names[i] + '</small></div>';
       }).join('') + '</div><p class="kma-smart-sentence" id="kma-smart-sentence">' + smartSentence(step) + '</p>' +
+        '<p class="kma-smart-hki"><span class="kma-ofga" title="HKI-vraag">HKI</span><span id="kma-smart-hki">' + hkiVraag(step) + '</span></p>' +
+        '<p class="muted small">Als HKI-vraag ("Hoe kan ik ...?"), zoals bij de KMA in de lessen persoonlijke leiderschapsontwikkeling: een vraag die je zelf onderzoekt en waar je in de praktijk mee experimenteert.</p>' +
         '<div class="kma-inline-form"><label class="muted small" for="kma-smart-date">Evaluatiedatum</label><input type="date" id="kma-smart-date" value="' + esc(getX('smart-date', '')) + '"/>' +
         '<button type="button" class="kma-icon-btn" data-act="smart-ics">' + icon('calendar') + 'Zet in agenda</button></div>' +
         (starters.length ? '<p class="muted small">Startpunten uit je persoonlijkheidstest:</p><div class="kma-chips">' + starters.map(function (s) { return '<button type="button" class="kma-chip-btn" data-smart-start="' + esc(s.text) + '">' + esc(s.text) + '</button>'; }).join('') + '</div>' : ''), 'target') +
@@ -661,6 +670,7 @@
     var s = document.getElementById('kma-smart-sentence');
     if (s) setTimeout(function () {
       s.innerHTML = smartSentence(step);
+      var hk = document.getElementById('kma-smart-hki'); if (hk) hk.innerHTML = hkiVraag(step);
       var p = smartParts(step);
       document.querySelectorAll('.kma-smart-l').forEach(function (el, i) { el.classList.toggle('ok', !!p[i]); });
     }, 0);
@@ -1872,6 +1882,7 @@
       '<p class="muted small">Let op: de twee assen zijn in onderzoek goed terug te vinden; de precieze indeling in acht gelijke sectoren minder (Wiggins, 1979). Daarom bewaart de app de plek op beide assen en toont hij pas een verdeling bij genoeg waarnemingen.</p></details>';
     c.innerHTML = '<div class="kma-leary-ch">' + per +
       cardHtml('Jouw gedrag op de roos', beeld + bron, 'target') +
+      cardHtml('Communicatie- en leiderschapscircumplex (CLX)', (L.clx ? L.clx(g.zelf, g.mede.concat(g.staf), 'Zelf', 'Anderen') : '') + '<p class="muted small">De KMA noemt dit model het communicatie- en leiderschapscircumplex (CLX). De vier kwadranten komen uit dezelfde twee assen als de roos: invloed (boven of onder) en verbondenheid (samen of tegen). De namen in je lesmateriaal kunnen iets anders zijn.</p>' + (window.kmaLeertaak ? kmaLeertaak.labels(['LeO 05', 'LeO 06', 'LeO 07']) : ''), 'target') +
       cardHtml('Per soort gedrag', secs, 'list') +
       cardHtml('Naast je persoonlijkheidstest', hex, 'user') +
       denk + (window.kmaReactie ? kmaReactie.oefeningHtml() : '') + uitleg + '</div>';

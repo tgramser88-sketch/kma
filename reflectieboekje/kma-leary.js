@@ -168,6 +168,22 @@
   /** Twee stippen: eigen gedrag → reactie van de ander. */
   function dotPaar(a, r) { return dot(a) + (clean(r) ? '<span class="kma-leary-pijl" aria-hidden="true">→</span>' + dot(r).replace('title="Leary: ', 'title="Reactie van de ander: ') : ''); }
 
+  /** 4.24.0 (R2): de vier kwadranten van het communicatie- en leiderschapscircumplex (CLX) van de KMA, uit dezelfde asscores. */
+  var KW = [
+    { k: 'bs', n: 'Boven-samen', d: 'leidend, helpend', b: 1, s: 1 },
+    { k: 'bt', n: 'Boven-tegen', d: 'concurrerend, aanvallend', b: 1, s: -1 },
+    { k: 'os', n: 'Onder-samen', d: 'meewerkend, volgend', b: -1, s: 1 },
+    { k: 'ot', n: 'Onder-tegen', d: 'opstandig, teruggetrokken', b: -1, s: -1 }
+  ];
+  function kwadrant(v) { v = clean(v); if (!v) return null; return KW.filter(function (q) { return (v.b >= 0 ? 1 : -1) === q.b && (v.s >= 0 ? 1 : -1) === q.s; })[0]; }
+  /** Raster van 2 x 2 met aantallen per kwadrant voor één of twee groepen (lijsten met {leary} of {b,s}). */
+  function clx(a, b, la, lb) {
+    var tel = function (list) { var c = {}; KW.forEach(function (q) { c[q.k] = 0; }); (list || []).forEach(function (it) { var q = kwadrant(it && it.leary !== undefined ? it.leary : it); if (q) c[q.k]++; }); return c; };
+    var ca = tel(a), cb = b ? tel(b) : null;
+    var cel = function (q) { return '<div class="kma-clx-q kma-clx-' + q.k + '"><b>' + q.n + '</b><small>' + q.d + '</small><span>' + esc(la || 'Zelf') + ': ' + ca[q.k] + (cb ? ' · ' + esc(lb || 'Anderen') + ': ' + cb[q.k] : '') + '</span></div>'; };
+    return '<div class="kma-clx" role="group" aria-label="Kwadranten van het communicatie- en leiderschapscircumplex">' + ['bt', 'bs', 'ot', 'os'].map(function (k) { return cel(KW.filter(function (q) { return q.k === k; })[0]); }).join('') + '</div>';
+  }
+
   window.KMALeary = { edit: edit, MIN: MIN, SECT: SECT, clean: clean, fromSector: fromSector, sector: sector, intensity: intensity, label: label,
-    dist: dist, picker: picker, value: value, set: setPick, rose: rose, axisBars: axisBars, dot: dot, paar: paar, PLAN: PLAN, dotPaar: dotPaar };
+    dist: dist, picker: picker, value: value, set: setPick, rose: rose, axisBars: axisBars, dot: dot, paar: paar, PLAN: PLAN, dotPaar: dotPaar, KW: KW, kwadrant: kwadrant, clx: clx };
 })();

@@ -99,7 +99,7 @@
     {
       "id": "smart", "apps": ["boek"], "titel": "SMART-leervraag en als-dan-plannen", "waar": "Boekje: SMART Leervraag (leervraag, als-dan-plannen, wekelijkse check-in).",
       "hoofdstukken": ["SMART Leervraag"],
-      "wat": "Je maakt van je leerdoel een specifieke, meetbare leervraag met een datum. Daarbij maak je tot drie als-dan-plannen: 'Als situatie X, dan doe ik Y'. Elke week check je in: is het gelukt?",
+      "wat": "Je maakt van je leerdoel een specifieke, meetbare leervraag met een datum. De app laat dezelfde leervraag ook zien als HKI-vraag ('Hoe kan ik ...?'), de vorm die de KMA gebruikt. Daarbij maak je tot drie als-dan-plannen: 'Als situatie X, dan doe ik Y'. Elke week check je in: is het gelukt?",
       "waarom": "Specifieke, uitdagende doelen leiden tot betere prestaties dan 'doe je best'. Een als-dan-plan koppelt het doel aan een herkenbaar moment, zodat je in die situatie bijna vanzelf handelt. De check-in houdt bij of het werkt.",
       "effect": "Als-dan-plannen: middelgroot tot groot effect op het bereiken van doelen, d = 0,65 (94 toetsen).",
       "grenzen": "Werkt vooral als het doel je echt iets zegt. Een SMART-formulering alleen is geen bewezen methode (het acroniem komt uit de managementpraktijk); de kracht zit in specifiek en uitdagend.",
@@ -180,7 +180,7 @@
     {
       "id": "medecadet", "apps": ["boek"], "titel": "Feedback van medecadetten", "waar": "Boekje: + Nieuw → Feedback geven, inbox.",
       "hoofdstukken": [],
-      "wat": "Cadetten geven elkaar korte feedbackkaarten (situatie, feit, effect, V, volgende stap). De ontvanger kiest wat hij ermee doet.",
+      "wat": "Cadetten geven elkaar korte feedbackkaarten (situatie, feit, effect, V, volgende stap). De ontvanger kiest wat hij ermee doet. De kaart volgt het OFGA-gespreksmodel dat de KMA leert (Opening, Feitelijk, Gewenst, Afsluiting): de letters staan bij de velden; de ontvanger sluit af met wat hij ermee gaat doen.",
       "waarom": "Feedback van medestudenten verhoogt prestaties, ook omdat je leert door zelf goed te kijken en te formuleren. Feedback van meerdere kanten (360 graden) helpt alleen als de ontvanger er doelen en acties aan verbindt; daarom de vraag 'Wat ga je ermee doen?'.",
       "effect": "Feedback van medestudenten: g = 0,31 (54 studies). 360-gradenfeedback: gemiddeld klein, groter met doelen en opvolging.",
       "grenzen": "Eén kaart van één medecadet is één perspectief. Zonder oefening is feedback van medestudenten minder nauwkeurig; vriendschap en groepsdruk kunnen meespelen.",
