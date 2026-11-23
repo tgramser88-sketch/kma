@@ -85,7 +85,8 @@
         (s.dtf ? '<span class="kma-pill">' + s.dtf + (s.dtf === 1 ? ' DTF-feit' : ' DTF-feiten') + '</span>' : '') +
         (p.from ? '<span class="kma-pill">Voorstel van ' + esc(p.from) + '</span>' : '') + '</div>' +
         (s.stuck ? '<div class="kma-plan-hint">' + icon('idea') + '<span>Twee weken op rij niet helemaal gelukt. Misschien is de situatie te breed of het gedrag te groot. Pas je plan aan?</span></div>' : '') +
-        '<div class="kma-row-btns"><button type="button" class="kma-icon-btn sm" data-plan-act="edit">' + icon('edit') + 'Aanpassen</button>' +
+        '<div class="kma-row-btns"><button type="button" class="kma-icon-btn sm is-primary" data-plan-act="moment">' + icon('check') + 'Net gebeurd: gelukt?</button>' +
+        '<button type="button" class="kma-icon-btn sm" data-plan-act="edit">' + icon('edit') + 'Aanpassen</button>' +
         '<button type="button" class="kma-icon-btn sm" data-plan-act="del" aria-label="Plan verwijderen">' + icon('trash') + 'Verwijderen</button></div></div>';
     }).join('');
     var addBox = l.length < MAX && !editing ? '<div class="kma-plan-new">' + form(draft.als, draft.dan, 'add') + '<p class="muted small">Maximaal drie plannen per leervraag: minder is sterker.</p></div>' : '';
@@ -192,6 +193,60 @@
     sc.sort(function (a, b) { return a.week < b.week ? -1 : 1; });
     setX('smart-checkins', sc);
   }
+
+  /* ---------------- 4.29.0: check-in vlak na de situatie (M5) ----------------
+     Naast de wekelijkse check-in: direct na de situatie "Is het gelukt?" (Gelukt / Deels / Niet), via + of de knop bij het plan.
+     Elk moment wordt bewaard (kma-x-plan-momenten) en telt mee als check-in van deze week (de laatste van de week telt). */
+  function momenten() { return getX('plan-momenten', []).filter(function (m) { return m && m.id; }); }
+  function momentOpslaan(id, r) {
+    var m = momenten(); m.push({ id: id, at: new Date().toISOString(), r: r }); setX('plan-momenten', m.slice(-200));
+    saveCi(id, r, null);
+    toast(r === 2 ? 'Gelukt: goed bezig! Opgeslagen.' : r === 1 ? 'Deels gelukt: opgeslagen. Wat hielp, en wat niet?' : 'Opgeslagen. Wat hield je tegen? Misschien is je plan te groot.');
+    if (isSmart()) rerender();
+  }
+  function snelCheckin(id) {
+    var l = list();
+    if (!l.length) { openAdd(); return; }
+    var p = id ? l.find(function (x) { return x.id === id; }) : (l.length === 1 ? l[0] : null);
+    if (!p) { kmaSheet({ title: 'Welk plan was het?', items: l.map(function (x) { return { icon: 'repeat', label: 'Als ' + x.als, hint: 'dan ' + x.dan, onClick: function () { setTimeout(function () { snelCheckin(x.id); }, 60); } }; }) }); return; }
+    kmaSheet({ title: 'Is het gelukt?', items: [
+      { section: 'Als ' + p.als + ', dan ' + p.dan },
+      { icon: 'check', label: 'Gelukt', hint: 'Ik deed wat ik me had voorgenomen', onClick: function () { momentOpslaan(p.id, 2); } },
+      { icon: 'activity', label: 'Deels', hint: 'Een deel lukte', onClick: function () { momentOpslaan(p.id, 1); } },
+      { icon: 'x', label: 'Niet', hint: 'Het lukte deze keer niet', onClick: function () { momentOpslaan(p.id, 0); } }
+    ] });
+  }
+  /* 4.29.0 (M7): 360°- en roosfeedback eindigt altijd in een doel en een als-dan-plan (Smither e.a. 2005: alleen met opvolging).
+     kmaActieKaart(bron, voorstel) geeft het slotblok; de knoppen zetten het doel in de leervraag en openen een nieuw plan. */
+  function actieKaart(bron, voorstel) {
+    var nPlan = list().length, doel = leervraagIngevuld();
+    var stap = function (ok, t) { return '<li class="' + (ok ? 'is-klaar' : '') + '">' + (ok ? icon('check') : '') + t + '</li>'; };
+    return '<div class="kma-card-block kma-actie" data-actie-bron="' + esc(bron) + '"><h4>' + icon('target') + 'Van feedback naar actie</h4>' +
+      '<p class="muted">Feedback van anderen helpt pas als je er iets mee doet. Kies één punt, maak er een doel van en spreek af wát je doet.</p>' +
+      '<ol class="kma-actie-stappen">' + stap(doel, '<b>Doel</b> in je leervraag') + stap(nPlan > 0, '<b>Als-dan-plan</b> voor de situatie') + stap(false, '<b>Check-in</b> direct na de situatie: gelukt?') + '</ol>' +
+      '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-actie="doel" data-actie-tekst="' + esc(voorstel || '') + '">' + icon('target') + 'Zet in mijn leervraag</button>' +
+      '<button type="button" class="kma-icon-btn is-primary" data-actie="plan">' + icon('repeat') + 'Als-dan-plan maken</button></div></div>';
+  }
+  window.kmaActieKaart = actieKaart;
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-actie]'); if (!b) return;
+    if (b.getAttribute('data-actie') === 'plan') { openAdd(); return; }
+    var i = smartIdx(); if (i < 0) return;
+    var key = steps[i].questions[0], t = b.getAttribute('data-actie-tekst') || '';
+    if (t && typeof saveAnswer === 'function') saveAnswer(key, answers[key] ? answers[key] + '\n' + t : 'Ik wil werken aan: ' + t);
+    goToStep(i); toast(t ? 'Toegevoegd aan je leervraag. Maak er nu een als-dan-plan bij.' : 'Schrijf je doel bij je leervraag en maak er een als-dan-plan bij.');
+  });
+  /** Is de leervraag ingevuld (minstens één antwoord in het SMART-hoofdstuk)? */
+  function leervraagIngevuld() {
+    var s = steps[smartIdx()]; if (!s || typeof answers === 'undefined') return false;
+    return (s.questions || []).some(function (q) { var a = answers[q]; return a && String(a).trim().length > 5; });
+  }
+  // Vandaag (Klassiek en Dashboard): een ingevulde leervraag zonder als-dan-plan krijgt een duwtje
+  (window.kmaVandaagExtra = window.kmaVandaagExtra || []).push(function () {
+    try { if (lvActief().status === 'voltooid') return []; } catch (e) {}
+    if (!leervraagIngevuld() || list().length) return [];
+    return [{ ic: 'repeat', t: 'Maak een als-dan-plan bij je leervraag', s: 'Spreek af wát je doet in een concrete situatie. Dat verdubbelt ongeveer de kans dat het lukt.', b: 'Plan maken', go: function () { openAdd(); return ''; } }];
+  });
 
   /* ---------------- Meerdere leervragen (4.5.1) ----------------
      De leervraag waar je nu aan werkt staat op de gewone plek (antwoorden, smart-date, check-ins, plannen),
@@ -355,6 +410,7 @@
     var act = b.getAttribute('data-plan-act'), box = b.closest('.kma-plan, .kma-plan-new');
     var val = function (k) { var i = box.querySelector('[data-plan-f="' + k + '"]'); return i ? i.value.trim() : ''; };
     if (act === 'add') { if (add({ als: val('als'), dan: val('dan') })) { draft = { als: '', dan: '' }; toast('Plan toegevoegd'); rerender(); } return; }
+    if (act === 'moment') { snelCheckin(id); return; }
     if (act === 'edit') { editing = id; rerender(); return; }
     if (act === 'cancel') { editing = null; rerender(); return; }
     if (act === 'save') {
@@ -430,6 +486,6 @@
     if (currentStepIndex !== i) goToStep(i); else rerender();
     setTimeout(function () { var el = document.querySelector('#kma-plannen .kma-plan-new'); if (el) { el.scrollIntoView({ block: 'center' }); var inp = el.querySelector('input'); if (inp) inp.focus(); } }, 300);
   }
-  window.kmaPlannen = { list: list, add: function (p) { var ok = add(p); if (ok && isSmart()) rerender(); return ok; }, count: function () { return list().length; }, max: MAX, openAdd: openAdd, stats: stats };
+  window.kmaPlannen = { snelCheckin: snelCheckin, momenten: momenten, leervraagIngevuld: leervraagIngevuld, list: list, add: function (p) { var ok = add(p); if (ok && isSmart()) rerender(); return ok; }, count: function () { return list().length; }, max: MAX, openAdd: openAdd, stats: stats };
   try { if (isSmart() || (steps[currentStepIndex] || {}).widget === 'dtf-logbook') rerender(); } catch (e) {}
 })();

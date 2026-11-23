@@ -220,6 +220,7 @@
       '<div class="kma-card-block kma-hex-chart">' + V.radar(axes, series, { label: 'Persoonlijkheidsprofiel' }) + V.legend(series) + '</div>' +
       '<div class="kma-card-block"><h4>' + icon('chart') + 'Jouw zes eigenschappen</h4><p class="muted">Tik op een eigenschap voor uitleg.' + (oth.count ? ' Het blauwe streepje is hoe anderen je zien.' : '') + '</p>' + traits + H.explainProfile() + '</div>' +
       (gapHtml ? '<div class="kma-card-block"><h4>' + icon('eye') + 'Zelfbeeld en hoe anderen je zien</h4>' + gapHtml + '</div>' : '') +
+      (oth.count && window.kmaActieKaart ? kmaActieKaart('360', (function () { var g = an.gaps.filter(function (x) { return x.kind !== 'mixed'; })[0]; return g ? (g.kind === 'blind' ? 'mogelijke blinde vlek op ' : 'verborgen kracht op ') + g.trait.name.toLowerCase() + ' (uit de 360°-feedback)' : ''; })()) : '') +
       observersHtml() + vTiles + swot +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-act="redo">' + icon('edit') + 'Antwoorden bekijken of wijzigen</button></div>' +
       forQuestions + '</div>';

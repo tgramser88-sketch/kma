@@ -41,6 +41,12 @@
       var fac = {};
       qs.forEach(function (q) { var a = Number(ans[q.id]); if (!(a >= 1 && a <= 5) || O.FACETS.indexOf(q.facet) < 0) return; (fac[q.facet] = fac[q.facet] || []).push(q.reversed ? 6 - a : a); });
       rec.facet = {}; Object.keys(fac).forEach(function (f) { rec.facet[f] = gemiddeld(fac[f]); });
+      // 4.29.0: bij het eerste meetmoment eventueel de volledige IPIP-HEXACO (240): de 144 extra antwoorden en domeinen over alle 240
+      var X = window.kmaHex240;
+      if (rec.items && X && X.klaar() && eersteMeetmoment()) {
+        rec.set = 'ipip-hexaco-240'; rec.extra = X.extra();
+        var d240 = X.domein240(); if (d240) { rec.domein240 = {}; O.TR.forEach(function (t) { if (d240[t] != null) rec.domein240[t] = d240[t]; }); }
+      }
       try { if (H && H.analyse) { var an = H.analyse(H.plain(H.score(ans, qs)), null); rec.sterktes = (an.quadrants.s || []).map(function (x) { return x.trait && x.trait.key; }).filter(function (k) { return O.TR.indexOf(k) >= 0; }).slice(0, 6); } } catch (e) {}
     }
     // Roos van Leary: per moment de asscores, bron en maand (geen tekst)
@@ -82,6 +88,11 @@
   }
 
   /* ---------------- Meetmomenten (4.27.0) ---------------- */
+  /** 4.29.0: is dit het eerste meetmoment van deze deelnemer (nog niets verstuurd voor een ander meetmoment)? */
+  function eersteMeetmoment() {
+    var mm = O.meetmoment(today()), v = S().verzonden || [];
+    return !v.some(function (x) { return !(x.jaar === mm.jaar && x.moment === mm.moment); });
+  }
   // Korte vingerafdruk van de antwoorden: zo ziet het boekje of de test sinds de vorige zending opnieuw is gemaakt.
   function itemsHash(a) { var h = 5381, t = (a || []).join(''); for (var i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) >>> 0; return h.toString(36); }
   /** Stand van het huidige meetmoment: al verstuurd? test nog dezelfde als bij een vorig meetmoment? */
@@ -100,8 +111,9 @@
     if (!actief()) return [];
     var st = stand(); if (st.verstuurd) return [];
     var nieuw = (S().verzonden || []).length > 0;
+    var X = window.kmaHex240, extra240 = X && st.volledig && !st.oudeTest && X.aangeboden() && !X.klaar() ? [{ ic: 'chart', t: 'Onderzoek: 144 aanvullende stellingen', s: 'Eenmalig, ongeveer 20 minuten, vrijwillig. ' + X.aantal() + ' van 144 beantwoord', b: X.aantal() ? 'Verder' : 'Starten', go: function () { X.open(); return ''; } }] : [];
     if (st.oudeTest || !st.volledig) return [{ ic: 'refresh', t: 'Onderzoek: meetmoment ' + st.mm.moment, s: nieuw ? 'Maak je persoonlijkheidstest opnieuw en verstuur daarna je gegevens' : 'Maak je persoonlijkheidstest helemaal af en verstuur je gegevens', b: 'Naar de test', go: naarTest }];
-    return [{ ic: 'share', t: 'Onderzoek: meetmoment ' + st.mm.moment, s: 'Verstuur je gegevens voor dit meetmoment', b: 'Openen', go: function () { open(); return ''; } }];
+    return extra240.concat([{ ic: 'share', t: 'Onderzoek: meetmoment ' + st.mm.moment, s: 'Verstuur je gegevens voor dit meetmoment', b: 'Openen', go: function () { open(); return ''; } }]);
   });
   /** Sleutel uit een QR-code (KMAKoppel.scanDialog) of een link. */
   function metSleutel(txt) {
@@ -134,7 +146,7 @@
       '<label class="kma-field"><span>Onderzoekssleutel (begint met KMAO1.)</span><textarea id="ok-key" rows="4" spellcheck="false" autocomplete="off" placeholder="KMAO1.…"></textarea></label>' +
       '<div class="kma-row-btns">' + (window.KMAKoppel ? '<button type="button" class="kma-icon-btn" data-ok="scan">' + icon('qr') + 'QR scannen</button>' : '') + '<label class="kma-icon-btn">' + icon('folder') + 'Uit bestand<input type="file" id="ok-file" accept=".txt,.json,text/plain" hidden></label><button type="button" class="kma-icon-btn is-primary" data-ok="key">Sleutel controleren</button></div><p class="kma-code-err" role="alert"></p>';
     if (!s.akkoord) return '<p class="small">Vingerafdruk van de sleutel: <b class="kma-ok-fp">' + esc(s.fp) + '</b>. Vergelijk die met wat de onderzoeker je laat zien. Klopt hij niet, stop dan.</p>' +
-      '<div class="kma-ok-box"><p><b>Wat gaat er mee</b></p><ul class="small"><li>Een willekeurige onderzoekscode, het opleidingsjaar en het meetmoment (begin, midden of eind)</li><li>Je antwoorden op de persoonlijkheidstest (IPIP) en de scores</li><li>Plekken op de roos van Leary (alleen de getallen), met de bron: jijzelf, een medecadet of staf</li><li>Aantallen datapunten per V, en per feedbackkaart: V, soort en of er een volgende stap en een actie bij stond</li><li>Je zelfbeoordeling en de beoordeling van je teamleider (alleen de cijfers per V)</li></ul>' +
+      '<div class="kma-ok-box"><p><b>Wat gaat er mee</b></p><ul class="small"><li>Een willekeurige onderzoekscode, het opleidingsjaar en het meetmoment (begin, midden of eind)</li><li>Je antwoorden op de persoonlijkheidstest (IPIP) en de scores; bij je eerste meetmoment eventueel ook de 144 aanvullende stellingen</li><li>Plekken op de roos van Leary (alleen de getallen), met de bron: jijzelf, een medecadet of staf</li><li>Aantallen datapunten per V, en per feedbackkaart: V, soort en of er een volgende stap en een actie bij stond</li><li>Je zelfbeoordeling en de beoordeling van je teamleider (alleen de cijfers per V)</li></ul>' +
       '<p><b>Wat gaat er nooit mee</b></p><ul class="small"><li>Je naam, Peoplesoft- of registratienummer</li><li>Wat je opschrijft (geen enkele tekst)</li><li>Fitheid, stress en welzijn</li></ul></div>' +
       '<p class="small">Meedoen is vrijwillig. Je kunt op elk moment stoppen; dan verstuurt het boekje niets meer. De uitkomsten worden niet gebruikt voor beslissingen over jou, zoals je beoordeling.</p>' +
       '<label class="kma-check"><input type="checkbox" id="ok-ja"> Ik doe vrijwillig mee en weet dat ik kan stoppen.</label>' +
@@ -146,10 +158,18 @@
       '<p class="small">Meetmoment nu: <b>' + mm.moment + '</b> van het opleidingsjaar ' + mm.jaar + '-' + (mm.jaar + 1) + '. ' + (last ? 'Laatst verstuurd: ' + esc(String(last.at).slice(0, 10)) + ' (' + esc(last.moment) + ').' : 'Nog niets verstuurd.') + '</p>' +
       (sd.oudeTest ? '<p class="kma-ok-let small">' + icon('refresh') + 'Nieuw meetmoment: maak eerst je persoonlijkheidstest opnieuw, zodat de onderzoeker kan zien wat er veranderd is. <button type="button" class="kma-chip-btn" data-ok="test">Naar de test</button></p>' : '') +
       '<p class="small">Klaar om te versturen: ' + (rec.items ? 'persoonlijkheidstest volledig' : 'persoonlijkheidstest nog niet volledig') + ', ' + rec.leary.length + ' plekken op de roos, ' + rec.kaarten.length + ' feedbackkaarten' + (rec.beoordeling ? ', beoordeling' : '') + '.</p>' +
+      h240Html() +
       '<details class="kma-ex"><summary>' + icon('idea') + 'Hoe bruikbaar vind je … (1 = niet, 5 = heel)</summary>' +
       rate('norm', 'de vergelijking van je test met andere KMA-cadetten?') + rate('schaal', 'de scores op de vaste schaal (0-100)?') + rate('roos', 'de roos van Leary?') + '</details>' +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-ok="stop">Stoppen met meedoen</button><button type="button" class="kma-icon-btn is-primary" data-ok="send">' + icon('share') + 'Gegevens versturen</button></div>' +
       '<p class="muted small">Versleuteld met de sleutel van de onderzoeker (vingerafdruk ' + esc(s.fp) + '). Alleen de onderzoeker kan het openen.</p>';
+  }
+  function h240Html() {
+    var X = window.kmaHex240; if (!X || !X.aangeboden()) return '';
+    var n = X.aantal();
+    return '<div class="kma-ok-box kma-ok-240"><p><b>Eenmalig: 144 aanvullende stellingen</b></p><p class="small">Alleen bij je eerste meetmoment. Samen met je 96 stellingen is dat de volledige test (240), waarmee de onderzoeker de onderdelen van je persoonlijkheid nauwkeuriger kan meten. Ongeveer 20 minuten, je kunt pauzeren. Vrijwillig: je profiel in het boekje verandert er niet door.</p>' +
+      '<p class="small">' + (X.klaar() ? icon('check') + 'Klaar: gaat mee met je volgende verzending.' : n + ' van 144 beantwoord.') + '</p>' +
+      (X.klaar() ? '' : '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-ok="h240">' + (n ? 'Verder met de stellingen' : 'Start de 144 stellingen') + '</button></div>') + '</div>';
   }
   function teken() { if (!ov) return; ov.querySelector('.kma-code-body').innerHTML = scherm(); }
   function zetSleutel(txt) {
@@ -175,6 +195,7 @@
       if (r) { var kv = r.getAttribute('data-ok-r').split('|'), s0 = S(); s0.bruikbaar = s0.bruikbaar || {}; s0.bruikbaar[kv[0]] = Number(kv[1]); setS(s0); teken(); ov.querySelector('details.kma-ex').open = true; return; }
       var b = e.target.closest('[data-ok]'); if (!b) return;
       var a = b.getAttribute('data-ok'), s = S();
+      if (a === 'h240') { close(); if (window.kmaHex240) kmaHex240.open(); return; }
       if (a === 'x') { close(); return; }
       if (a === 'key') { zetSleutel(ov.querySelector('#ok-key').value); return; }
       if (a === 'scan') { close(); KMAKoppel.scanDialog({ rescan: true }); return; }
@@ -190,5 +211,5 @@
       if (a === 'send') { b.disabled = true; verstuur().then(teken, function () { b.disabled = false; }); }
     });
   }
-  window.kmaOnderzoek = { open: open, actief: actief, code: function () { return actief() ? S().code : ''; }, bouw: bouw, verstuur: verstuur, stand: stand, metSleutel: metSleutel };
+  window.kmaOnderzoek = { open: open, actief: actief, code: function () { return actief() ? S().code : ''; }, bouw: bouw, verstuur: verstuur, stand: stand, metSleutel: metSleutel, eersteMeetmoment: eersteMeetmoment };
 })();

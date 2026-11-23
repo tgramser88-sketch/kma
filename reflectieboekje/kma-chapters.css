@@ -1965,3 +1965,9 @@ body.kma-dash .hero { display: none !important; }
 body.kma-cvs-dash:not([data-cvs-tab="cadetten"]) #kma-fab { display: none !important; }
 body.kma-cvs-dash #kma-fab { bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
 .kma-heat .kma-vdot { width: auto; padding: 0 5px; font-size: 10px; }
+
+/* 4.29.0: van feedback naar actie (M7) */
+.kma-actie-stappen { margin: 6px 0 10px; padding-left: 20px; }
+.kma-actie-stappen li { margin: 3px 0; }
+.kma-actie-stappen li.is-klaar { color: var(--kma-ok, #2e7d50); }
+.kma-actie-stappen li .kma-ic, .kma-actie-stappen li svg { width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; }

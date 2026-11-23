@@ -109,8 +109,9 @@
   var OPT = function (f) { return function (v) { return v === null || v === undefined || v === '' || f(v); }; };
   var SCHEMA = {
     type: ONE(['kma-onderzoek']), v: ONE([1]), bron: ONE(['boekje', 'cvs']), code: RE(CODE_RE), groep: OPT(RE(HEX_RE)), tl: OPT(RE(HEX_RE)),
-    jaar: INT(2020, 2100), moment: ONE(MM), maand: RE(MAAND_RE), app: RE(/^\d+\.\d+\.\d+$/), set: OPT(ONE(['ipip-hexaco-96'])),
+    jaar: INT(2020, 2100), moment: ONE(MM), maand: RE(MAAND_RE), app: RE(/^\d+\.\d+\.\d+$/), set: OPT(ONE(['ipip-hexaco-96', 'ipip-hexaco-240'])),
     'items.*': INT(1, 5), 'items': function (v) { return Array.isArray(v) && v.length <= 200; },
+    'extra.*': INT(1, 5), 'extra': function (v) { return Array.isArray(v) && v.length === 144; }, 'domein240.*': OPT(NUM(0, 100)),
     'domein.*': OPT(NUM(0, 100)), 'facet.*': OPT(NUM(1, 5)),
     'leary': function (v) { return Array.isArray(v) && v.length <= 2000; },
     'leary.*.bron': ONE(BRON), 'leary.*.b': NUM(-2, 2), 'leary.*.s': NUM(-2, 2), 'leary.*.maand': OPT(RE(MAAND_RE)), 'leary.*.gever': OPT(RE(CODE_RE)), 'leary.*.v': OPT(ONE(V4)),
@@ -123,10 +124,10 @@
   };
   function keyOk(path) {
     if (SCHEMA[path]) return SCHEMA[path];
-    var gen = path.replace(/\.\d+(?=\.|$)/g, '.*').replace(/^(domein|facet|v4|zelfbeoordeling|beoordeling)\.[^.]+/, '$1.*');
+    var gen = path.replace(/\.\d+(?=\.|$)/g, '.*').replace(/^(domein240|domein|facet|v4|zelfbeoordeling|beoordeling)\.[^.]+/, '$1.*');
     return SCHEMA[gen] || null;
   }
-  var OBJ = /^(domein|facet|v4|v4\.[^.]+|zelfbeoordeling|beoordeling|bruikbaar|leary\.\d+|kaarten\.\d+)$/;
+  var OBJ = /^(domein240|domein|facet|v4|v4\.[^.]+|zelfbeoordeling|beoordeling|bruikbaar|leary\.\d+|kaarten\.\d+)$/;
   /** Lijst met problemen; leeg = in orde. */
   function check(rec) {
     var err = [];
@@ -149,6 +150,8 @@
     })(rec, '');
     ['type', 'v', 'bron', 'code', 'jaar', 'moment'].forEach(function (k) { if (rec[k] === undefined) err.push(k + ': ontbreekt'); });
     if (rec.domein) Object.keys(rec.domein).forEach(function (k) { if (TR.indexOf(k) < 0) err.push('domein.' + k + ': onbekend'); });
+    if (rec.domein240) Object.keys(rec.domein240).forEach(function (k) { if (TR.indexOf(k) < 0) err.push('domein240.' + k + ': onbekend'); });
+    if ((rec.extra || rec.domein240) && rec.set !== 'ipip-hexaco-240') err.push('extra: alleen bij set ipip-hexaco-240');
     if (rec.v4) Object.keys(rec.v4).forEach(function (k) { if (V4.indexOf(k) < 0) err.push('v4.' + k + ': onbekend'); });
     ['zelfbeoordeling', 'beoordeling'].forEach(function (g) { if (rec[g]) Object.keys(rec[g]).forEach(function (k) { if (V4.indexOf(k) < 0) err.push(g + '.' + k + ': onbekend'); }); });
     if (rec.facet) Object.keys(rec.facet).forEach(function (k) { if (!/^[A-Za-zÀ-ÿ\- ]{3,40}$/.test(k) || FACETS.indexOf(k) < 0) err.push('facet: onbekend facet'); });

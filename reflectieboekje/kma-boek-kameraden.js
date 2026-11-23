@@ -179,7 +179,9 @@
           var t = F.read(d.base + 'vragen/' + f.name); if (!t) return;
           return unpack(t).then(function (o) {
             var r = cleanReq(o); if (!r) return;
-            if (r.vanPs === ps) { if (r.tot && r.tot < plusDays(-14)) F.remove(d.base + 'vragen/' + f.name); return; }
+            // 4.29.0: elke cadet in de groep ruimt een verlopen vraag op (twee weken na de einddatum), niet alleen de vrager
+            if (r.tot && r.tot < plusDays(-14)) { F.remove(d.base + 'vragen/' + f.name); return; }
+            if (r.vanPs === ps) return;
             if (r.aan !== 'groep' && r.aan.indexOf(ps) < 0) return;
             addRequest(r, true);
           }, function () {});

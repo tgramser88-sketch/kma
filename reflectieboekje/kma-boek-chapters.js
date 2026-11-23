@@ -1977,6 +1977,7 @@
       '<p class="muted small">Let op: de twee assen zijn in onderzoek goed terug te vinden; de precieze indeling in acht gelijke sectoren minder (Wiggins, 1979). Daarom bewaart de app de plek op beide assen en toont hij pas een verdeling bij genoeg waarnemingen.</p></details>';
     c.innerHTML = '<div class="kma-leary-ch">' + per +
       cardHtml('Jouw gedrag op de roos', beeld + bron, 'target') +
+      (g.mede.length + g.staf.length && window.kmaActieKaart ? kmaActieKaart('roos', '') : '') +
       cardHtml('Communicatie- en leiderschapscircumplex (CLX)', (L.clx ? L.clx(g.zelf, g.mede.concat(g.staf), 'Zelf', 'Anderen') : '') + '<p class="muted small">De KMA noemt dit model het communicatie- en leiderschapscircumplex (CLX). De vier kwadranten komen uit dezelfde twee assen als de roos: invloed (boven of onder) en verbondenheid (samen of tegen). De namen in je lesmateriaal kunnen iets anders zijn.</p>' + (window.kmaLeertaak ? kmaLeertaak.labels(['LeO 05', 'LeO 06', 'LeO 07']) : ''), 'target') +
       cardHtml('Per soort gedrag', secs, 'list') +
       cardHtml('Naast je persoonlijkheidstest', hex, 'user') +

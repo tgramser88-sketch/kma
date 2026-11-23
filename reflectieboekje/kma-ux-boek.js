@@ -31,6 +31,7 @@
     kmaSheet({ title: 'Wat wil je vastleggen?', items: [
       { icon: 'calendar', label: 'DTF-feit', hint: 'Kort: wat gebeurde er? De V en de rest kan later', onClick: quickDtf },
       window.kmaNabespreking ? { icon: 'talk', label: 'Nabespreking na een oefening', hint: 'Vier vragen, wordt een DTF-feit en zo nodig een als-dan-plan', onClick: function () { kmaNabespreking.open(); } } : null,
+      window.kmaPlannen && kmaPlannen.count() ? { icon: 'repeat', label: 'Als-dan-plan: is het gelukt?', hint: 'Direct na de situatie: gelukt, deels of niet', onClick: function () { setTimeout(function () { kmaPlannen.snelCheckin(); }, 60); } } : null,
       window.kmaKameraad ? { icon: 'users', label: 'Feedback geven aan een medecadet', hint: 'Situatie, wat je zag en een volgende stap', onClick: function () { if (kmaKameraad.give) kmaKameraad.give(); else kmaKameraad.open(); } } : null,
       { section: 'Meer' },
       { icon: 'refresh', label: '5G-T-reflectie', hint: 'Nieuwe reflectie in 4 stappen', onClick: function () { goToStep(idx('5gt-multi')); after(80, function () { if (typeof add5GTCase === 'function') add5GTCase(); }); } },
