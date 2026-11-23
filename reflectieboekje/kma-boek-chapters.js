@@ -132,6 +132,8 @@
     });
     if (!isShared(FIT_TITLE)) p.fitness = [];
     p.extras = collectExtras(true);
+    // 4.26.0 (B2): de onderzoekscode reist mee, zodat de teamleider zijn deel aan hetzelfde record kan koppelen
+    if (window.kmaOnderzoek && kmaOnderzoek.code()) p.onderzoekscode = kmaOnderzoek.code();
     p.sharedChapters = steps.map(function (s, i) { return i === 0 || isShared(s.title); });
     // Ook op titel: een oudere of nieuwere app met andere hoofdstuknummers leest dan toch het juiste hoofdstuk.
     p.sharedTitles = {}; steps.forEach(function (s, i) { p.sharedTitles[s.title] = i === 0 || isShared(s.title); });
@@ -1649,6 +1651,7 @@
     window.updateGedragscodeScore = function () { var r = origV4.apply(this, arguments); clearTimeout(v4t); v4t = setTimeout(function () { try { snapV4(); } catch (e) {} }, 800); return r; };
   }
   /** Everything that says something about growth, in date order. */
+  window.kmaGroeiData = function () { return groeiData(); };   // 4.26.0: voor het onderzoek (kma-boek-onderzoek.js)
   function groeiData() {
     if (!getX('self-history', []).length) try { snapSelf(); } catch (e) {}
     if (!getX('v4-history', []).length) try { snapV4(); } catch (e) {}

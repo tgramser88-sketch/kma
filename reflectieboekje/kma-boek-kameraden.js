@@ -66,6 +66,7 @@
       situatie: clip(o.situatie, 140), feit: clip(o.feit, 500), effect: clip(o.effect, 400), v4: V4.indexOf(o.v4) >= 0 ? o.v4 : '',
       soort: o.soort === 'verbeteren' ? 'verbeteren' : 'vasthouden', tip: clip(o.tip, 400), at: clip(o.at, 40) };
     var lr = window.KMALeary ? KMALeary.clean(o.leary) : null; if (lr) c.leary = lr;
+    if (typeof o.oc === 'string' && /^OC-[0-9A-HJ-NP-Z]{4}-[0-9A-HJ-NP-Z]{4}$/.test(o.oc)) c.oc = o.oc;   // 4.26.0: onderzoekscode van de gever (alleen als die meedoet)
     return c.feit ? c : null;
   }
   function cleanReq(o) {
@@ -304,7 +305,7 @@
       if (!req && leftThisWeek() <= 0) { err.textContent = 'Je hebt deze week al ' + MAX_WEEK + ' keer ongevraagd feedback gegeven.'; return; }
       if (!me()) { err.textContent = 'Vul eerst je naam in bij je profiel (hoofdstuk 0): je medecadet ziet van wie de feedback komt.'; return; }
       var soortEl = ov.querySelector('input[name="kk-soort"]:checked'), v4El = ov.querySelector('input[name="kk-v4"]:checked');
-      var card = cleanCard({ type: 'kma-kameraad', id: uid(), van: me(), vanPs: myPs(), aan: naam, aanPs: req ? req.vanPs : viaPs, req: req ? req.id : '',
+      var card = cleanCard({ type: 'kma-kameraad', id: uid(), van: me(), vanPs: myPs(), aan: naam, aanPs: req ? req.vanPs : viaPs, req: req ? req.id : '', oc: window.kmaOnderzoek ? kmaOnderzoek.code() : '',
         datum: v('#kk-d'), tijd: v('#kk-t'), situatie: v('#kk-sit'), feit: feit, effect: v('#kk-eff'), v4: v4El ? v4El.value : '', soort: soortEl ? soortEl.value : 'vasthouden', tip: v('#kk-tip'), at: new Date().toISOString(), leary: window.KMALeary ? KMALeary.value(ov.querySelector('#kk-leary')) : null });
       var go = function () {
         var s = S(); s.sent.push({ id: card.id, week: week(), aan: card.aan, req: card.req, at: card.at }); if (s.sent.length > 200) s.sent = s.sent.slice(-200);

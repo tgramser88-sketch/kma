@@ -134,6 +134,7 @@
         { icon: 'sun', label: 'Licht', checked: mode === 'light', onClick: function () { setThemeMode('light'); } },
         { icon: 'moon', label: 'Donker', checked: mode === 'dark', onClick: function () { setThemeMode('dark'); } },
         { section: 'Gegevens' },
+        window.kmaOnderzoek ? { icon: 'chart', label: 'Onderzoek', hint: kmaOnderzoek.actief() ? 'Je doet mee: gegevens versturen of stoppen' : 'Alleen met een sleutel van de onderzoeker', onClick: function () { kmaOnderzoek.open(); } } : null,
         { icon: 'trash', label: 'Alles wissen', hint: 'Verwijdert al je antwoorden op dit toestel', danger: true, onClick: function () { clearData(); } }
       ]
     });
