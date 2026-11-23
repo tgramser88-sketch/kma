@@ -1786,6 +1786,45 @@
       tab + '<p class="muted small">Per V naast elkaar: wat je zelf vastlegde, wat anderen zagen en hoe jij en je teamleider het beoordeelden. Zie je een V met veel eigen feiten maar weinig van anderen, vraag dan feedback op die V.</p>';
   }
 
+  /* ---------------- 4.27.0 (M9): de hele opleiding, jaar na jaar ----------------
+     Leiderschapsontwikkeling verloopt over jaren (Day e.a. 2014). Per opleidingsjaar: datapunten per V (zelf en
+     anderen), de gemiddelde plek op de roos (zelf en anderen) en de mijlpalen (beoordelingen, nabesprekingen).
+     De pijl vergelijkt met het jaar ervoor. */
+  function opleidingData() {
+    var jaren = {}, nu = ojaar(today()); jaren[nu] = 1;
+    dtfItems.forEach(function (d) { var y = d && ojaar(d.datum); if (y) jaren[y] = 1; });
+    (groeiData().tl || []).forEach(function (t) { var y = ojaar(t.date); if (y) jaren[y] = 1; });
+    var L = window.KMALeary, gem = function (l, k) { return l.length ? Math.round(l.reduce(function (a, x) { return a + x[k]; }, 0) / l.length * 10) / 10 : null; };
+    return Object.keys(jaren).map(Number).sort(function (a, b) { return a - b; }).map(function (y) {
+      var inJ = function (d) { return ojaar(String(d || '').slice(0, 10)) === y; }, D = leerlijnData(y);
+      var zelf = [], anderen = [];
+      if (L) {
+        dtfItems.forEach(function (d) { if (!d || !inJ(d.datum)) return; var a = L.clean(d.leary); if (a) (d.bron === 'medecadet' ? anderen : zelf).push(a); var b = L.clean(d.learyAnder); if (b) anderen.push(b); });
+        try { (window.kmaKameraad ? kmaKameraad._S().inbox || [] : []).forEach(function (c) { var a = c && inJ(c.datum || c.at) && L.clean(c.leary); if (a) anderen.push(a); }); } catch (e) {}
+        try { (window.kmaFeedback ? kmaFeedback.all() : []).forEach(function (r) { (r.dtfNotes || []).forEach(function (n) { var a = n && inJ(n.datum) && L.clean(n.leary); if (a) anderen.push(a); }); }); } catch (e) {}
+      }
+      return { y: y, D: D, zb: gem(zelf, 'b'), zs: gem(zelf, 's'), ab: gem(anderen, 'b'), as: gem(anderen, 's'), nz: zelf.length, na: anderen.length };
+    });
+  }
+  function opleidingHtml() {
+    var J = opleidingData();
+    var pijl = function (a, b) { return a == null || b == null ? '' : b > a + 0.2 ? ' <span class="kma-up" title="hoger dan het jaar ervoor">▲</span>' : b < a - 0.2 ? ' <span class="kma-down" title="lager dan het jaar ervoor">▼</span>' : ''; };
+    var getal = function (x) { return x == null ? '–' : String(x).replace('.', ','); };
+    var kop = '<tr><th scope="col">Opleidingsjaar</th>' + J.map(function (j) { return '<th scope="col">' + ojaarLabel(j.y) + '</th>'; }).join('') + '</tr>';
+    var rij = function (label, f) { return '<tr><th scope="row">' + label + '</th>' + J.map(function (j, i) { return '<td>' + f(j, i ? J[i - 1] : null) + '</td>'; }).join('') + '</tr>'; };
+    var tab = '<div class="kma-dp" tabindex="0" role="region" aria-label="Groei over de hele opleiding"><table class="kma-dp-tab"><thead>' + kop + '</thead><tbody>' +
+      VS.map(function (v, k) { return rij(v + ' <small class="muted">(zelf / anderen)</small>', function (j, p) { var r = j.D.perV[k]; return r.zelf + ' / ' + r.anderen + (p ? pijl(p.D.perV[k].zelf + p.D.perV[k].anderen, r.zelf + r.anderen) : ''); }); }).join('') +
+      rij('Dominantie <small class="muted">(zelf / anderen)</small>', function (j, p) { return getal(j.zb) + ' / ' + getal(j.ab) + (p ? pijl(p.ab, j.ab) : ''); }) +
+      rij('Affiliatie <small class="muted">(zelf / anderen)</small>', function (j, p) { return getal(j.zs) + ' / ' + getal(j.as) + (p ? pijl(p.as, j.as) : ''); }) +
+      rij('Beoordeling teamleider', function (j) { return j.D.tl ? esc(fmtDate(j.D.tl.date)) + (j.D.tl.oordeel ? '<br><small>' + esc(j.D.tl.oordeel) + '</small>' : '') : '–'; }) +
+      rij('Nabesprekingen', function (j) { return String(j.D.nab); }) +
+      rij('Leervraag gelukt', function (j) { return j.D.ci ? j.D.ciOk + ' van ' + j.D.ci + ' weken' : '–'; }) +
+      '</tbody></table></div>';
+    return (J.length < 2 ? '<p class="muted small">Dit is je eerste opleidingsjaar in het boekje. Volgend jaar zie je hier naast elkaar hoe je per V en op de roos van Leary groeit.</p>' : '') + tab +
+      '<p class="muted small">Dominantie en affiliatie: gemiddelde plek op de roos van Leary (−2 tot +2), uit je eigen DTF-feiten en uit wat medecadetten en je teamleider zagen. ▲ en ▼ vergelijken met het jaar ervoor.</p>';
+  }
+  window.kmaOpleidingData = opleidingData;
+
   /* ---------------- 4.23.0 (P10): wat doe je met feedback? ---------------- */
   function feedbackKwaliteit() {
     var inbox = []; try { inbox = window.kmaKameraad ? kmaKameraad._S().inbox || [] : []; } catch (e) {}
@@ -1864,6 +1903,7 @@
       (g.v4.length > 1 ? cardHtml('Eigen score per V (1-10)', V.lineChart(g.v4.map(function (h) { return fmtDate(h.date).replace(/ \d{4}$/, ''); }), VS.map(function (v, i) { return { label: v, color: VCOL[v], values: g.v4.map(function (h) { return h.s[i]; }) }; }), { yMin: 0, yMax: 10, ticks: [0, 5, 10], label: 'Eigen score per V', connect: true }) + V.legend(VS.map(function (v) { return { label: v, color: VCOL[v] }; })), 'activity') : '') +
       (Object.keys(g.months).length ? cardHtml('DTF-feiten per maand', groeiDtf(g), 'calendar') : '') +
       cardHtml('Mijn leerlijn', '<div id="kma-leerlijn">' + leerlijnHtml() + '</div>', 'trend') +
+      cardHtml('Over de hele opleiding', opleidingHtml(), 'flag') +
       cardHtml('Wat doe je met feedback?', feedbackKwaliteitHtml(), 'message') +
       weekHtml() +
       cardHtml('Afscheidsspeech', speechHtml(), 'message') +

@@ -201,6 +201,8 @@
   function accept(ov, text) {
     var raw = String(text || '').trim();
     if (raw.indexOf('KMAK1:') === 0 && window.kmaKameraad && kmaKameraad.accept) { stopScan(); buzz(); close(ov); kmaKameraad.accept(raw); return true; }
+    // 4.27.0: onderzoekssleutel als QR-code (Onderzoeksapp) → het onderzoeksscherm van het boekje of het CVS
+    if (/^KMAO1\./.test(raw)) { var on = window.kmaOnderzoek || window.kmaCvsOnderzoek; if (on && on.metSleutel) { stopScan(); buzz(); close(ov); on.metSleutel(raw); return true; } }
     var k = decode(text);
     var err = ov.querySelector('#kk-err');
     if (!k) { if (err) err.textContent = 'Dit is geen QR-code voor een teamkoppeling. Vraag je teamleider om de QR-code van je groep.'; return false; }

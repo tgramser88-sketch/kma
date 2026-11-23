@@ -193,6 +193,8 @@
   function gesprekHtml(g) {
     var acts = (g.afspraken || []).filter(function (a) { return a && a.wat; });
     return '<div class="kma-fb-plan"><div class="kma-fb-plan-top"><strong>' + esc(g.soort || 'Gesprek') + '</strong><span>' + esc(fmtDate(g.datum)) + '</span></div>' +
+      (g.terugblik ? '<p class="small"><b>Terugblik op de vorige afspraken:</b> ' + esc(g.terugblik) + '</p>' : '') +
+      (g.grow ? ['doel', 'nu', 'opties'].filter(function (k) { return g.grow[k]; }).map(function (k) { return '<p class="small"><b>' + { doel: 'Doel', nu: 'Huidige situatie', opties: 'Opties' }[k] + ':</b> ' + esc(g.grow[k]) + '</p>'; }).join('') : '') +
       (g.besproken ? '<p>' + esc(g.besproken) + '</p>' : '') +
       (acts.length ? '<ul class="kma-fb-acts">' + acts.map(function (a) { return '<li class="' + (a.klaar ? 'ok' : '') + '">' + esc(a.wat) + (a.wie ? ' <em>' + esc(a.wie) + '</em>' : '') + (a.wanneer ? ' <small>' + esc(fmtDate(a.wanneer)) + '</small>' : '') + '</li>'; }).join('') + '</ul>' : '') +
       (g.vervolg ? '<small class="muted">Vervolggesprek: ' + esc(fmtDate(g.vervolg)) + '</small>' : '') + '</div>';
@@ -299,7 +301,9 @@
     if (s.widget === 'dtf-logbook' && (d.dtfNotes || []).length) {
       parts.push('<h5>Waarnemingen van je teamleider en instructeurs</h5>' + d.dtfNotes.map(function (n) {
         var sg = n.teken === '+' ? ' pos' : n.teken === '-' ? ' neg' : '';
-        return '<div class="kma-fb-case kma-dtf-obs' + sg + '"><small class="muted">' + esc([n.datum, n.tijd, n.by].filter(Boolean).join(' · ')) + (sg ? ' · ' + (n.teken === '+' ? 'positief' : 'negatief') : '') + '</small>' + textBlock(n.feit) +
+        return '<div class="kma-fb-case kma-dtf-obs' + sg + '"><small class="muted">' + esc([n.datum, n.tijd, n.by].filter(Boolean).join(' · ')) + (sg ? ' · ' + (n.teken === '+' ? 'positief' : 'negatief') : '') + '</small>' +
+          (n.doel ? '<p class="kma-dtf-dvs"><b>Doel:</b> ' + esc(n.doel) + '</p>' : '') + textBlock(n.feit) +
+          (n.stap ? '<p class="kma-dtf-dvs"><b>Volgende stap:</b> ' + esc(n.stap) + '</p>' : '') +
           ((n.v4 || []).length ? '<span class="kma-fb-tags">' + n.v4.map(function (v) { return '<i>' + esc(v) + '</i>'; }).join('') + '</span>' : '') + '</div>';
       }).join(''));
     }

@@ -81,6 +81,35 @@
     return rec;
   }
 
+  /* ---------------- Meetmomenten (4.27.0) ---------------- */
+  // Korte vingerafdruk van de antwoorden: zo ziet het boekje of de test sinds de vorige zending opnieuw is gemaakt.
+  function itemsHash(a) { var h = 5381, t = (a || []).join(''); for (var i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) >>> 0; return h.toString(36); }
+  /** Stand van het huidige meetmoment: al verstuurd? test nog dezelfde als bij een vorig meetmoment? */
+  function stand() {
+    var s = S(), mm = O.meetmoment(today()), v = s.verzonden || [];
+    var nu = v.filter(function (x) { return x.jaar === mm.jaar && x.moment === mm.moment; });
+    var eerder = v.filter(function (x) { return !(x.jaar === mm.jaar && x.moment === mm.moment) && x.test; }).slice(-1)[0];
+    var rec = bouw(), h = rec.items ? itemsHash(rec.items) : '';
+    return { mm: mm, verstuurd: nu.length > 0, oudeTest: !!(eerder && h && eerder.test === h), volledig: !!rec.items };
+  }
+  function naarTest() {
+    close();
+    try { var i = steps.findIndex(function (x) { return /Persoonlijkheidstest/.test(x.title); }); if (i >= 0) goToStep(i); } catch (e) {}
+  }
+  (window.kmaVandaagExtra = window.kmaVandaagExtra || []).push(function () {
+    if (!actief()) return [];
+    var st = stand(); if (st.verstuurd) return [];
+    var nieuw = (S().verzonden || []).length > 0;
+    if (st.oudeTest || !st.volledig) return [{ ic: 'refresh', t: 'Onderzoek: meetmoment ' + st.mm.moment, s: nieuw ? 'Maak je persoonlijkheidstest opnieuw en verstuur daarna je gegevens' : 'Maak je persoonlijkheidstest helemaal af en verstuur je gegevens', b: 'Naar de test', go: naarTest }];
+    return [{ ic: 'share', t: 'Onderzoek: meetmoment ' + st.mm.moment, s: 'Verstuur je gegevens voor dit meetmoment', b: 'Openen', go: function () { open(); return ''; } }];
+  });
+  /** Sleutel uit een QR-code (KMAKoppel.scanDialog) of een link. */
+  function metSleutel(txt) {
+    open(); var t = ov && ov.querySelector('#ok-key');
+    if (!t) { toast('Je doet al mee. Stop eerst als je een andere sleutel wilt gebruiken.'); return; }
+    t.value = String(txt || '').trim(); zetSleutel(t.value);
+  }
+
   /* ---------------- Versturen ---------------- */
   function verstuur() {
     var s = S(); if (!actief()) return Promise.reject(new Error('Niet actief'));
@@ -90,7 +119,7 @@
       var naam = s.code + '-' + rec.jaar + '-' + rec.moment + '-' + Date.now() + '.json', fs = window.kmaDeelFS, waar = '';
       if (fs && fs.ok() && fs.write('onderzoek/inbox/' + naam, txt)) waar = 'deelmap';
       else if (typeof window.downloadTextFile === 'function') { window.downloadTextFile(txt, 'KMA-onderzoek-' + naam); waar = 'bestand'; }
-      s = S(); (s.verzonden = s.verzonden || []).push({ at: new Date().toISOString(), jaar: rec.jaar, moment: rec.moment, waar: waar }); s.verzonden = s.verzonden.slice(-20); setS(s);
+      s = S(); (s.verzonden = s.verzonden || []).push({ at: new Date().toISOString(), jaar: rec.jaar, moment: rec.moment, waar: waar, test: rec.items ? itemsHash(rec.items) : '' }); s.verzonden = s.verzonden.slice(-20); setS(s);
       toast(waar === 'deelmap' ? 'Versleuteld in de deelmap gezet' : 'Versleuteld bestand gemaakt: geef het aan de onderzoeker');
       return { rec: rec, txt: txt, waar: waar };
     });
@@ -103,18 +132,19 @@
     var s = S();
     if (!s.key) return '<p>Doe je mee aan onderzoek van de KMA naar persoonlijkheid, gedrag en de 4V\'s? Dat kan alleen als de onderzoeker je een <b>onderzoekssleutel</b> geeft. Zonder sleutel verzamelt het boekje niets.</p>' +
       '<label class="kma-field"><span>Onderzoekssleutel (begint met KMAO1.)</span><textarea id="ok-key" rows="4" spellcheck="false" autocomplete="off" placeholder="KMAO1.…"></textarea></label>' +
-      '<div class="kma-row-btns"><label class="kma-icon-btn">' + icon('folder') + 'Uit bestand<input type="file" id="ok-file" accept=".txt,.json,text/plain" hidden></label><button type="button" class="kma-icon-btn is-primary" data-ok="key">Sleutel controleren</button></div><p class="kma-code-err" role="alert"></p>';
+      '<div class="kma-row-btns">' + (window.KMAKoppel ? '<button type="button" class="kma-icon-btn" data-ok="scan">' + icon('qr') + 'QR scannen</button>' : '') + '<label class="kma-icon-btn">' + icon('folder') + 'Uit bestand<input type="file" id="ok-file" accept=".txt,.json,text/plain" hidden></label><button type="button" class="kma-icon-btn is-primary" data-ok="key">Sleutel controleren</button></div><p class="kma-code-err" role="alert"></p>';
     if (!s.akkoord) return '<p class="small">Vingerafdruk van de sleutel: <b class="kma-ok-fp">' + esc(s.fp) + '</b>. Vergelijk die met wat de onderzoeker je laat zien. Klopt hij niet, stop dan.</p>' +
       '<div class="kma-ok-box"><p><b>Wat gaat er mee</b></p><ul class="small"><li>Een willekeurige onderzoekscode, het opleidingsjaar en het meetmoment (begin, midden of eind)</li><li>Je antwoorden op de persoonlijkheidstest (IPIP) en de scores</li><li>Plekken op de roos van Leary (alleen de getallen), met de bron: jijzelf, een medecadet of staf</li><li>Aantallen datapunten per V, en per feedbackkaart: V, soort en of er een volgende stap en een actie bij stond</li><li>Je zelfbeoordeling en de beoordeling van je teamleider (alleen de cijfers per V)</li></ul>' +
       '<p><b>Wat gaat er nooit mee</b></p><ul class="small"><li>Je naam, Peoplesoft- of registratienummer</li><li>Wat je opschrijft (geen enkele tekst)</li><li>Fitheid, stress en welzijn</li></ul></div>' +
       '<p class="small">Meedoen is vrijwillig. Je kunt op elk moment stoppen; dan verstuurt het boekje niets meer. De uitkomsten worden niet gebruikt voor beslissingen over jou, zoals je beoordeling.</p>' +
       '<label class="kma-check"><input type="checkbox" id="ok-ja"> Ik doe vrijwillig mee en weet dat ik kan stoppen.</label>' +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-ok="stop">Niet meedoen</button><button type="button" class="kma-icon-btn is-primary" data-ok="akkoord">Akkoord</button></div><p class="kma-code-err" role="alert"></p>';
-    var mm = O.meetmoment(today()), last = (s.verzonden || []).slice(-1)[0], b = s.bruikbaar || {};
+    var mm = O.meetmoment(today()), last = (s.verzonden || []).slice(-1)[0], b = s.bruikbaar || {}, sd = stand();
     var rate = function (k, vraag) { return '<div class="kma-field"><span>' + vraag + '</span><div class="kma-chips">' + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" class="kma-chip-btn' + (b[k] === n ? ' on' : '') + '" data-ok-r="' + k + '|' + n + '" aria-pressed="' + (b[k] === n) + '">' + n + '</button>'; }).join('') + '</div></div>'; };
     var rec = bouw();
     return '<p>Je doet mee. Je onderzoekscode: <b class="kma-ok-code">' + esc(s.code) + '</b></p>' +
       '<p class="small">Meetmoment nu: <b>' + mm.moment + '</b> van het opleidingsjaar ' + mm.jaar + '-' + (mm.jaar + 1) + '. ' + (last ? 'Laatst verstuurd: ' + esc(String(last.at).slice(0, 10)) + ' (' + esc(last.moment) + ').' : 'Nog niets verstuurd.') + '</p>' +
+      (sd.oudeTest ? '<p class="kma-ok-let small">' + icon('refresh') + 'Nieuw meetmoment: maak eerst je persoonlijkheidstest opnieuw, zodat de onderzoeker kan zien wat er veranderd is. <button type="button" class="kma-chip-btn" data-ok="test">Naar de test</button></p>' : '') +
       '<p class="small">Klaar om te versturen: ' + (rec.items ? 'persoonlijkheidstest volledig' : 'persoonlijkheidstest nog niet volledig') + ', ' + rec.leary.length + ' plekken op de roos, ' + rec.kaarten.length + ' feedbackkaarten' + (rec.beoordeling ? ', beoordeling' : '') + '.</p>' +
       '<details class="kma-ex"><summary>' + icon('idea') + 'Hoe bruikbaar vind je … (1 = niet, 5 = heel)</summary>' +
       rate('norm', 'de vergelijking van je test met andere KMA-cadetten?') + rate('schaal', 'de scores op de vaste schaal (0-100)?') + rate('roos', 'de roos van Leary?') + '</details>' +
@@ -147,6 +177,8 @@
       var a = b.getAttribute('data-ok'), s = S();
       if (a === 'x') { close(); return; }
       if (a === 'key') { zetSleutel(ov.querySelector('#ok-key').value); return; }
+      if (a === 'scan') { close(); KMAKoppel.scanDialog({ rescan: true }); return; }
+      if (a === 'test') { naarTest(); return; }
       if (a === 'akkoord') {
         if (!ov.querySelector('#ok-ja').checked) { ov.querySelector('.kma-code-err').textContent = 'Vink eerst aan dat je vrijwillig meedoet.'; return; }
         s.akkoord = new Date().toISOString(); s.code = s.code || O.newCode();
@@ -158,5 +190,5 @@
       if (a === 'send') { b.disabled = true; verstuur().then(teken, function () { b.disabled = false; }); }
     });
   }
-  window.kmaOnderzoek = { open: open, actief: actief, code: function () { return actief() ? S().code : ''; }, bouw: bouw, verstuur: verstuur };
+  window.kmaOnderzoek = { open: open, actief: actief, code: function () { return actief() ? S().code : ''; }, bouw: bouw, verstuur: verstuur, stand: stand, metSleutel: metSleutel };
 })();

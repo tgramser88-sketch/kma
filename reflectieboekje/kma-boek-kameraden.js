@@ -165,6 +165,14 @@
         }, Promise.resolve());
       });
     }).then(function () {
+      // 4.27.0 (M4): scores voor mijn kaarten
+      var sf = F.list(d.base + 'scores/' + ps).filter(function (f) { return !f.dir && /\.json$/i.test(f.name); });
+      if (sf.length) {
+        var s5 = S(); s5.scores = s5.scores || {};
+        sf.forEach(function (f) { var t = F.read(d.base + 'scores/' + ps + '/' + f.name); var o; try { o = JSON.parse(t); } catch (e) { return; } if (o && o.type === 'kma-kameraad-score' && o.s >= 1 && o.s <= 5) s5.scores[f.name] = Math.round(o.s); });
+        var ks = Object.keys(s5.scores); if (ks.length > 200) ks.slice(0, ks.length - 200).forEach(function (k) { delete s5.scores[k]; });
+        save(s5);
+      }
       var vr = F.list(d.base + 'vragen').filter(function (f) { return !f.dir && /\.json$/i.test(f.name); });
       return vr.reduce(function (p, f) {
         return p.then(function () {
@@ -241,7 +249,7 @@
     if (document.getElementById('kma-kam-ov')) return;
     var left = leftThisWeek(), n = newCount(), reqs = openRequests(), mine = S().mine;
     var items = [{ section: 'Geven' },
-      { icon: 'message', label: 'Feedback geven', hint: left ? 'Ongevraagd: nog ' + left + ' van ' + MAX_WEEK + ' deze week' : 'Je hebt deze week al ' + MAX_WEEK + ' keer ongevraagd feedback gegeven. Op een vraag kan altijd.', onClick: function () { if (!left) { toast('Deze week kun je geen ongevraagde feedback meer geven. Op een vraag van een medecadet kan het wel.', 'error'); return; } giveForm(null); } }];
+      { icon: 'message', label: 'Feedback geven', hint: (function () { var m = mijnScores(); return m.n >= 3 ? 'Jouw kaarten: gemiddeld ' + String(m.gem).replace('.', ',') + ' van 5 bruikbaar (' + m.n + ' scores). ' : ''; })() + (left ? 'Ongevraagd: nog ' + left + ' van ' + MAX_WEEK + ' deze week' : 'Je hebt deze week al ' + MAX_WEEK + ' keer ongevraagd feedback gegeven. Op een vraag kan altijd.'), onClick: function () { if (!left) { toast('Deze week kun je geen ongevraagde feedback meer geven. Op een vraag van een medecadet kan het wel.', 'error'); return; } giveForm(null); } }];
     if (reqs.length) items.push({ icon: 'users', label: 'Vragen van medecadetten (' + reqs.length + ')', hint: 'Zij vragen jou om feedback', onClick: listRequests });
     items.push({ section: 'Vragen' },
       { icon: 'send', label: 'Feedback vragen', hint: 'Aan je hele groep of aan een paar medecadetten', onClick: askForm });
@@ -260,7 +268,45 @@
       return '<label class="kma-kam-chip"><input type="radio" name="kk-v4" value="' + v + '"' + (sel === v ? ' checked' : '') + '><span>' + v + '</span></label>';
     }).join('') + '</div>';
   }
+  /* ---------------- 4.27.0 (M4): kalibratie-oefening vóór de eerste eigen kaart ----------------
+     Drie voorbeeldkaarten: goed of minder goed? Na elke keuze de uitleg. Eén keer verplicht, daarna via "Zo geef je
+     goede feedback" opnieuw te doen. Bron: Double, McGrane & Hopfenbeck (2020): peer feedback werkt beter met training. */
+  var KAL = [
+    { sit: 'Oefening Hei, verkenning dinsdag', feit: 'Je gaf de opdracht aan de groep zonder het doel van de verkenning te noemen. Twee mensen vroegen daarna wat de bedoeling was.', stap: 'Noem bij de volgende opdracht eerst het doel, dan de taken.', goed: true,
+      uitleg: 'Goed: een concrete situatie, wat je zag en wat het effect was, en één volgende stap. Je medecadet kan er meteen iets mee.' },
+    { sit: 'Week 3', feit: 'Jij bent altijd zo onduidelijk als je leiding geeft.', stap: 'Beter je best doen.', goed: false,
+      uitleg: 'Minder goed: "altijd" en "jij bent" gaan over de persoon, niet over gedrag. Er staat geen situatie en de stap is niet concreet.' },
+    { sit: 'Avondappèl donderdag', feit: 'Je zag dat Sam zijn uitrusting niet compleet had en hielp hem voor het appèl zonder dat iemand het vroeg. Daardoor stond de groep op tijd.', stap: 'Blijf dat doen, ook als je zelf haast hebt.', goed: true,
+      uitleg: 'Goed: ook positieve feedback is concreet. Het effect maakt duidelijk waarom het gedrag ertoe doet (vasthouden).' }
+  ];
+  function kalibratie(verder) {
+    var i = 0, goed = 0;
+    var teken = function () {
+      if (i >= KAL.length) {
+        var s0 = S(); s0.kalibratie = new Date().toISOString(); s0.kalScore = goed; save(s0);
+        sheet('Oefenen: goede feedback herkennen', '<p>Klaar: <b>' + goed + ' van ' + KAL.length + '</b> goed herkend.</p><p class="small">Let bij je eigen kaart op: een situatie, wat je zag en het effect, en één concrete volgende stap. Geen oordeel over de persoon.</p>' +
+          '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-x="close">Sluiten</button>' + (verder ? '<button type="button" class="kma-icon-btn is-primary" data-k="kal-verder">' + icon('message') + 'Nu je eigen kaart</button>' : '') + '</div>',
+          function (e) { if (e.target.closest('[data-k="kal-verder"]')) verder(); });
+        return;
+      }
+      var k = KAL[i];
+      sheet('Oefenen: goede feedback herkennen (' + (i + 1) + '/' + KAL.length + ')', '<p class="small">Voordat je je eerste kaart geeft: is dit goede feedback?</p>' +
+        '<div class="kma-kam-card"><div class="kma-kam-sit">' + esc(k.sit) + '</div><p class="kma-kam-feit">' + esc(k.feit) + '</p><p class="small"><b>Volgende stap:</b> ' + esc(k.stap) + '</p></div>' +
+        '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-k="kal-n">Minder goed</button><button type="button" class="kma-icon-btn is-primary" data-k="kal-j">Goed</button></div><div class="kma-kal-uitleg" aria-live="polite"></div>',
+        function (e) {
+          var b = e.target.closest('[data-k="kal-j"],[data-k="kal-n"]'), nx = e.target.closest('[data-k="kal-next"]');
+          if (nx) { i++; teken(); return; }
+          if (!b) return;
+          var keus = b.getAttribute('data-k') === 'kal-j', ok = keus === k.goed, box = e.target.closest('.kma-sheet').querySelector('.kma-kal-uitleg');
+          if (box.innerHTML) return;
+          if (ok) goed++;
+          box.innerHTML = '<p class="' + (ok ? 'kma-kal-ok' : 'kma-kal-nee') + '"><b>' + (ok ? 'Klopt.' : 'Niet helemaal.') + '</b> ' + esc(k.uitleg) + '</p><div class="kma-row-btns"><button type="button" class="kma-icon-btn is-primary" data-k="kal-next">Volgende</button></div>';
+        });
+    };
+    teken();
+  }
   function giveForm(req, preset) {
+    if (!S().kalibratie && !S().sent.length) { kalibratie(function () { giveForm(req, preset); }); return; }   // wie al kaarten gaf, hoeft niet
     var d = deel();
     var after = function (list) {
       var aanHtml;
@@ -415,12 +461,16 @@
       '<div class="kma-kam-actie"><label class="kma-code-lab"><span class="kma-ofga" title="Afsluiting">A</span>Wat ga je ermee doen? <small>Eén zin; zonder deze stap verandert er weinig</small><textarea id="kk-actie" maxlength="300" rows="2" placeholder="bijv. Bij de volgende opdracht noem ik eerst het doel.">' + esc(c.actie || '') + '</textarea></label>' +
         (window.kmaPlannen ? '<label class="kma-check"><input type="checkbox" id="kk-actie-plan"> Maak er een als-dan-plan van</label><div class="kma-kam-plan" hidden><label class="kma-code-lab">Als …<input type="text" id="kk-actie-als" maxlength="160" value="' + esc(c.situatie || '') + '"></label></div>' : '') +
         '<div class="kma-row-btns"><button type="button" class="kma-icon-btn is-primary" data-k="actie">' + icon('check') + 'Opslaan</button></div></div>' +
+      // 4.27.0 (M4): feedback op feedback, anoniem terug naar de gever (via de deelmap)
+      '<div class="kma-kam-bruik"><span>Hoe bruikbaar was deze feedback? <small class="muted">(anoniem voor ' + esc(c.van) + ')</small></span><div class="kma-chips">' + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" class="kma-chip-btn' + (c.bruik === n ? ' on' : '') + '" data-k-bruik="' + n + '" aria-pressed="' + (c.bruik === n) + '">' + n + '</button>'; }).join('') + '</div></div>' +
       '<p class="muted small">' + icon('lock') + ' Deze kaart is alleen van jou. Je teamleider ziet hem pas als je hem in je DTF-logboek zet en dat hoofdstuk deelt.</p>' +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-k="del">' + icon('trash') + 'Verwijderen</button>' +
       (c.inDtf ? '' : '<button type="button" class="kma-icon-btn is-primary" data-k="dtf">' + icon('calendar') + 'In mijn DTF-logboek</button>') + '</div>' +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-k="back">Terug naar het postvak</button></div>';
     sheet('Feedback van ' + c.van, body, function (e) {
       if (e.target.closest('[data-k="back"]')) { listInbox(); return; }
+      var br = e.target.closest('[data-k-bruik]');
+      if (br) { bruikbaar(c.id, Number(br.getAttribute('data-k-bruik'))); return; }
       if (e.target.closest('[data-k="dtf"]')) { toDtf(c.id); return; }
       if (e.target.id === 'kk-actie-plan') { var pl = e.target.closest('.kma-kam-actie').querySelector('.kma-kam-plan'); if (pl) pl.hidden = !e.target.checked; return; }
       if (e.target.closest('[data-k="actie"]')) {
@@ -437,6 +487,24 @@
         if (window.kmaUndoToast) kmaUndoToast('Kaart verwijderd', function () { var s3 = S(); s3.inbox = JSON.parse(snap); save(s3); });
       }
     });
+  }
+  /** Bruikbaarheid 1-5 bewaren en (één keer per kaart) anoniem in de deelmap zetten voor de gever. */
+  function bruikbaar(id, n) {
+    var s = S(), c = s.inbox.find(function (x) { return x.id === id; }); if (!c || !(n >= 1 && n <= 5)) return;
+    var eerder = c.bruik; c.bruik = n; save(s);
+    var d = deel();
+    if (d && c.vanPs && /^[0-9A-Za-z]{1,20}$/.test(c.vanPs)) {
+      // de bestandsnaam is willekeurig en vast per kaart: een nieuwe keuze vervangt de oude, de gever ziet niet van welke kaart
+      c.bruikFile = c.bruikFile || (Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4)); save(s);
+      F.write(d.base + 'scores/' + c.vanPs + '/' + c.bruikFile + '.json', JSON.stringify({ type: 'kma-kameraad-score', v: 1, s: n, maand: today().slice(0, 7) }));
+    }
+    toast(eerder ? 'Aangepast' : 'Dank je. ' + (d ? c.van + ' ziet alleen een gemiddelde, niet van wie.' : 'Bewaard in je postvak.'));
+    showCard(id);
+  }
+  /** Gever: gemiddelde bruikbaarheid van de eigen kaarten (pas vanaf 3 scores, zodat het anoniem blijft). */
+  function mijnScores() {
+    var sc = S().scores || {}, l = Object.keys(sc).map(function (k) { return sc[k]; });
+    return { n: l.length, gem: l.length ? Math.round(l.reduce(function (a, b) { return a + b; }, 0) / l.length * 10) / 10 : null };
   }
   function toDtf(id) {
     var s = S(), c = s.inbox.find(function (x) { return x.id === id; }); if (!c || typeof dtfItems === 'undefined') return;
@@ -497,8 +565,8 @@
       '<li><b>Vasthouden of verbeteren.</b> Geef ook feedback op wat goed gaat; dat is net zo nuttig.</li>' +
       '<li><b>Eén tip.</b> Wat zou je de volgende keer doen? Kort en concreet.</li></ol>' +
       '<p class="muted small">Ongevraagd geef je hooguit ' + MAX_WEEK + ' keer per week feedback. Op een vraag van een medecadet kan het altijd. Je feedback is niet anoniem: je medecadet ziet van wie hij komt.</p>' +
-      '<div class="kma-row-btns"><button type="button" class="kma-icon-btn is-primary" data-x="close">Begrepen</button></div>';
-    sheet('Zo geef je goede feedback', body);
+      '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-k="kal-opnieuw">' + icon('repeat') + 'Oefenen met voorbeelden</button><button type="button" class="kma-icon-btn is-primary" data-x="close">Begrepen</button></div>';
+    sheet('Zo geef je goede feedback', body, function (e) { if (e.target.closest('[data-k="kal-opnieuw"]')) kalibratie(null); });
   }
 
   /* ---------------- Scannen en bestanden ---------------- */
@@ -568,7 +636,7 @@
   }
 
   /* ---------------- Start ---------------- */
-  window.kmaKameraad = { open: open, give: giveForm, ask: askForm, inbox: listInbox, scan: scanSheet, accept: accept, sync: sync, left: leftThisWeek, newCount: newCount, requests: openRequests, people: people, _S: S };
+  window.kmaKameraad = { kalibratie: kalibratie, bruikbaar: bruikbaar, mijnScores: mijnScores, open: open, give: giveForm, ask: askForm, inbox: listInbox, scan: scanSheet, accept: accept, sync: sync, left: leftThisWeek, newCount: newCount, requests: openRequests, people: people, _S: S };
   badge();
   setTimeout(function () { sync().then(badge); }, 4000);
   setInterval(function () { if (!document.hidden) sync().then(badge); }, 120000);

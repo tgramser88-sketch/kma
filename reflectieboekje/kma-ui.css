@@ -541,3 +541,12 @@ body[data-kma-fab="mini"] .kma-fab > span, body[data-kma-fab="mini"] .kma-quick-
 .kma-link-btn .ki { width: 18px; height: 18px; }
 .kma-empty-demo small { font-size: 13px; }
 body.kma-has-bottombar .kma-top { bottom: calc(100px + env(safe-area-inset-bottom)); }
+/* 4.27.0: nabespreking, wie deden mee (M3) */
+.kma-aar-deel { margin: 8px 0 12px; } .kma-aar-deel summary { cursor: pointer; font-weight: 600; display: flex; gap: 6px; align-items: center; min-height: 40px; }
+.kma-aar-cad { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 4px 12px; margin: 6px 0; }
+/* 4.27.0: teamleider-kaart Doel, Wat zag ik, Volgende stap (M2) */
+.kma-dtf-dvs { margin: 6px 0 0; font-size: 14px; color: var(--text-primary); } .kma-dtf-dvs b { color: var(--accent-gold); font-weight: 600; }
+/* 4.27.0 (M8): coachende opbouw en terugblik */
+.kma-gs-grow { margin: 8px 0 12px; border: 1px solid var(--border-color, #d9d4c2); border-radius: 8px; padding: 6px 10px; }
+.kma-gs-grow summary { cursor: pointer; font-weight: 600; display: flex; gap: 6px; align-items: center; min-height: 40px; }
+.kma-gs-terug-l { list-style: none; padding: 0; margin: 6px 0; }
