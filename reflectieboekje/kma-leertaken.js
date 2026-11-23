@@ -16,7 +16,7 @@
     'Ref 12': ['Reflecteren voor, tijdens en na OTV2', 'Themablok 2', 'Als Ref 04, bij de tweede oefening te velde.', 'Nabespreking na een oefening, DTF-feiten en 5G-T.', 'volledig'],
     'Ref 14': ['Reflecteren voor, tijdens en na OTV3', 'Themablok 3', 'Als Ref 04, bij de derde oefening te velde.', 'Nabespreking na een oefening, DTF-feiten en 5G-T.', 'volledig'],
     'Ref 16': ['Reflecteren naar eigen behoefte', 'Themablok 3', 'Zelf bepalen waarop je reflecteert en een leer- of ontwikkelplan maken.', 'Leervraag met als-dan-plannen, reflecties en Mijn groei.', 'volledig'],
-    'Ref 17': ['Reflectieopdracht Afscheidsspeech', 'Themablok 3', 'Terugkijken op je ontwikkeling sinds je autobiografie, als speech die een ander over jou houdt.', 'Levenslijn en Mijn groei als bron; een eigen opdracht ontbreekt nog.', 'deels'],
+    'Ref 17': ['Reflectieopdracht Afscheidsspeech', 'Themablok 3', 'Terugkijken op je ontwikkeling sinds je autobiografie, als speech die een ander over jou houdt.', 'Mijn groei → Afscheidsspeech, met bouwstenen uit levenslijn, feedback, roos en leervraag.', 'volledig'],
     'LeO 01': ['LTV-opdrachten', 'Themablok 1', 'Leidinggeven in kleine (groeps)opdrachten in de praktijk.', 'DTF-feit of nabespreking per opdracht.', 'deels'],
     'LeO 05': ['Communicatie- en leiderschapscircumplex, basis', 'Themablok 1', 'De assen en kwadranten van het circumplex kennen en het gedrag uitproberen.', 'Roos van Leary: hoofdstuk met uitleg, roos bij DTF en feedback.', 'volledig'],
     'LeO 06': ['Circumplex: gedrag herkennen en toepassen', 'Themablok 2', 'Gedrag en stijlen herkennen bij jezelf en anderen in een oefensetting.', 'Je eigen roos naast die van medecadetten en je teamleider.', 'volledig'],
@@ -53,7 +53,7 @@
     'LO&S 01': ['Fysieke nulmeting', 'AMO', 'Weten hoe je er fysiek voor staat.', 'Fitheidslogboek.', 'deels'],
     'LO&S 02': ['KMA fysieke test (basis)', 'Themablok 1 en 2', 'Deelnemen aan de formatieve fysieke test.', 'Toetsing en examinering DKOO.', 'volledig'],
     'LO&S 03': ['KMA fysieke test', 'Themablok 1 t/m 3', 'De fysieke test afleggen (basis en specifiek).', 'Toetsing en examinering DKOO.', 'volledig'],
-    'EVA 00': ['Weekevaluatie', 'Alle blokken', 'De afgelopen week evalueren met je groep.', 'Check-in van de week; een eigen weekcyclus volgt.', 'deels']
+    'EVA 00': ['Weekevaluatie', 'Alle blokken', 'De afgelopen week evalueren met je groep.', 'Weekcyclus: doel aan het begin van de week, weekevaluatie aan het eind (Vandaag en Mijn groei).', 'volledig']
   };
   function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function label(code) {

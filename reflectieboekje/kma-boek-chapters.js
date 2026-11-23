@@ -1804,6 +1804,56 @@
   }
   window.kmaFeedbackKwaliteit = feedbackKwaliteit;
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-leerjaar]'); if (!b) return; leerJaar = Number(b.getAttribute('data-leerjaar')); var c = document.getElementById('kma-leerlijn'); if (c) c.innerHTML = leerlijnHtml(); });
+
+  /* ---------------- 4.25.0 (R6): reflectieopdracht Afscheidsspeech (leertaak Ref 17) ----------------
+     Een speech die een ander over jou zou houden bij het einde van je opleiding. Bouwstenen uit het boekje: hoogtepunten
+     uit je levenslijn, wat medecadetten bij "vasthouden" schreven, je sterkten op de roos en je leerlijn. Opslag:
+     kma-x-afscheidsspeech = { tekst, at }. Gaat mee met het portfolio niet automatisch: de cadet kopieert of deelt zelf. */
+  function speechBouwstenen() {
+    var out = [];
+    try {
+      var hoog = (typeof timelineItems !== 'undefined' ? timelineItems : []).filter(function (t) { return t && Number(t.score) > 0 && (t.title || t.text); })
+        .sort(function (a, b) { return Number(b.score) - Number(a.score); }).slice(0, 3);
+      if (hoog.length) out.push(['Hoogtepunten uit je levenslijn', hoog.map(function (t) { return (t.year ? t.year + ': ' : '') + (t.title || t.text); })]);
+    } catch (e) {}
+    try {
+      var vh = (window.kmaKameraad ? kmaKameraad._S().inbox || [] : []).filter(function (c) { return c && c.soort !== 'verbeteren' && c.feit; }).slice(-4);
+      if (vh.length) out.push(['Wat medecadetten zagen (vasthouden)', vh.map(function (c) { return String(c.feit).replace(/\s+/g, ' ').slice(0, 140); })]);
+    } catch (e) {}
+    try {
+      var L = window.KMALeary, d = L ? L.dist(dtfItems.filter(function (x) { return x && L.clean(x.leary); })) : null;
+      if (d && d.n) { var top = L.SECT.slice().sort(function (a, b) { return d.counts[b.k] - d.counts[a.k]; }).filter(function (x) { return d.counts[x.k]; }).slice(0, 2); out.push(['Je gedrag op de roos', top.map(function (x) { return x.n + ': ' + x.d; })]); }
+    } catch (e) {}
+    try { var stp = steps[byTitle(/SMART/)], p = stp ? smartParts(stp)[0] : ''; if (p) out.push(['Waar je aan werkte', [p]]); } catch (e) {}
+    return out;
+  }
+  function speechHtml() {
+    var sp = getX('afscheidsspeech', null), b = speechBouwstenen();
+    return '<p class="small">Aan het eind van je opleiding schrijf je een speech die iemand anders over jou zou kunnen houden: een medecadet of iemand van het kader. Begin met de eigenschappen waarmee je graag herinnerd wilt worden. Wat zou diegene echt vertellen, en wat zou hij idealiter vertellen?</p>' +
+      (b.length ? '<details class="kma-ex"><summary>' + icon('idea') + 'Bouwstenen uit je boekje</summary>' + b.map(function (x) { return '<p class="small"><b>' + esc(x[0]) + '</b></p><ul class="plain small">' + x[1].map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>'; }).join('') + '</details>' : '') +
+      '<label class="kma-field"><span class="sr-only">Je afscheidsspeech</span><textarea id="kma-speech" rows="8" maxlength="6000" placeholder="Beste collega\'s, vandaag nemen we afscheid van …">' + esc(sp && sp.tekst || '') + '</textarea></label>' +
+      '<div class="kma-row-btns"><button type="button" class="kma-icon-btn is-primary" data-speech="opslaan">' + icon('save') + 'Opslaan</button><button type="button" class="kma-icon-btn" data-speech="delen">' + icon('share') + 'Delen</button></div>' +
+      (sp && sp.at ? '<p class="muted small">Laatst opgeslagen ' + esc(fmtDate(String(sp.at).slice(0, 10))) + '.</p>' : '') + (window.kmaLeertaak ? kmaLeertaak.labels(['Ref 17']) : '');
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-speech]'); if (!b) return;
+    var t = (document.getElementById('kma-speech') || {}).value || '';
+    if (b.getAttribute('data-speech') === 'opslaan') { setX('afscheidsspeech', { tekst: t, at: new Date().toISOString() }); kmaToast('Speech opgeslagen'); return; }
+    if (!t.trim()) { kmaToast('Schrijf eerst je speech', 'error'); return; }
+    try { if (window.KMA_CAP && window.KMA_CAP.shareText) { window.KMA_CAP.shareText(t); return; } } catch (x) {}
+    if (navigator.share) { navigator.share({ title: 'Afscheidsspeech', text: t }).catch(function () {}); return; }
+    try { navigator.clipboard.writeText(t).then(function () { kmaToast('Speech gekopieerd'); }); } catch (x) {}
+  });
+  /* 4.25.0 (R5, M6): de laatste weken van de weekcyclus (doel en weekevaluatie). */
+  function weekHtml() {
+    var W = window.kmaWeek; if (!W) return '';
+    var a = W.alle(), ks = Object.keys(a).sort().reverse().slice(0, 6);
+    var nu = '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-week="doel">' + icon('target') + 'Doel deze week</button><button type="button" class="kma-icon-btn" data-week="eva">' + icon('check') + 'Weekevaluatie</button></div>';
+    if (!ks.length) return cardHtml('Weekcyclus', '<p class="muted small">Kies aan het begin van de week één doel, leg tijdens de week DTF-feiten vast en kijk aan het eind kort terug. Vandaag herinnert je eraan.</p>' + nu, 'calendar');
+    var R2 = ['Niet gelukt', 'Deels gelukt', 'Gelukt'];
+    return cardHtml('Weekcyclus', '<ul class="plain small kma-week-lijst">' + ks.map(function (k) { var w = a[k] || {}, e = w.eva || {}; return '<li><b>' + esc(k.replace('-W', ' week ')) + '</b>' + (w.doel ? ': ' + esc(w.doel) : '') + (e.r != null ? ' <span class="muted">(' + R2[e.r] + ')</span>' : '') + (e.mee ? '<br><span class="muted">Mee naar volgende week: ' + esc(e.mee) + '</span>' : '') + (!e.at ? ' <span class="muted">· nog geen evaluatie</span>' : '') + '</li>'; }).join('') + '</ul>' + nu, 'calendar');
+  }
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-week]'); if (!b || !window.kmaWeek) return; if (b.getAttribute('data-week') === 'doel') kmaWeek.doel(); else kmaWeek.evaluatie(); });
   R['groei'] = function (c) {
     var g = groeiData();
     c.innerHTML = groeiTiles(g) +
@@ -1812,6 +1862,8 @@
       (Object.keys(g.months).length ? cardHtml('DTF-feiten per maand', groeiDtf(g), 'calendar') : '') +
       cardHtml('Mijn leerlijn', '<div id="kma-leerlijn">' + leerlijnHtml() + '</div>', 'trend') +
       cardHtml('Wat doe je met feedback?', feedbackKwaliteitHtml(), 'message') +
+      weekHtml() +
+      cardHtml('Afscheidsspeech', speechHtml(), 'message') +
       cardHtml('Jouw groei op een tijdlijn', '<div id="kma-groei-tl">' + groeiTimeline(g) + '</div>', 'activity');
   };
   window.kmaGroeiData = groeiData;
