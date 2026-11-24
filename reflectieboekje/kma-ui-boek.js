@@ -103,7 +103,9 @@
           setTimeout(function () { try { inp.scrollIntoView({ block: 'center', behavior: 'smooth' }); inp.focus({ preventScroll: true }); } catch (e) { inp.focus(); } }, 320);
         } },
         { icon: 'file', label: 'Portfolio (PDF)', hint: 'Download al je producten als opgemaakt portfolio', onClick: function () { window.kmaPortfolio && kmaPortfolio(); } },
-        window.kmaNabespreking ? { icon: 'talk', label: 'Nabespreking na een oefening', hint: 'Vier vragen, wordt een DTF-feit en zo nodig een als-dan-plan', onClick: function () { kmaNabespreking.open(); } } : null,
+        window.kmaOefenen ? { icon: 'talk', label: 'Oefenen met feedback ontvangen', hint: 'Drie korte casussen: eerst begrijpen, dan reageren', onClick: function () { kmaOefenen.open(); } } : null,
+        window.kmaGereedschap ? { icon: 'puzzle', label: 'Gereedschapskist', hint: 'Modellen die je erbij aanzet: WOOP, doel in vijf niveaus, roos, nabespreking', onClick: function () { kmaGereedschap.open(); } } : null,
+        window.kmaNabespreking && (!window.kmaGereedschap || kmaGereedschap.aan('aar')) ? { icon: 'talk', label: 'Nabespreking na een oefening', hint: 'Vier vragen, wordt een DTF-feit en zo nodig een als-dan-plan', onClick: function () { kmaNabespreking.open(); } } : null,
         window.kmaVerbeterplan && kmaVerbeterplan.actief() ? { icon: 'target', label: 'Mijn verbeterplan', hint: 'Na een functioneringsgesprek met verbetertraject (OER 3.7.3e)', onClick: function () { kmaVerbeterplan.open(); } } : null,
         { icon: 'users', label: 'Bereid je gesprek voor', hint: 'Eén pagina voor het gesprek met je teamleider', onClick: function () { window.kmaGesprek && kmaGesprek.open(); } },
         { icon: 'bell', label: 'Herinneringen', hint: window.kmaReminders && kmaReminders.anyOn() ? 'Aan' : 'Uit: meldingen voor je check-in, evaluatie en back-up', onClick: function () { window.kmaReminders && kmaReminders.open(); } },
@@ -118,6 +120,8 @@
         { section: 'Hulp' },
         window.kmaOnderbouwing ? { icon: 'idea', label: 'Wetenschappelijke onderbouwing', hint: 'Waarom werkt het boekje zo? Per onderdeel het effect, de grenzen en de bronnen', onClick: function () { kmaOnderbouwing.open(); } } : null,
         { icon: 'book', label: 'Handleiding', hint: 'Uitleg en tutorials, met een knop naar elk hoofdstuk', onClick: function () { window.kmaHandleiding && kmaHandleiding.open(); } },
+        window.kmaSnelstart ? { icon: 'book', label: 'Snel starten', hint: 'Vijf stappen op één pagina', onClick: function () { kmaSnelstart.open('cadet'); } } : null,
+        window.kmaHulp ? { icon: 'alert', label: 'Hulp en opslag', hint: (function () { var p = kmaHulp.procent(); return 'Foutrapport en opslag: ' + p + '% gebruikt' + (p >= 80 ? ' (bijna vol)' : ''); })(), onClick: function () { kmaHulp.open(); } } : null,
         { icon: 'book', label: 'Uitleg', hint: 'De drie introschermen opnieuw bekijken', onClick: function () { window.kmaIntro && kmaIntro.open(); } },
         window.kmaMelden ? { icon: 'message', label: 'Probleem melden', hint: 'Vaste melding met app, versie en toestel: delen of kopiëren', onClick: function () { kmaMelden.open(); } } : null,
         // 4.6.0: back-up maken en terugzetten staan samen hier (voor jezelf), niet meer bij Delen (naar je teamleider)
@@ -231,7 +235,15 @@
      Nummering sinds 4.3.9: kern 0 t/m 8, verdieping 9 t/m 13, naslag en overzicht 14 t/m 17 (Roos van Leary sinds 4.16.0). */
   var GROUPS = { verdieping: ['Zelfbeoordelingsformulier KMA', 'Voorbereiding Cadetbeoordeling', 'Probleem- en Behoefteanalyse', 'Fitheid & stress', 'Curriculum vitae'],
     naslag: ['Toetsing en examinering DKOO', 'Begrippenlijst & Vakjargon', 'Mijn groei & ontwikkeling', 'Roos van Leary'] };
-  var GROUP_INFO = { kern: ['Kern', 'Hiermee werk je de hele opleiding'], verdieping: ['Verdieping', 'Rond een beoordeling, als er iets speelt of als het past'], naslag: ['Naslag en overzicht', 'Niets invullen: opzoeken en terugkijken'] };
+  var GROUP_INFO = { kern: ['Vaste basis', 'Je rode draad: hiermee werk je de hele opleiding'], verdieping: ['Verdieping', 'Rond een beoordeling, als er iets speelt of als het past'], naslag: ['Naslag en overzicht', 'Niets invullen: opzoeken en terugkijken'] };
+  /** 4.30: stap van de rode draad voor de kopjes in Klassiek (zelfde stappen als het Werkboek in Dashboard). */
+  function FASE_KL(t) {
+    if (/Cadet Informatie|Introductie|Ontwikkelbiografie|Persoonlijkheidstest|Gedragscode/.test(t)) return 'Jezelf leren kennen';
+    if (/SMART/.test(t)) return 'Leervraag';
+    if (/5G-T|Korthagen/.test(t)) return 'Reflecteren';
+    if (/Datum-Tijd-Feit/.test(t)) return 'Doen en vastleggen';
+    return '';
+  }
   function hidden(idx) { return !!(steps[idx] && steps[idx].verborgen); }
   window.kmaChapterHidden = hidden;
   function groupOf(idx) {
@@ -293,7 +305,7 @@
   function groupNav() {
     var nav = document.getElementById('step-nav');
     if (!nav) return;
-    Array.prototype.forEach.call(nav.querySelectorAll(':scope > .kma-nav-group'), function (h) { h.remove(); });
+    Array.prototype.forEach.call(nav.querySelectorAll(':scope > .kma-nav-group, :scope > .kma-nav-fase'), function (h) { h.remove(); });
     var links = Array.prototype.slice.call(nav.querySelectorAll(':scope > .step-link'));
     if (!links.length) return;
     links.forEach(function (l, i) { if (!l.hasAttribute('data-idx')) l.setAttribute('data-idx', i); });
@@ -316,7 +328,13 @@
       head.querySelector('.kma-nav-group-count').textContent = mine.length + (mine.length === 1 ? ' hoofdstuk' : ' hoofdstukken');
       head.addEventListener('click', function () { openGroup(nav.getAttribute('data-open') === g ? '' : g); });
       frag.appendChild(head);
-      mine.forEach(function (l, k) { l.setAttribute('data-group', g); l.classList.toggle('is-last', k === mine.length - 1); frag.appendChild(l); });
+      var vorige = '';
+      mine.forEach(function (l, k) {
+        // 4.30 (punt 18): in de vaste basis staan de stappen van de rode draad als kopjes
+        var f = g === 'kern' ? FASE_KL(steps[+l.getAttribute('data-idx')].title) : '';
+        if (f && f !== vorige) { var fk = document.createElement('div'); fk.className = 'kma-nav-fase'; fk.setAttribute('data-group', g); fk.setAttribute('aria-hidden', 'true'); fk.textContent = f; frag.appendChild(fk); vorige = f; }
+        l.setAttribute('data-group', g); l.classList.toggle('is-last', k === mine.length - 1); frag.appendChild(l);
+      });
     });
     nav.appendChild(frag);
     nav.classList.add('kma-acc');

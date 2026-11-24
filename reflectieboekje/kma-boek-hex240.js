@@ -189,7 +189,7 @@
     function teken() {
       var q = ITEMS[idx], ans = antwoorden(), done = aantal(), cur = ans[q.id];
       ov.innerHTML = '<div class="kma-test-top"><button type="button" class="kma-test-close" aria-label="Pauzeren">' + icon('x') + '<span>Pauzeren</span></button>' +
-        '<span class="kma-test-who">Onderzoek · aanvullende stellingen</span></div>' +
+        '<span class="kma-test-who">' + (aangeboden() ? 'Onderzoek · ' : 'Lange test · ') + 'aanvullende stellingen</span></div>' +
         '<div class="kma-test-progress"><span style="width:' + Math.round(done / ITEMS.length * 100) + '%"></span></div>' +
         '<div class="kma-test-count">Stelling ' + (idx + 1) + ' van ' + ITEMS.length + ' · ' + done + ' beantwoord</div><div class="kma-test-q"></div>' +
         '<div class="kma-test-options">' + LABELS.map(function (l, i) { return '<button type="button" class="kma-test-opt' + (Number(cur) === i + 1 ? ' chosen' : '') + '" data-v="' + (i + 1) + '"><span class="n">' + (i + 1) + '</span>' + l + '</button>'; }).join('') + '</div>' +
@@ -214,9 +214,11 @@
       var f = ov.querySelector('[data-nav="finish"]'); if (f) f.onclick = klaarScherm;
     }
     function klaarScherm() {
-      ov.innerHTML = '<div class="kma-test-handover">' + icon('check') + '<h2>Klaar, bedankt!</h2><p>De aanvullende stellingen gaan mee als je je gegevens voor dit meetmoment verstuurt. Je eigen profiel in het boekje verandert niet.</p>' +
+      var ond = aangeboden();
+      if (window.kmaMeting) kmaMeting.vastleggen();
+      ov.innerHTML = '<div class="kma-test-handover">' + icon('check') + '<h2>Klaar, bedankt!</h2><p>' + (ond ? 'De aanvullende stellingen gaan mee als je je gegevens voor dit meetmoment verstuurt. ' : '') + 'Je uitslag gebruikt nu alle 240 stellingen: een kleinere meetfout.</p>' +
         '<button type="button" class="kma-icon-btn is-primary" data-nav="back">Terug</button></div>';
-      ov.querySelector('[data-nav="back"]').onclick = function () { sluit(); if (window.kmaOnderzoek && kmaOnderzoek.open) kmaOnderzoek.open(); };
+      ov.querySelector('[data-nav="back"]').onclick = function () { sluit(); if (ond && window.kmaOnderzoek && kmaOnderzoek.open) kmaOnderzoek.open(); else if (typeof renderWidgets === 'function') renderWidgets(); };
     }
     teken();
   }

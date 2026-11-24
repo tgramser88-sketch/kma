@@ -128,12 +128,27 @@
       verify: function (scope, pin) { return JSON.parse(nativeStore.pinVerify(scope, String(pin))); }
     };
   } else {
-    // Browser preview only: no real protection here.
+    // Website: de pincode is een slot tegen meekijken, geen versleuteling (punt 56, 4.30). Hij staat niet meer leesbaar
+    // in de browser maar als afgeleide code met een willekeurig zout; een oude, leesbare pincode wordt bij de eerste
+    // keer goed invoeren omgezet. Na 5 foute pogingen even wachten.
+    var pinH = function (salt, pin) { var s = salt + ':' + pin, h = 2166136261, g = 3735928559; for (var r = 0; r < 2000; r++) for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; g ^= s.charCodeAt(i) + r; g = Math.imul(g, 2246822519) >>> 0; } return ('0000000' + h.toString(16)).slice(-8) + ('0000000' + g.toString(16)).slice(-8); };
+    var pinSalt = function () { var u = new Uint8Array(8); try { crypto.getRandomValues(u); } catch (e) { for (var i = 0; i < 8; i++) u[i] = Math.floor(Math.random() * 256); } return Array.prototype.map.call(u, function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''); };
+    var pinFout = {};
     kmaPin = {
+      web: true,
       isSet: function (scope) { return !!fallback.getItem('preview-pin:' + scope); },
-      set: function (scope, pin) { fallback.setItem('preview-pin:' + scope, String(pin)); return true; },
+      set: function (scope, pin) { var s = pinSalt(); fallback.setItem('preview-pin:' + scope, 'h1:' + s + ':' + pinH(s, String(pin))); return true; },
       clear: function (scope) { fallback.removeItem('preview-pin:' + scope); },
-      verify: function (scope, pin) { return { ok: fallback.getItem('preview-pin:' + scope) === String(pin), wait: 0 }; }
+      verify: function (scope, pin) {
+        var f = pinFout[scope] || { n: 0, tot: 0 }, nu = Date.now();
+        if (f.tot > nu) return { ok: false, wait: Math.ceil((f.tot - nu) / 1000) };
+        var v = fallback.getItem('preview-pin:' + scope) || '', ok;
+        if (/^h1:/.test(v)) { var p = v.split(':'); ok = pinH(p[1], String(pin)) === p[2]; }
+        else { ok = v === String(pin); if (ok) kmaPin.set(scope, pin); }   // migratie: leesbare pincode omzetten
+        if (ok) { pinFout[scope] = { n: 0, tot: 0 }; return { ok: true, wait: 0 }; }
+        f.n++; if (f.n >= 5) { f.tot = nu + 30000; f.n = 0; } pinFout[scope] = f;
+        return { ok: false, wait: f.tot > nu ? 30 : 0 };
+      }
     };
   }
   window.kmaPin = kmaPin;

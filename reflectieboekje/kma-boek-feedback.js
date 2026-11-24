@@ -66,6 +66,8 @@
     var st = load();
     st.received = (st.received || []).filter(function (x) { return x.date !== d.date; });
     st.received.unshift({ date: d.date || new Date().toISOString(), from: d.from || '', items: d.items || {}, cases5GT: d.cases5GT || [], casesKorthagen: Array.isArray(d.casesKorthagen) ? d.casesKorthagen : [], plans: Array.isArray(d.plans) ? d.plans : [], gesprekken: Array.isArray(d.gesprekken) ? d.gesprekken : [], dtfNotes: d.dtfNotes || [], form: d.form || null, toets: d.toets && typeof d.toets === 'object' ? d.toets : null, drie: d.drie && typeof d.drie === 'object' ? d.drie : {},
+      // 4.30 (punten 18, 29): aangeraden model en voorgestelde observator (alleen bekende sleutels en korte tekst)
+      aanraden: Array.isArray(d.aanraden) ? d.aanraden.filter(function (k) { return ['woop', 'gas', 'roos', 'aar'].indexOf(k) >= 0; }) : [], observator: typeof d.observator === 'string' ? d.observator.slice(0, 60) : '',
       // 4.18.0 (OER 3.7.3c en 3.7.3e): melding dat afspraken gedeeld zijn, akkoord op het verbeterplan
       afsprakenGedeeld: Array.isArray(d.afsprakenGedeeld) ? d.afsprakenGedeeld.filter(function (x) { return x && typeof x.at === 'string'; }).slice(-10) : [],
       verbeterAkkoord: d.verbeterAkkoord && typeof d.verbeterAkkoord === 'object' && typeof d.verbeterAkkoord.at === 'string' ? { gesprek: String(d.verbeterAkkoord.gesprek || ''), at: d.verbeterAkkoord.at, by: String(d.verbeterAkkoord.by || '') } : null });

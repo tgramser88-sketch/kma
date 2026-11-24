@@ -49,6 +49,8 @@
   var FIT_TITLE = 'Fitheid & stress';
   var PRIVATE_DEFAULT = { 'Introductie & Drijfveren': true, 'Curriculum vitae': true };
   PRIVATE_DEFAULT[FIT_TITLE] = true;
+  // 4.30 (punt 74): de persoonlijkheidstest is standaard privé; wie al deelde, houdt zijn instelling (kma-boek-meting.js)
+  PRIVATE_DEFAULT['Persoonlijkheidstest (IPIP)'] = true;
   var RENAMED = [['Gedragscode Defensie (4 V\'s)', 'Ik en de Gedragscode Defensie'], ['__fitheid', FIT_TITLE], ['Voorbereiding Cadetbeoordeling & Fitheid', 'Voorbereiding Cadetbeoordeling']];
   function sharePrefs() {
     var p = getX('share', {}), moved = false;
@@ -86,6 +88,19 @@
       var grI = byWidget('groei'); if (grI >= 0 && !isShared(steps[grI].title)) { delete out['self-history']; delete out['v4-history']; }
       if (!isShared(FIT_TITLE)) { delete out.pss; delete out.who5; }
       delete out['pss-groep']; // de groepsberekening is van het groepje zelf
+      // 4.30: geslacht is alleen voor het onderzoek en gaat nooit naar het CadetVolgSysteem; instroom en startdatum wel
+      if (out.instroom && typeof out.instroom === 'object') out.instroom = { soort: out.instroom.soort, start: out.instroom.start };
+      // 4.30 (punt 68): stress en welzijn gaan nooit naar het CadetVolgSysteem, ook niet via de gespreksvoorbereiding
+      if (out['gesprek-prep'] && typeof out['gesprek-prep'] === 'object') { delete out['gesprek-prep'].stress; if (out['gesprek-prep'].incl) out['gesprek-prep'].incl.stress = false; }
+      delete out.pss; delete out.who5;
+      // 4.30: onderzoeksinstellingen blijven op de telefoon (de code reist apart mee); de 144 extra stellingen alleen als de test gedeeld is
+      delete out.onderzoek;
+      var hxI = byWidget('hexaco'); if (hxI < 0 || !isShared(steps[hxI].title)) delete out.hex240;
+      // 4.30 (punt 78): metingen alleen als de test gedeeld is, en dan alleen de scores (niet de losse antwoorden)
+      if (hxI < 0 || !isShared(steps[hxI].title)) delete out['hex-metingen'];
+      else if (Array.isArray(out['hex-metingen'])) out['hex-metingen'] = out['hex-metingen'].map(function (m) { return m && { datum: m.datum, set: m.set, d: m.d }; }).filter(Boolean);
+      // 4.30: eigen hulpgegevens blijven op de telefoon
+      delete out.fouten; delete out['opslag-melding']; delete out.oefenen;
     }
     return out;
   }
@@ -247,6 +262,8 @@
     holder.id = 'kma-idcard-holder';
     holder.innerHTML = idCard();
     c.insertBefore(holder, c.firstChild);
+    // 4.30 (punten 66, 67): instroom (burger/doorstromer), startdatum en geslacht (alleen onderzoek)
+    if (window.kmaInstroom && !document.getElementById('kma-instroom')) { var ins = document.createElement('div'); ins.innerHTML = kmaInstroom.html(); c.appendChild(ins.firstChild); }
   };
   AFTERQ['cadet-profile'] = function () {
     var opcoT = document.getElementById('q-input-3');
@@ -1976,9 +1993,9 @@
       '<p><b>Zo gebruik je het:</b> kies bij een DTF-feit welk gedrag je liet zien, en vraag medecadetten bij hun feedback hetzelfde. Na een tijd zie je waar je vaak zit, en of anderen dat ook zo zien. Bespreek verschillen in het gesprek met je teamleider.</p>' +
       '<p class="muted small">Let op: de twee assen zijn in onderzoek goed terug te vinden; de precieze indeling in acht gelijke sectoren minder (Wiggins, 1979). Daarom bewaart de app de plek op beide assen en toont hij pas een verdeling bij genoeg waarnemingen.</p></details>';
     c.innerHTML = '<div class="kma-leary-ch">' + per +
-      cardHtml('Jouw gedrag op de roos', beeld + bron, 'target') +
+      cardHtml('Jouw gedrag op de roos', (window.kmaBewijs ? kmaBewijs.roosZin(g.zelf, g.mede.concat(g.staf)) : '') + beeld + bron, 'target') +
       (g.mede.length + g.staf.length && window.kmaActieKaart ? kmaActieKaart('roos', '') : '') +
-      cardHtml('Communicatie- en leiderschapscircumplex (CLX)', (L.clx ? L.clx(g.zelf, g.mede.concat(g.staf), 'Zelf', 'Anderen') : '') + '<p class="muted small">De KMA noemt dit model het communicatie- en leiderschapscircumplex (CLX). De vier kwadranten komen uit dezelfde twee assen als de roos: invloed (boven of onder) en verbondenheid (samen of tegen). De namen in je lesmateriaal kunnen iets anders zijn.</p>' + (window.kmaLeertaak ? kmaLeertaak.labels(['LeO 05', 'LeO 06', 'LeO 07']) : ''), 'target') +
+      (L.clxAan ? cardHtml('Communicatie- en leiderschapscircumplex (CLX)', (L.clx ? L.clx(g.zelf, g.mede.concat(g.staf), 'Zelf', 'Anderen') : '') + '<p class="muted small">De KMA noemt dit model het communicatie- en leiderschapscircumplex (CLX). De vier kwadranten komen uit dezelfde twee assen als de roos: invloed (boven of onder) en verbondenheid (samen of tegen). De namen in je lesmateriaal kunnen iets anders zijn.</p>' + (window.kmaLeertaak ? kmaLeertaak.labels(['LeO 05', 'LeO 06', 'LeO 07']) : ''), 'target') : '') +
       cardHtml('Per soort gedrag', secs, 'list') +
       cardHtml('Naast je persoonlijkheidstest', hex, 'user') +
       denk + (window.kmaReactie ? kmaReactie.oefeningHtml() : '') + uitleg + '</div>';
@@ -2105,7 +2122,7 @@
         return '<div class="pf-bar"><span>' + esc(t.name) + '</span><b><i style="width:' + s[t.key] + '%"></i></b><em>' + s[t.key] + '%</em></div>';
       }).join('');
       var q = an.quadrants, quad = function (title, cls, list) {
-        return '<div class="pf-swot ' + cls + '"><h4>' + title + '</h4>' + (list.length ? '<ul>' + list.map(function (p) { return '<li>' + esc(p.text) + '<small>' + esc(p.trait.name) + ' ' + p.score + '%</small></li>'; }).join('') + '</ul>' : '<p class="pf-muted">-</p>') + '</div>';
+        return '<div class="pf-swot ' + cls + '"><h4>' + title + '</h4>' + (list.length ? '<ul>' + list.map(function (p) { var bw = window.kmaBewijs ? kmaBewijs.bewijs(p, cls, oth) : null; return '<li>' + esc(p.text) + '<small>' + esc(p.trait.name) + ' ' + p.score + '%' + (bw ? ' · ' + (bw.status === 'bevestigd' ? 'bevestigd' : bw.status === 'niet' ? 'anderen zien het anders' : 'nog te weinig bewijs') + (bw.feiten ? ' (' + bw.feiten + ' DTF)' : '') : '') + '</small></li>'; }).join('') + '</ul>' : '<p class="pf-muted">-</p>') + '</div>';
       };
       return pfCard('Profiel', '<div class="pf-two"><div class="pf-chart">' + V.radar(axes, series, { label: 'Persoonlijkheidsprofiel' }) + V.legend(series) + '</div><div>' + bars + '</div></div>') +
         pfCard('SWOT', '<div class="pf-swot-grid">' + quad('Sterke kanten', 's', q.s) + quad('Valkuilen', 'w', q.w) + quad('Kansen', 'o', q.o) + quad('Bedreigingen', 't', q.t) + '</div>') +
@@ -2221,6 +2238,42 @@
   }
   PF_VIS.fitheid = function () { return pfFitness() + (PSS ? pfPss() : ''); };
   /** Every portfolio part: key, title and its HTML (empty when there is nothing to show). */
+  /* 4.30 (punt 79): het portfolio volgt de rode draad in vijf stappen (zelfde indeling als het Werkboek), met daarna
+     verdieping en naslag. Nieuw: metingen (kort/lang), als-dan-plannen met check-ins, gebruikt gereedschap en de
+     bronnen als bijlage. De keuze per onderdeel blijft bewaard (zelfde sleutels als voorheen). */
+  var PF_FASEN = ['Jezelf leren kennen', 'Leervraag', 'Doen en vastleggen', 'Reflecteren', 'Feedback en beoordeling', 'Verdieping en naslag'];
+  function pfFase(t) {
+    if (/Cadet Informatie|Introductie|Ontwikkelbiografie|Persoonlijkheidstest|Gedragscode/.test(t)) return 0;
+    if (/SMART/.test(t)) return 1;
+    if (/Datum-Tijd-Feit/.test(t)) return 2;
+    if (/5G-T|Korthagen/.test(t)) return 3;
+    if (/Zelfbeoordelingsformulier|Voorbereiding Cadetbeoordeling/.test(t)) return 4;
+    return 5;
+  }
+  function pfExtra() {
+    var out = [], M = window.kmaMeting, P2 = window.kmaPlannen, G = window.kmaGereedschap, hx = steps.findIndex(function (s) { return s.widget === 'hexaco'; }), sm = steps.findIndex(function (s) { return /SMART/.test(s.title); });
+    var ml = M ? M.lijst() : [];
+    if (ml.length) out.push({ key: 'x-metingen', title: 'Metingen persoonlijkheidstest', fase: 0, def: hx >= 0 && isShared(steps[hx].title),
+      html: pfCard('', '<table class="pf-table"><tr><th>Datum</th><th>Test</th>' + H.TRAITS.map(function (t) { return '<th>' + esc(t.key) + '</th>'; }).join('') + '</tr>' + ml.map(function (m) { return '<tr><td>' + esc(fmtDate(m.datum)) + '</td><td>' + esc(m.set) + '</td>' + H.TRAITS.map(function (t) { return '<td>' + (m.d[t.key] != null ? Math.round(m.d[t.key]) : '–') + '</td>'; }).join('') + '</tr>'; }).join('') + '</table>' +
+        (ml.length >= 2 ? '<p class="pf-muted">' + H.TRAITS.map(function (t) { var r = M.verandering(t.key, ml[ml.length - 2], ml[ml.length - 1]); return r && r.echt ? esc(t.name) + ': echt ' + r.richting : ''; }).filter(Boolean).join(' · ') + '</p>' : '') +
+        '<p class="pf-muted">Percentielen ten opzichte van ' + esc(M.NORM_BRON) + '. Alleen een verschil groter dan de meetfout heet een echte verandering.</p>') });
+    var pl = P2 && P2.list ? P2.list() : [];
+    if (pl.length) out.push({ key: 'x-plannen', title: 'Als-dan-plannen en check-ins', fase: 1, def: sm >= 0 && isShared(steps[sm].title),
+      html: pfCard('', '<table class="pf-table">' + pl.map(function (p) { var s = P2.stats ? P2.stats(p.id) : { gelukt: 0, n: 0 }; return '<tr><th>Als ' + esc(p.als || '') + ', dan ' + esc(p.dan || '') + '</th><td>' + (s.n ? s.gelukt + ' van ' + s.n + ' keer gelukt' : 'nog geen check-in') + (p.edited ? ' · bijgesteld' : '') + '</td></tr>'; }).join('') + '</table>') });
+    if (G) { var aan = G.MODELLEN.filter(function (m) { return G.aan(m.k); }); if (aan.length) out.push({ key: 'x-gereedschap', title: 'Gebruikt gereedschap', fase: 2, def: true, html: pfCard('', '<p>' + aan.map(function (m) { return esc(m.t); }).join(' · ') + '</p><p class="pf-muted">Naast de vaste basis gekozen uit de gereedschapskist.</p>') }); }
+    var B = window.kmaBewijs;
+    out.push({ key: 'x-bronnen', title: 'Bijlage: bronnen', fase: 6, def: true, html: pfCard('', '<ul class="pf-bronnen">' + [
+      'Ashton, M. C., & Lee, K. (2007). Empirical, theoretical, and practical advantages of the HEXACO model of personality structure. Personality and Social Psychology Review, 11(2), 150-166.',
+      'Barrick, M. R., & Mount, M. K. (1991). The Big Five personality dimensions and job performance: A meta-analysis. Personnel Psychology, 44(1), 1-26.',
+      'Judge, T. A., Bono, J. E., Ilies, R., & Gerhardt, M. W. (2002). Personality and leadership: A qualitative and quantitative review. Journal of Applied Psychology, 87(4), 765-780.',
+      'Lee, K., Ashton, M. C., & de Vries, R. E. (2005). Predicting workplace delinquency and integrity with the HEXACO and Five-Factor Models of personality structure. Human Performance, 18(2), 179-197.',
+      'Jacobson, N. S., & Truax, P. (1991). Clinical significance: A statistical approach to defining meaningful change in psychotherapy research. Journal of Consulting and Clinical Psychology, 59(1), 12-19.',
+      'Korthagen, F. A. J. (2001). Linking practice and theory: The pedagogy of realistic teacher education. Mahwah: Erlbaum.',
+      'Gollwitzer, P. M. (1999). Implementation intentions: Strong effects of simple plans. American Psychologist, 54(7), 493-503.',
+      'IPIP-HEXACO-normen: openpsychometrics.org (n = 20.365), via het R-pakket IPV.'
+    ].map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('') + '</ul>' + (B ? '' : '')) });
+    return out;
+  }
   function pfParts() {
     var out = [];
     steps.forEach(function (s, i) {
@@ -2229,10 +2282,12 @@
       var vis = PF_VIS[key] ? PF_VIS[key](s) : '';
       var qa = key === 'cadet-profile' ? '' : pfQA(s, key === 'smart' ? function () { return true; } : null);
       var title = String(s.title || '').replace(/^[^\wÀ-ÿ]+/, '');
-      if (vis || qa) out.push({ key: 's' + i, title: title, html: vis + (qa ? pfCard(vis ? 'Mijn antwoorden' : '', qa) : ''), def: s.widget === 'cv' || s.widget === 'groei' ? true : isShared(s.title), cv: s.widget === 'cv' });
+      if (vis || qa) out.push({ key: 's' + i, title: title, html: vis + (qa ? pfCard(vis ? 'Mijn antwoorden' : '', qa) : ''), def: s.widget === 'cv' || s.widget === 'groei' ? true : isShared(s.title), cv: s.widget === 'cv', fase: pfFase(String(s.title || '')), nr: i });
     });
-    // The CV opens the portfolio, right after the table of contents.
-    out.sort(function (a, b) { return (b.cv ? 1 : 0) - (a.cv ? 1 : 0); });
+    try { out = out.concat(pfExtra()); } catch (e) { /* zonder de nieuwe onderdelen */ }
+    // The CV opens the portfolio, right after the table of contents; daarna de rode draad (4.30).
+    out.forEach(function (p, i) { p.volg = i; });
+    out.sort(function (a, b) { return (b.cv ? 1 : 0) - (a.cv ? 1 : 0) || (a.cv ? 0 : (a.fase - b.fase)) || a.volg - b.volg; });
     return out;
   }
   function pfDoc(parts, sel) {
@@ -2247,8 +2302,12 @@
     var toc = '<section class="pf-sec pf-toc"><div class="pf-sec-head"><span>Inhoud</span><h2>Wat zit er in dit portfolio</h2></div><ol>' +
       chosen.map(function (p, i) { return '<li><b>' + String(i + 1).padStart(2, '0') + '</b>' + esc(p.title) + '</li>'; }).join('') + '</ol>' +
       '<p class="pf-muted">Gemaakt met het KMA Reflectieboekje. De onderdelen zijn door de cadet zelf gekozen.</p></section>';
+    var vorige = -1;
     return cover + toc + chosen.map(function (p, i) {
-      return '<section class="pf-sec"><div class="pf-sec-head"><span>' + String(i + 1).padStart(2, '0') + '</span><h2>' + esc(p.title) + '</h2></div>' + p.html + '</section>';
+      var kop = '';
+      // de stap van de rode draad staat in de kop zelf (geen los regeltje dat op een eigen pagina kan belanden)
+      if (!p.cv && p.fase !== vorige && p.fase < PF_FASEN.length) { kop = ' data-fase="' + esc((p.fase < 5 ? 'Stap ' + (p.fase + 1) + ' · ' : '') + PF_FASEN[p.fase]) + '"'; vorige = p.fase; }
+      return '<section class="pf-sec"><div class="pf-sec-head"><span>' + String(i + 1).padStart(2, '0') + '</span>' + '<h2' + kop + '>' + esc(p.title) + '</h2>' + '</div>' + p.html + '</section>';
     }).join('');
   }
   function pfSel(parts) {

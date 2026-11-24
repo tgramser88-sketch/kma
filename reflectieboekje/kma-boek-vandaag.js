@@ -134,6 +134,31 @@
 
   /* ---------------- De kaart ---------------- */
   var MAX = 3;   // 4.18.0: hooguit drie dingen in beeld
+  /* 4.30 (punten 36, 66): de week vanaf de eigen start en wat genoeg is voor deze periode (vier weken). */
+  function weekTekst() {
+    var I = window.kmaInstroom; if (!I) return '';
+    var ow = I.opleidingsweek(), ew = I.eigenWeek();
+    if (ow == null) return '';
+    if (ow < 1) return ' · je opleiding begint binnenkort';
+    return ' · week ' + ow + ' van ' + I.WEKEN + (I.lees().soort === 'doorstromer' ? ' · jouw ' + ew + 'e week' : '');
+  }
+  function genoegHtml() {
+    var grens = new Date(); grens.setDate(grens.getDate() - 28); var vanaf = day(grens);
+    var dtf = typeof dtfItems !== 'undefined' && Array.isArray(dtfItems) ? dtfItems.filter(function (x) { return x && (x.datum || '') >= vanaf; }).length : 0;
+    var refl = 0;
+    try {
+      // Een reflectie telt als hij is ingevuld; nieuwe reflecties hebben een tijdstempel als id (alleen de laatste vier weken)
+      var gevuld = function (c) { return c && ['gebeurtenis', 'actie', 'terugblik'].some(function (k) { return c[k] && String(c[k]).trim(); }); };
+      var recent = function (c) { return !(c.id > 1e12) || c.id >= +grens; };
+      refl = [].concat(typeof cases5GT !== 'undefined' ? cases5GT : [], typeof casesKorthagen !== 'undefined' ? casesKorthagen : []).filter(function (c) { return gevuld(c) && recent(c); }).length;
+    } catch (e) { refl = 0; }
+    var test = !!(window.KMAHex && typeof hexacoSelfAnswers !== 'undefined' && KMAHex.isComplete(KMAHex.score(hexacoSelfAnswers, hexacoQuestionsSelf)));
+    var plan = !!(smartFilled() && window.kmaPlannen && kmaPlannen.count() > 0);
+    var r = function (ok, t) { return '<li class="' + (ok ? 'ok' : '') + '">' + (ok ? '✓' : '○') + ' ' + t + '</li>'; };
+    return '<details class="kma-vd-genoeg"><summary>Genoeg voor deze periode</summary><ul>' +
+      r(test, 'Persoonlijkheidstest (kort of lang)') + r(plan, 'Leervraag met als-dan-plan') + r(dtf >= 6, '6 DTF-feiten in vier weken · nu ' + dtf) + r(refl >= 1, '1 reflectie (5G-T of Korthagen)') +
+      '</ul><p class="kma-vd-sub">Meer mag, maar dit is genoeg om van te leren. Kwaliteit telt meer dan aantal.</p></details>';
+  }
   function row(it, i) {
     return '<div class="kma-vd-item"><span class="kma-vd-ic" aria-hidden="true">' + icon(it.ic) + '</span><span class="kma-vd-t"><b>' + esc(it.t) + (it.nieuw ? ' <em class="kma-vd-new">nieuw</em>' : '') + '</b><small>' + esc(it.s) + '</small></span>' +
       '<button type="button" class="kma-vd-btn" data-vd="' + i + '">' + esc(it.b) + '</button></div>';
@@ -150,9 +175,10 @@
     var card = document.createElement('section');
     card.id = 'kma-vandaag'; card.className = 'kma-vandaag'; card.setAttribute('aria-label', 'Vandaag');
     var remOff = window.kmaReminders && !kmaReminders.anyOn();
-    card.innerHTML = '<h3>Vandaag</h3><p class="kma-vd-sub">' + DAGEN[d.getDay()].charAt(0).toUpperCase() + DAGEN[d.getDay()].slice(1) + ' ' + d.getDate() + ' ' + MAANDEN[d.getMonth()] + ' · dit staat voor je klaar</p>' +
+    card.innerHTML = '<h3>Vandaag</h3><p class="kma-vd-sub">' + DAGEN[d.getDay()].charAt(0).toUpperCase() + DAGEN[d.getDay()].slice(1) + ' ' + d.getDate() + ' ' + MAANDEN[d.getMonth()] + weekTekst() + ' · dit staat voor je klaar</p>' +
       (list.length ? list.slice(0, MAX).map(row).join('') : '<p class="kma-vd-leeg">Niets dat nu moet. Leg iets vast met <b>+ Nieuw</b> of werk verder aan je ontwikkeling.</p>') +
       (list.length > MAX ? '<details class="kma-vd-meer"><summary>Later (' + (list.length - MAX) + ')</summary>' + list.slice(MAX).map(function (it, j) { return row(it, j + MAX); }).join('') + '</details>' : '') +
+      genoegHtml() +
       (remOff ? '<button type="button" class="kma-vd-link" data-vd-rem>' + icon('bell') + 'Herinneringen aanzetten</button>' : '');
     card.__items = list;
     content.insertBefore(card, content.firstChild);

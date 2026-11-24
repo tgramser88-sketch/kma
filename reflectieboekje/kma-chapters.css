@@ -38,7 +38,7 @@ body.dark-theme .kma-icon-btn.is-primary, body.kma-volg .kma-icon-btn.is-primary
 .kma-inline-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
 .kma-inline-form input, .kma-inline-form select { flex: 1 1 140px; min-width: 0; }
 #widget-container input[type=text], #widget-container input[type=date], #widget-container input[type=time], #widget-container input[type=search], #widget-container select, #widget-container textarea, .kma-select, .kma-obs-add input, .kma-obs-add select {
-  min-height: 42px; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-widget); color: var(--text-primary); font: inherit; font-size: 14px; box-sizing: border-box;
+  min-height: 42px; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-input, var(--bg-widget)); color: var(--text-primary); font: inherit; font-size: 14px; box-sizing: border-box;
 }
 #widget-container textarea { width: 100%; min-height: 80px; margin: 6px 0; }
 #widget-container > input[type=text], #widget-container .kma-card-block > input[type=text] { width: 100%; margin: 4px 0; }
@@ -739,7 +739,7 @@ body.kma-pf-open { overflow: hidden; }
 .kma-fb-inline { margin: 10px 0 12px; }
 .kma-fb-new { font-style: normal; font-size: 13px; font-weight: 800; padding: 1px 7px; border-radius: 999px; background: var(--accent-red, #a91f2b); color: #fff; margin-left: 4px; vertical-align: middle; }
 .kma-code-body { padding: 0 16px 14px; }
-.kma-code-input { width: 100%; box-sizing: border-box; font: 700 20px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; text-align: center; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); text-transform: uppercase; }
+.kma-code-input { width: 100%; box-sizing: border-box; font: 700 20px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; text-align: center; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input, var(--bg-main)); color: var(--text-primary); text-transform: uppercase; }
 .kma-code-err { color: var(--accent-red, #a91f2b); font-size: 13px; min-height: 16px; margin: 6px 0; }
 .kma-code-list { display: grid; gap: 8px; margin: 10px 0 14px; }
 .kma-code-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border-color); }
@@ -828,7 +828,7 @@ html.role-senior [onclick*="import-kma-form-file-input"], html.role-junior [oncl
 .kma-plan-body { padding: 14px 16px 40px; }
 .kma-plan-field { display: grid; gap: 4px; margin: 0 0 16px; }
 .kma-plan-field > label { font-weight: 800; font-size: 14px; }
-.kma-plan-field textarea, .kma-plan-field input[type=text], .kma-plan-field input[type=date] { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-widget); color: var(--text-primary); font: inherit; font-size: 14px; }
+.kma-plan-field textarea, .kma-plan-field input[type=text], .kma-plan-field input[type=date] { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input, var(--bg-widget)); color: var(--text-primary); font: inherit; font-size: 14px; }
 .kma-plan-field textarea { min-height: 90px; }
 .kma-plan-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 560px) { .kma-plan-row { grid-template-columns: 1fr; } }
@@ -842,7 +842,7 @@ html.role-senior [onclick*="import-kma-form-file-input"], html.role-junior [oncl
 .kma-plan-all { margin: 0 0 14px; }
 .kma-plan-acts { display: grid; gap: 6px; }
 .kma-plan-act { display: grid; grid-template-columns: 24px 2fr 1fr 130px 34px; gap: 6px; align-items: center; }
-.kma-plan-act input[type=text], .kma-plan-act input[type=date] { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-widget); color: var(--text-primary); font: inherit; font-size: 13px; min-width: 0; }
+.kma-plan-act input[type=text], .kma-plan-act input[type=date] { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input, var(--bg-widget)); color: var(--text-primary); font: inherit; font-size: 13px; min-width: 0; }
 .kma-plan-act input[type=checkbox] { width: 18px; height: 18px; accent-color: #2f9e5b; }
 @media (max-width: 560px) { .kma-plan-act { grid-template-columns: 24px 1fr 34px; } .kma-plan-act [data-af="wie"], .kma-plan-act [data-af="wanneer"] { grid-column: 2; } }
 .kma-fb-plan { margin: 6px 0 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border-color); border-left: 4px solid var(--accent-gold); }
@@ -903,7 +903,7 @@ html.role-senior [onclick*="import-kma-form-file-input"], html.role-junior [oncl
 .kma-cv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
 @media (max-width: 520px) { .kma-cv-grid { grid-template-columns: 1fr; } }
 .kma-cv label { display: grid; gap: 3px; font-size: 13px; font-weight: 700; color: var(--text-muted); }
-.kma-cv input[type=text], .kma-cv input[type=email], .kma-cv input[type=tel], .kma-cv input[type=date], .kma-cv input[type=month], .kma-cv select, .kma-cv textarea { width: 100%; box-sizing: border-box; padding: 9px 10px; border-radius: 9px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); font: inherit; font-size: 14px; font-weight: 400; }
+.kma-cv input[type=text], .kma-cv input[type=email], .kma-cv input[type=tel], .kma-cv input[type=date], .kma-cv input[type=month], .kma-cv select, .kma-cv textarea { width: 100%; box-sizing: border-box; padding: 9px 10px; border-radius: 9px; border: 1px solid var(--border-color); background: var(--bg-input, var(--bg-main)); color: var(--text-primary); font: inherit; font-size: 14px; font-weight: 400; }
 .kma-cv textarea { min-height: 70px; }
 .kma-cv-profile { min-height: 100px !important; }
 .kma-cv-list { display: grid; gap: 10px; margin-bottom: 8px; }
@@ -1020,7 +1020,7 @@ h1, h2, h3, h4, .step-title, .kma-sheet-title { overflow-wrap: break-word; hyphe
 .kma-agenda h3 em { font-style: normal; font-size: 13px; background: var(--accent-gold); color: #111a14; border-radius: 999px; padding: 1px 8px; }
 .kma-agenda-hint { font-size: 13px; color: var(--text-muted); margin: 4px 0 10px; }
 .kma-agenda-add { display: flex; gap: 8px; margin: 0 0 10px; }
-.kma-agenda-add input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); font-size: 14px; }
+.kma-agenda-add input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input, var(--bg-main)); color: var(--text-primary); font-size: 14px; }
 .kma-agenda-add .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; font-size: 13px; white-space: nowrap; }
 .kma-agenda-list { list-style: none; margin: 0; padding: 0; }
 .kma-agenda-item { display: flex; align-items: flex-start; gap: 6px; padding: 8px 0; border-top: 1px solid var(--border-color); }
@@ -1108,7 +1108,7 @@ h1, h2, h3, h4, .step-title, .kma-sheet-title { overflow-wrap: break-word; hyphe
 .kma-pss-bonus { padding: 10px 12px; border-left: 3px solid var(--accent-gold); background: rgba(201, 162, 39, 0.08); border-radius: 6px; }
 @media (max-width: 380px) { .kma-pss-opts { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; } .kma-pss-opts span { font-size: 13px; } }
 .kma-code-lab { display: grid; gap: 6px; margin: 10px 0; font-size: 13px; font-weight: 600; }
-.kma-code-lab input { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); font: inherit; font-weight: 400; font-size: 16px; }
+.kma-code-lab input { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input, var(--bg-main)); color: var(--text-primary); font: inherit; font-weight: 400; font-size: 16px; }
 details.kma-pat > summary .kma-pat-t { flex: 1; min-width: 0; line-height: 1.35; }
 details.kma-pat > summary .kma-pat-t > .ki { vertical-align: -3px; margin-right: 6px; }
 
@@ -1220,7 +1220,7 @@ details.kma-tp-blok > summary em { font-style: normal; font-weight: 600; font-si
 /* Peloton en team (4.3.6) */
 .kma-role-pel { display: grid; gap: 4px; margin: 4px 0 12px; font-size: 13px; font-weight: 700; color: var(--text-muted); }
 .kma-role-pel small { font-weight: 400; }
-.kma-role-pel input { width: 100%; box-sizing: border-box; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); font-size: 15px; }
+.kma-role-pel input { width: 100%; box-sizing: border-box; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input, var(--bg-main)); color: var(--text-primary); font-size: 15px; }
 .kma-role-pel[hidden] { display: none; }
 .kma-staff-h { margin: 16px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--accent-gold); }
 .kma-staff-list { display: grid; gap: 8px; }
@@ -1293,7 +1293,7 @@ body[class*="kma-opco-"] .site-header { border-bottom: 4px solid var(--kma-opco)
 .kma-rem-row b { display: block; font-size: 14px; color: var(--text-primary); }
 .kma-rem-row small { display: block; color: var(--text-muted); font-size: 13px; }
 .kma-rem-sub { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 0 0 12px; font-size: 13px; color: var(--text-muted); }
-.kma-rem-sub select, .kma-rem-sub input { min-height: 40px; border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 10px; background: var(--bg-widget, #fff); color: var(--text-primary); font: inherit; font-size: 14px; }
+.kma-rem-sub select, .kma-rem-sub input { min-height: 40px; border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 10px; background: var(--bg-input, var(--bg-widget)); color: var(--text-primary); font: inherit; font-size: 14px; }
 .kma-rem-sw { position: relative; flex: 0 0 auto; width: 48px; height: 28px; }
 .kma-rem-sw input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
 .kma-rem-sw i { position: absolute; inset: 0; border-radius: 999px; background: #8a8f88; transition: background .15s; }
@@ -1306,7 +1306,7 @@ body[class*="kma-opco-"] .site-header { border-bottom: 4px solid var(--kma-opco)
 .kma-gp-q { padding: 12px 0; border-top: 1px solid var(--border-color); }
 .kma-gp-q label b { display: block; color: var(--text-primary); }
 .kma-gp-q label small { color: var(--text-muted); font-size: 13px; }
-.kma-gp-q textarea { width: 100%; margin-top: 6px; min-height: 70px; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; font: inherit; background: var(--bg-widget, #fff); color: var(--text-primary); box-sizing: border-box; }
+.kma-gp-q textarea { width: 100%; margin-top: 6px; min-height: 70px; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; font: inherit; background: var(--bg-input, var(--bg-widget)); color: var(--text-primary); box-sizing: border-box; }
 .kma-gp-vb { font-size: 13px; color: var(--text-muted); margin: 10px 0 6px; }
 .kma-gp-doc { border: 1px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,.08); padding: 16px; max-width: none; }
 .kma-gp-doc h2 { font-size: 17px; }
@@ -1322,7 +1322,7 @@ body.dark-theme .kma-fbr-done { color: #7fd09a; }
 .kma-fbr-done .ki { width: 16px; height: 16px; }
 .kma-fbr-link { background: none; border: 0; color: var(--text-muted); text-decoration: underline; font: inherit; font-size: 13px; cursor: pointer; min-height: 32px; padding: 4px 6px; }
 .kma-fbr-lab { display: block; font-size: 13px; font-weight: 700; margin-bottom: 4px; color: var(--text-primary); }
-.kma-fbr textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 10px; font: inherit; background: var(--bg-widget, #fff); color: var(--text-primary); margin-bottom: 8px; }
+.kma-fbr textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 10px; font: inherit; background: var(--bg-input, var(--bg-widget)); color: var(--text-primary); margin-bottom: 8px; }
 /* Voorbeeldantwoord (Reflectieboekje) */
 .kma-ex-btn { display: inline; background: none; border: 0; padding: 0 2px; margin: 0; color: var(--kma-action-text); font: inherit; font-size: 13px; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; vertical-align: baseline; }
 .kma-ex-btn:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
@@ -1352,7 +1352,7 @@ body.dark-theme .kma-fbr-done { color: #7fd09a; }
 .kma-gs-ok .ki { width: 14px; height: 14px; }
 .kma-gs-acts { margin: 6px 0; padding-left: 18px; font-size: 13px; }
 .kma-gs-acts li.ok { text-decoration: line-through; color: var(--text-muted); }
-.kma-gs-act select { min-height: 36px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-widget); color: var(--text-primary); padding: 4px 6px; }
+.kma-gs-act select { min-height: 36px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-input, var(--bg-widget)); color: var(--text-primary); padding: 4px 6px; }
 .kma-gs-share { display: flex; align-items: center; gap: 8px; margin: 10px 0; font-size: 14px; }
 .kma-gs-share input { width: 20px; height: 20px; }
 @media (max-width: 360px) {
@@ -1527,7 +1527,7 @@ body.dark-theme .kma-pill.ok { color: #7cc69a; }
 .kma-quick-fab.has-new::after { content: ""; position: absolute; top: 4px; right: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent-red, #c82837); border: 2px solid var(--kma-action, #d8cb92); }
 .kma-quick-fab { position: fixed; }
 .kma-kam .kma-code-lab small { font-weight: 400; color: var(--text-muted, #aeb5af); }
-.kma-kam .kma-code-lab textarea, .kma-kam .kma-code-lab select { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); font: inherit; font-weight: 400; font-size: 16px; }
+.kma-kam .kma-code-lab textarea, .kma-kam .kma-code-lab select { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input, var(--bg-main)); color: var(--text-primary); font: inherit; font-weight: 400; font-size: 16px; }
 .kma-kam .kma-code-lab textarea { resize: vertical; min-height: 64px; }
 .kma-kam-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .kma-kam-to { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: var(--bg-card-deep, rgba(255,255,255,.05)); margin: 4px 0 6px; }
@@ -1606,7 +1606,7 @@ body.dark-theme .kma-pill.ok { color: #7cc69a; }
 .kma-gn .kma-code-body { display: grid; gap: 10px; }
 .kma-gn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .kma-gn label, .kma-gn-lab { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
-.kma-gn input[type=text], .kma-gn input[type=date], .kma-gn input[type=time], .kma-gn textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-widget); color: var(--text-primary); font: inherit; font-size: 15px; box-sizing: border-box; }
+.kma-gn input[type=text], .kma-gn input[type=date], .kma-gn input[type=time], .kma-gn textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-input, var(--bg-widget)); color: var(--text-primary); font: inherit; font-size: 15px; box-sizing: border-box; }
 .kma-gn-group { border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 10px; display: grid; gap: 4px; }
 .kma-gn-gh { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .kma-gn label.kma-gn-cad { display: flex; align-items: center; gap: 10px; font-weight: 400; font-size: 15px; min-height: 40px; }
@@ -1642,7 +1642,7 @@ body.dark-theme .kma-pill.ok { color: #7cc69a; }
 /* Probleem melden (4.15.0, kma-melden.js) */
 .kma-pm .kma-code-body { display: grid; gap: 12px; }
 .kma-pm label.kma-field { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
-.kma-pm textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-widget); color: var(--text-primary); font: inherit; font-size: 15px; box-sizing: border-box; }
+.kma-pm textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-input, var(--bg-widget)); color: var(--text-primary); font: inherit; font-size: 15px; box-sizing: border-box; }
 .kma-pm label.kma-check { display: flex; align-items: center; gap: 10px; font-size: 15px; min-height: 40px; }
 /* Roos van Leary (4.16.0, kma-leary.js) */
 .kma-leary-pick { border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; margin: 8px 0; background: var(--bg-widget); }
@@ -1687,7 +1687,7 @@ body.dark-theme .kma-pill.ok { color: #7cc69a; }
 /* Nabespreking (4.17.0) en "Wat ga je ermee doen?" */
 .kma-nb .kma-code-body { display: grid; gap: 12px; }
 .kma-nb label.kma-field, .kma-nb div.kma-field { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
-.kma-nb textarea, .kma-nb input[type=text], .kma-nb input[type=date] { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-widget); color: var(--text-primary); font: inherit; font-size: 15px; box-sizing: border-box; }
+.kma-nb textarea, .kma-nb input[type=text], .kma-nb input[type=date] { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-input, var(--bg-widget)); color: var(--text-primary); font: inherit; font-size: 15px; box-sizing: border-box; }
 .kma-nb .kma-inline-form { display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; }
 .kma-nb label.kma-check, .kma-kam-actie label.kma-check { display: flex; align-items: center; gap: 10px; font-size: 15px; min-height: 40px; }
 .kma-nb [hidden], .kma-kam-actie [hidden] { display: none !important; }
@@ -1971,3 +1971,96 @@ body.kma-cvs-dash #kma-fab { bottom: calc(76px + env(safe-area-inset-bottom)) !i
 .kma-actie-stappen li { margin: 3px 0; }
 .kma-actie-stappen li.is-klaar { color: var(--kma-ok, #2e7d50); }
 .kma-actie-stappen li .kma-ic, .kma-actie-stappen li svg { width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; }
+
+/* 4.30 (punten 66, 67): instroom en geslacht in het profiel */
+.kma-instroom { margin: 16px 0; padding: 16px; border: 1px solid var(--border-color); border-radius: 16px; background: var(--bg-card); display: flex; flex-direction: column; gap: 10px; }
+.kma-instroom h3 { margin: 4px 0 0; font-size: 16px; }
+.kma-instroom-keuze { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-input, var(--bg-widget)); cursor: pointer; min-height: 44px; }
+.kma-instroom-keuze.on { border: 2px solid var(--accent-gold-text); background: var(--bg-card-deep); }
+.kma-instroom-keuze input { margin-top: 3px; accent-color: var(--accent-gold-text); }
+.kma-instroom-keuze span { display: flex; flex-direction: column; gap: 2px; }
+.kma-instroom-keuze small, .kma-instroom-veld small { font-size: 12px; }
+.kma-instroom-veld { display: flex; flex-direction: column; gap: 4px; font-weight: 600; font-size: 14px; }
+.kma-instroom-veld input, .kma-instroom-veld select { font-weight: 400; }
+
+/* 4.30 (punt 18): kopjes van de rode draad in Klassiek en de gereedschapskist */
+.step-nav.kma-acc > .kma-nav-fase { display: none; grid-column: 1 / -1; padding: 8px 14px 4px; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--accent-gold-text); background: var(--bg-card, #fff); border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); }
+.step-nav.kma-acc[data-open="kern"] > .kma-nav-fase[data-group="kern"] { display: block; }
+.kma-sheet-body { padding: 0 16px 8px; }
+.kma-gs { display: flex; flex-direction: column; gap: 8px; }
+.kma-gs-voorstel, .kma-gs-tl { margin: 0; padding: 10px 12px; border-radius: 12px; font-size: 13px; }
+.kma-gs-voorstel { background: var(--bg-card-deep); }
+.kma-gs-tl { background: rgba(47, 158, 91, .14); }
+.kma-gs-rij { display: flex; gap: 10px; align-items: flex-start; min-height: 44px; cursor: pointer; }
+.kma-gs-rij input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent-gold-text); }
+.kma-gs-rij span { display: flex; flex-direction: column; }
+.kma-gs-rij small { color: var(--text-muted); font-size: 12px; }
+
+/* 4.30 (punten 2-6, 24, 70, 77): normcurve, keuze kort/lang en metingen */
+.kma-norm-rij { padding: 8px 0; border-top: 1px solid var(--border-color); }
+.kma-norm-rij:first-of-type { border-top: 0; }
+.kma-norm-kop { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 14px; }
+.kma-norm-kop span { color: var(--accent-gold-text); font-weight: 700; font-size: 13px; }
+.kma-grens { font-style: normal; font-weight: 600; font-size: 11px; padding: 1px 6px; border-radius: 999px; background: var(--bg-card-deep); color: var(--text-muted); }
+.kma-curve { display: block; width: 100%; max-width: 420px; height: auto; margin: 4px 0; }
+.kma-curve-lijn { fill: none; stroke: var(--text-muted); stroke-width: 1.5; }
+.kma-curve-vul { fill: var(--accent-gold); opacity: .45; }
+.kma-curve-ci { fill: var(--accent-gold); opacity: .14; }
+.kma-curve-as { stroke: var(--border-color); }
+.kma-curve-jij { stroke: var(--accent-gold-text); stroke-width: 2.5; }
+.kma-hex-keuze { display: flex; flex-direction: column; gap: 8px; }
+.kma-prive { display: flex; gap: 10px; align-items: flex-start; margin: 4px 0 0; font-size: 13px; }
+.kma-prive svg { flex: none; color: #2f9e5b; }
+.kma-mm-rij, .kma-groei-rij { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding: 4px 0; }
+.kma-groei-rij span:first-child { flex: 1; }
+.kma-mm-nu, .kma-echt { color: var(--accent-gold-text); font-weight: 700; }
+
+/* 4.30 (punten 7, 28-30, 69): bewijs bij de SWOT, 360 en roos */
+.kma-bw-rij { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.kma-bw { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--bg-card-deep); color: var(--text-muted); }
+.kma-bw-ok { background: rgba(47, 158, 91, .16); color: #1f6b3f; }
+.kma-bw-niet { background: rgba(197, 185, 131, .3); color: var(--accent-gold-text); }
+body.dark-theme .kma-bw-ok { color: #7fd1a0; }
+.kma-bw-bron { display: block; margin-top: 4px; font-size: 12px; color: var(--text-muted); font-style: italic; }
+.kma-roos-zin { margin: 0 0 10px; font-size: 15px; }
+.kma-roos-zin span { display: block; margin-top: 4px; font-size: 12px; font-weight: 400; }
+
+/* 4.30 (punt 36): genoeg voor deze periode */
+.kma-vd-genoeg { margin-top: 10px; font-size: 13px; }
+.kma-vd-genoeg summary { cursor: pointer; font-weight: 700; min-height: 32px; }
+.kma-vd-genoeg ul { list-style: none; margin: 6px 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.kma-vd-genoeg li.ok { color: inherit; font-weight: 600; }
+
+.kma-kam-nietbeoordeling { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0; padding: 10px 12px; border-radius: 12px; background: rgba(47, 158, 91, .14); font-size: 13px; }
+.kma-kam-nietbeoordeling svg { flex: none; color: #2f9e5b; }
+
+/* 4.30 (punt 38): oefenen met feedback ontvangen */
+.kma-oef-opt { display: block; width: 100%; text-align: left; margin: 6px 0; padding: 12px; min-height: 44px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-input, var(--bg-widget)); color: var(--text-primary); font: inherit; cursor: pointer; }
+.kma-oef-opt.goed { border: 2px solid #2f9e5b; background: rgba(47, 158, 91, .12); }
+.kma-oef-opt.fout { border: 2px solid var(--accent-gold-text); }
+.kma-oef-uitleg { margin: 8px 0; padding: 10px 12px; border-radius: 12px; background: var(--bg-card-deep); font-size: 14px; }
+/* 4.30 (punten 18, 29): aanraden in het CVS */
+.kma-aanraden { margin: 16px 0; padding: 16px; border: 1px solid var(--border-color); border-radius: 16px; background: var(--bg-card); display: flex; flex-direction: column; gap: 8px; }
+.kma-aanraden h4 { margin: 0; }
+.kma-aanr-obs { display: flex; flex-direction: column; gap: 4px; font-size: 14px; font-weight: 600; }
+.kma-aanr-obs input { font-weight: 400; }
+.kma-cvs-prive { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 10px; padding: 10px 12px; border-radius: 12px; background: rgba(47, 158, 91, .14); font-size: 13px; }
+.kma-cvs-prive svg { flex: none; color: #2f9e5b; }
+.kma-cvs-groei { margin: 0 0 12px; }
+
+/* 4.30 (punten 50, 51, 71): inzicht voor de teamleider */
+.kma-pel-verd { margin: 16px 0; padding: 16px; border: 1px solid var(--border-color); border-radius: 16px; background: var(--bg-card, var(--bg-widget)); }
+.kma-pel-kop { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.kma-pel-kop h4 { margin: 0; }
+.kma-pel-hist { display: flex; align-items: flex-end; gap: 3px; height: 70px; margin-top: 10px; }
+.kma-pel-hist span { flex: 1; background: var(--accent-gold); border-radius: 3px 3px 0 0; min-height: 2px; }
+.kma-pel-as { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+.kma-wpm, .kma-eigen-v { margin: 8px 0; padding: 10px 12px; border-radius: 12px; background: var(--bg-card-deep, rgba(0,0,0,.04)); font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+.kma-wpm-rij { display: grid; grid-template-columns: 44px 1fr; gap: 6px; color: var(--accent-gold-text, var(--accent-gold)); }
+.kma-eigen-bars { display: flex; gap: 8px; align-items: flex-end; height: 56px; }
+.kma-eigen-bars span { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.kma-eigen-bars i { display: block; width: 100%; background: var(--accent-gold); border-radius: 3px 3px 0 0; min-height: 2px; }
+.kma-eigen-bars em { font-style: normal; font-size: 11px; }
+/* 4.30 (punt 79): stappen van de rode draad in het portfolio */
+.pf-sec-head h2[data-fase]::before { content: attr(data-fase); display: block; margin: 0 0 2px; font-size: 9pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #8a6d1f; }
+.pf-bronnen { font-size: 9.5pt; line-height: 1.45; padding-left: 18px; }

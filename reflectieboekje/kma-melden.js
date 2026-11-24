@@ -26,7 +26,9 @@
       '', 'Stappen:', (v.stappen || '-').trim(),
       '', 'Verwacht:', (v.verwacht || '-').trim(),
       '', 'Gebeurd:', (v.gebeurd || '-').trim(),
-      '', 'Schermafbeelding: ' + (v.foto ? 'ja, bijgevoegd' : 'nee')].join('\n');
+      '', 'Schermafbeelding: ' + (v.foto ? 'ja, bijgevoegd' : 'nee')].concat(
+      // 4.30 (punt 15): de laatste fouten uit het foutenlogboek (zonder invoer van de gebruiker)
+      window.kmaHulp && kmaHulp.lijst().length ? ['', 'Laatste fouten:'].concat(kmaHulp.lijst().slice(-5).map(function (f) { return f.t + ' ' + f.b + ':' + f.r + ' ' + f.m; })) : []).join('\n');
   }
   function close() { if (ov) { ov.remove(); ov = null; } }
   function lees() { var g = function (id) { var e = ov && ov.querySelector('#' + id); return e ? (e.type === 'checkbox' ? e.checked : e.value) : ''; }; return { stappen: g('pm-stappen'), verwacht: g('pm-verwacht'), gebeurd: g('pm-gebeurd'), foto: g('pm-foto') }; }

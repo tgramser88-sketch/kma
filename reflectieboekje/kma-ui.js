@@ -422,6 +422,8 @@
     html += '<div class="kma-sheet-items"></div>';
     sheet.innerHTML = html;
     var list = sheet.querySelector('.kma-sheet-items');
+    // 4.30: eigen inhoud (al ge-escaped door de aanroeper), bijv. de gereedschapskist
+    if (opts.html) { var body = document.createElement('div'); body.className = 'kma-sheet-body'; body.innerHTML = opts.html; sheet.insertBefore(body, list); }
     (opts.items || []).filter(Boolean).forEach(function (it) {   // 4.5.4: lege plekken (null) overslaan
       if (it.section) {
         var h = document.createElement('div');

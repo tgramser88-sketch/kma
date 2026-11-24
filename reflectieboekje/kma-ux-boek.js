@@ -30,7 +30,7 @@
   function quickSheet() {
     kmaSheet({ title: 'Wat wil je vastleggen?', items: [
       { icon: 'calendar', label: 'DTF-feit', hint: 'Kort: wat gebeurde er? De V en de rest kan later', onClick: quickDtf },
-      window.kmaNabespreking ? { icon: 'talk', label: 'Nabespreking na een oefening', hint: 'Vier vragen, wordt een DTF-feit en zo nodig een als-dan-plan', onClick: function () { kmaNabespreking.open(); } } : null,
+      window.kmaNabespreking && (!window.kmaGereedschap || kmaGereedschap.aan('aar')) ? { icon: 'talk', label: 'Nabespreking na een oefening', hint: 'Vier vragen, wordt een DTF-feit en zo nodig een als-dan-plan', onClick: function () { kmaNabespreking.open(); } } : null,
       window.kmaPlannen && kmaPlannen.count() ? { icon: 'repeat', label: 'Als-dan-plan: is het gelukt?', hint: 'Direct na de situatie: gelukt, deels of niet', onClick: function () { setTimeout(function () { kmaPlannen.snelCheckin(); }, 60); } } : null,
       window.kmaKameraad ? { icon: 'users', label: 'Feedback geven aan een medecadet', hint: 'Situatie, wat je zag en een volgende stap', onClick: function () { if (kmaKameraad.give) kmaKameraad.give(); else kmaKameraad.open(); } } : null,
       { section: 'Meer' },
@@ -306,7 +306,9 @@
     { id: '360', sym: 'ring', t: '360°', d: '3 anderen gaven feedback', ok: function () { return (g('hexacoObservers', []) || []).length >= 3; } },
     { id: 'kern', sym: 'check', t: 'Kern', d: 'Kern afgerond', ok: kernDone },
     { id: 'fit', sym: 'heart', t: 'Fit & scherp', d: '3 stresschecks', ok: function () { return (getX('pss', []) || []).length >= 3; } },
-    { id: 'portfolio', sym: 'book', t: 'Portfolio', d: 'Eerste PDF', ok: function () { return false; } }
+    { id: 'portfolio', sym: 'book', t: 'Portfolio', d: 'Eerste PDF', ok: function () { return false; } },
+    // 4.30 (punt 32): belonen wat leren laat zien: een plan bijstellen na feedback
+    { id: 'bijgesteld', sym: 'check', t: 'Bijsteller', d: 'Plan bijgesteld na feedback', ok: function () { return !!(window.kmaOefenen && kmaOefenen.planBijgesteld()); } }
   ];
   var LONG = { profiel: 'Profiel ingevuld met naam, Peoplesoft-nummer en krijgsmachtdeel', '5gt': 'Eerste 5G-T-reflectie geschreven', dtf: '10 DTF-feiten vastgelegd', reeks: '4 weken op rij je SMART-check-in (deels) gelukt', '360': 'Drie anderen gaven 360°-feedback', kern: 'Alle hoofdstukken van de kern afgerond', fit: 'Drie stresschecks ingevuld', portfolio: 'Je eerste portfolio als PDF gemaakt' };
   function fmt(iso) { try { return new Date(iso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return ''; } }

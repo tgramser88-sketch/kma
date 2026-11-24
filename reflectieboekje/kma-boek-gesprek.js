@@ -90,7 +90,7 @@
       '<p class="kma-rem-intro">Eén pagina voor het gesprek met je teamleider. Kies wat erin komt en schrijf je eigen vragen erbij. In een functioneringsgesprek geef jij ook je zienswijze. ' + (window.kmaOER ? kmaOER.label('3.7.3') : '') + '</p>' +
       '<div class="kma-rem-sub"><label for="kma-gp-datum">Datum van het gesprek</label><input type="date" id="kma-gp-datum" value="' + esc(p.datum) + '"/></div>' +
       row('smart', 'SMART-leervraag en check-ins') + row('refl', 'Laatste 3 reflecties (5G-T en Korthagen)') + row('fb', 'Feedback en lopende afspraken') +
-      row('stress', 'Stresscheck', hasStress ? 'Alleen als je dat wilt. Gaat alleen mee als dit aan staat.' : 'Je hebt nog geen stresscheck ingevuld', !hasStress) +
+      row('stress', 'Stresscheck', hasStress ? 'Alleen op je eigen papier als je dat wilt. Gaat nooit naar het CadetVolgSysteem.' : 'Je hebt nog geen stresscheck ingevuld', !hasStress) +
       '<div class="kma-gp-q"><label for="kma-gp-vragen"><b>Mijn vragen voor het gesprek</b><small>Eén vraag per regel</small></label><textarea id="kma-gp-vragen" rows="3" placeholder="Bijvoorbeeld: Hoe kan ik vaker het woord nemen in de groep?">' + esc(p.vragen) + '</textarea></div>' +
       '<p class="kma-gp-vb">Voorbeeld</p><div class="kma-gp-doc kma-summary-page" id="kma-gp-doc">' + docHtml(p) + '</div>' +
       '<div class="kma-row-btns kma-rem-btns"><button type="button" class="kma-icon-btn" data-gp-x>' + icon('x') + 'Sluiten</button><button type="button" class="kma-icon-btn" data-gp-share>' + icon('share') + 'Delen met teamleider</button><button type="button" class="kma-icon-btn is-primary" data-gp-pdf>' + icon('print') + 'Maak PDF</button></div></div>';

@@ -23,6 +23,8 @@
   }
   window.calculateHexacoSelfScores = function () {
     storeScores();
+    // 4.30: de test is een meting; bij de keuze "lang" volgen meteen de 144 extra stellingen
+    if (window.kmaMeting) { kmaMeting.vastleggen(); if (kmaMeting.keuze() === 'lang' && window.kmaHex240 && !kmaHex240.klaar()) setTimeout(function () { kmaHex240.open(); }, 400); }
     renderWidgets();
     updateProgress();
     kmaToast('Je persoonlijkheidsprofiel is bijgewerkt');
@@ -159,6 +161,7 @@
   }
 
   /* ---------------- Results ---------------- */
+  var curOth = null;   // 4.30: observatoren voor het bewijs bij de SWOT
   function pointHtml(p, quadrant) {
     var actions = (quadrant === 'w' || quadrant === 't')
       ? '<div class="kma-swot-try"><strong>Probeer dit:</strong> ' + esc(p.action) + '</div>' +
@@ -167,11 +170,14 @@
       : '';
     return '<li><span class="kma-swot-text">' + esc(p.text) + '</span>' +
       '<span class="kma-swot-src">omdat je ' + (p.band === 'high' ? 'hoog' : 'laag') + ' scoort op ' + esc(p.trait.name) + ' (' + p.score + '%) · <em>' + esc(p.v) + '</em></span>' +
-      (quadrant === 's' ? '<span class="kma-swot-why">' + esc(p.why) + '</span>' : '') + actions + '</li>';
+      (quadrant === 's' ? '<span class="kma-swot-why">' + esc(p.why) + '</span>' : '') + (window.kmaBewijs ? kmaBewijs.badges(kmaBewijs.bewijs(p, quadrant, curOth)) : '') + actions + '</li>';
   }
 
   function resultsHtml() {
     var s = selfScores(), oth = others(), an = H.analyse(s, oth.count ? oth : null), ind = H.vIndication(s);
+    curOth = oth.count ? oth : null;
+    // 4.30 (punt 28): de labels blinde vlek en verborgen kracht pas vanaf drie observatoren
+    var BW = window.kmaBewijs, labels = !BW || BW.labelsAan(oth);
     var axes = ['Integr.', 'Emot.', 'Extrav.', 'Verdr.', 'Consc.', 'Openh.'];
     var series = [{ label: 'Jij', color: V.colors.gold, values: H.TRAITS.map(function (t) { return s[t.key]; }) }];
     if (oth.count) series.push({ label: oth.count === 1 ? oth.per[0].name : 'Anderen (gem. van ' + oth.count + ')', color: V.colors.blue, dashed: true, values: H.TRAITS.map(function (t) { return oth.avg[t.key]; }) });
@@ -192,7 +198,7 @@
         '</div>';
     }).join('');
 
-    var gapHtml = an.gaps.length ? '<div class="kma-gaps">' + an.gaps.map(function (g) {
+    var gapHtml = labels && an.gaps.length ? '<div class="kma-gaps">' + an.gaps.map(function (g) {
       var title = g.kind === 'hidden' ? 'Verborgen kracht' : g.kind === 'blind' ? 'Mogelijke blinde vlek' : 'Wisselend beeld';
       return '<div class="kma-gap ' + g.kind + '"><strong>' + title + ' · ' + esc(g.trait.name) + '</strong><span>' + esc(g.text) + (g.self != null ? ' (jij ' + g.self + '%, anderen ' + g.others + '%)' : '') + '</span></div>';
     }).join('') + '</div>' : '';
@@ -205,7 +211,7 @@
     var quad = function (key, title, cls, list) {
       return '<div class="kma-swot ' + cls + '"><h5>' + title + '</h5>' + (list.length ? '<ul>' + list.map(function (p) { return pointHtml(p, key); }).join('') + '</ul>' : '<p class="muted">Geen uitgesproken scores in deze richting.</p>') + '</div>';
     };
-    var swot = '<div class="kma-card-block"><h4>' + icon('target') + 'Jouw SWOT</h4><p class="muted">Op basis van je scores. Maximaal 3 punten per vak, de meest uitgesproken eerst.</p>' +
+    var swot = '<div class="kma-card-block"><h4>' + icon('target') + 'Jouw SWOT</h4><p><span class="kma-bw kma-bw-ok">Alleen voor jou en je gesprek</span></p><p class="muted">Op basis van je scores, met bewijs uit je DTF-feiten en van je observatoren. Maximaal 3 punten per vak, de meest uitgesproken eerst.</p>' +
       '<div class="kma-swot-grid">' + quad('s', 'Sterke kanten', 's', q.s) + quad('w', 'Valkuilen', 'w', q.w) + quad('o', 'Kansen', 'o', q.o) + quad('t', 'Bedreigingen', 't', q.t) + '</div>' +
       (an.middle.length ? '<p class="kma-mid">' + an.middle.map(function (m) { return 'Je zit in het midden op <strong>' + esc(m.trait.name) + '</strong> (' + m.score + '%): je kunt per situatie kiezen.'; }).join(' ') + '</p>' : '') +
       (an.combos.length ? '<div class="kma-combos">' + an.combos.map(function (c) { return '<div class="kma-combo"><strong>' + esc(c.name) + '</strong><span>' + esc(c.mean) + '</span><em>Probeer dit: ' + esc(c.a) + '</em></div>'; }).join('') + '</div>' : '') +
@@ -216,19 +222,21 @@
       an.gaps.filter(function (g) { return g.kind !== 'mixed'; }).map(function (g) { return '<span>' + (g.kind === 'hidden' ? 'Verborgen kracht: ' : 'Blinde vlek: ') + esc(g.trait.name) + '</span>'; }).join('') + '</div>';
 
     var qual = H.quality ? H.qualityHtml(H.quality(hexacoSelfAnswers, hexacoQuestionsSelf, (function () { try { return JSON.parse(kmaStore.getItem('kma-x-hex-tijd')); } catch (e) { return null; } })()), 'cadet') : '';
-    return '<div class="kma-hex">' + strip + qual +
+    var MT = window.kmaMeting;
+    if (MT) MT.vastleggen();
+    return '<div class="kma-hex">' + strip + qual + (MT ? MT.normHtml() + MT.langHtml() : '') +
       '<div class="kma-card-block kma-hex-chart">' + V.radar(axes, series, { label: 'Persoonlijkheidsprofiel' }) + V.legend(series) + '</div>' +
       '<div class="kma-card-block"><h4>' + icon('chart') + 'Jouw zes eigenschappen</h4><p class="muted">Tik op een eigenschap voor uitleg.' + (oth.count ? ' Het blauwe streepje is hoe anderen je zien.' : '') + '</p>' + traits + H.explainProfile() + '</div>' +
-      (gapHtml ? '<div class="kma-card-block"><h4>' + icon('eye') + 'Zelfbeeld en hoe anderen je zien</h4>' + gapHtml + '</div>' : '') +
+      (BW ? BW.verschilHtml(s, oth) : '') + (gapHtml ? '<div class="kma-card-block"><h4>' + icon('eye') + 'Zelfbeeld en hoe anderen je zien</h4>' + gapHtml + '</div>' : '') +
       (oth.count && window.kmaActieKaart ? kmaActieKaart('360', (function () { var g = an.gaps.filter(function (x) { return x.kind !== 'mixed'; })[0]; return g ? (g.kind === 'blind' ? 'mogelijke blinde vlek op ' : 'verborgen kracht op ') + g.trait.name.toLowerCase() + ' (uit de 360°-feedback)' : ''; })()) : '') +
-      observersHtml() + vTiles + swot +
+      observersHtml() + vTiles + swot + (MT ? MT.groeiHtml() : '') +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-act="redo">' + icon('edit') + 'Antwoorden bekijken of wijzigen</button></div>' +
       forQuestions + '</div>';
   }
 
   function emptyHtml() {
     var n = H.answeredCount(hexacoSelfAnswers), total = hexacoQuestionsSelf.length;
-    return '<div class="kma-hex"><div class="kma-card-block kma-empty-hex">' + icon('chart', 'big') +
+    return '<div class="kma-hex">' + (window.kmaMeting ? kmaMeting.keuzeHtml() : '') + '<div class="kma-card-block kma-empty-hex">' + icon('chart', 'big') +
       '<h4>' + (n ? 'Ga verder met je persoonlijkheidstest' : 'Je hebt de test nog niet gedaan') + '</h4>' +
       '<p>' + total + ' korte stellingen · ongeveer 12 minuten · één stelling per scherm. Je kunt altijd pauzeren; je antwoorden worden bewaard.</p>' +
       (n ? '<div class="kma-test-progress inline"><span style="width:' + Math.round(n / total * 100) + '%"></span></div><p class="muted">' + n + ' van ' + total + ' beantwoord</p>' : '') +

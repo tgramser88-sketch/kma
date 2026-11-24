@@ -378,7 +378,7 @@ body.dark-theme .kma-saved.ok, body.kma-volg .kma-saved.ok { color: #7cc69a; }
    :where() heeft geen specificiteit, zodat bestaande, specifiekere opmaak voorgaat. */
 :where(input[type=text], input:not([type]), input[type=date], input[type=time], input[type=search], input[type=email], input[type=tel], input[type=number], input[type=month], input[type=url], select, textarea) {
   min-height: 42px; padding: 8px 12px; border: 1px solid var(--border-color, #c9c4b2); border-radius: 10px;
-  background: var(--bg-widget, #fff); color: var(--text-primary, #172019); font: inherit; font-size: 15px; line-height: 1.45; box-sizing: border-box; max-width: 100%;
+  background: var(--bg-input, var(--bg-widget)); color: var(--text-primary, #172019); font: inherit; font-size: 15px; line-height: 1.45; box-sizing: border-box; max-width: 100%;
 }
 :where(input, select, textarea):focus { outline: none; border-color: var(--accent-gold, #b59a52); box-shadow: 0 0 0 3px rgba(181, 154, 82, .25); }
 :where(textarea) { width: 100%; min-height: 80px; }
@@ -550,3 +550,15 @@ body.kma-has-bottombar .kma-top { bottom: calc(100px + env(safe-area-inset-botto
 .kma-gs-grow { margin: 8px 0 12px; border: 1px solid var(--border-color, #d9d4c2); border-radius: 8px; padding: 6px 10px; }
 .kma-gs-grow summary { cursor: pointer; font-weight: 600; display: flex; gap: 6px; align-items: center; min-height: 40px; }
 .kma-gs-terug-l { list-style: none; padding: 0; margin: 6px 0; }
+
+/* 4.30 (punten 15, 17): hulp en opslag */
+.kma-hulp h4 { margin: 10px 0 4px; font-size: 15px; }
+.kma-hulp-meter { height: 10px; border-radius: 5px; background: var(--bg-card-deep, #ece9dd); overflow: hidden; }
+.kma-hulp-meter i { display: block; height: 10px; border-radius: 5px; background: #2f9e5b; }
+.kma-hulp-meter i.vol { background: #a91f2b; }
+/* 4.30 (punt 41): snel starten */
+.kma-snel-stappen { margin: 8px 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+.kma-snel-stappen li b { display: block; }
+.kma-snel-stappen li span { font-size: 13px; color: var(--text-muted); }
+.kma-snel h4 { margin: 12px 0 4px; }
+.kma-snel-rechten { margin: 0; padding-left: 18px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }

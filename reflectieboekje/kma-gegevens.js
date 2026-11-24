@@ -33,7 +33,15 @@
     { sinds: '4.3', wat: 'Luchtmacht heet CLRS (was CLSK / KLu)', waar: 'bij binnenkomst en bij de start', code: 'kma-transfer.js: kmaFixOpco' },
     { sinds: '4.4', wat: '5G-T: inzichten, leervraag en actieplan staan in stap 4', waar: 'bij lezen', code: 'kma-5gt.js: migrate, view' },
     { sinds: '4.3', wat: 'Persoonlijkheidstest: resultaten van de oude HEXACO-variant tellen niet mee', waar: 'bij lezen', code: 'pagina.html: KMA_PERS_SET, kmaPersLegacy' },
-    { sinds: '4.7.0', wat: 'Stresscheck: een meting met 14 antwoorden (PSS-14) wordt als PSS-10 gelezen', waar: 'bij lezen', code: 'kma-pss.js: ten, legacy, FROM14' }
+    { sinds: '4.7.0', wat: 'Stresscheck: een meting met 14 antwoorden (PSS-14) wordt als PSS-10 gelezen', waar: 'bij lezen', code: 'kma-pss.js: ten, legacy, FROM14' },
+    // 4.30 (punt 62): elke omzetting heeft een test met oude gegevens erin (besluit 23-11: niets mag verdwijnen)
+    { sinds: '4.30', wat: 'Profiel zonder instroom krijgt de standaard burger, zonder startdatum; niets anders verandert', waar: 'bij de start (eenmalig)', code: 'kma-boek-instroom.js: migreer · test_instroom' },
+    { sinds: '4.30', wat: 'Gereedschapskist: al gebruikte modellen (WOOP, doel in vijf niveaus, roos, nabespreking) staan aan', waar: 'bij de start (eenmalig)', code: 'kma-boek-gereedschap.js: migreer · test_gereedschap' },
+    { sinds: '4.30', wat: 'Bestaande persoonlijkheidstest = eerste meting (kort, of lang als de 144 klaar zijn); wie al deelde blijft de test delen', waar: 'bij het eerste lezen (eenmalig)', code: 'kma-boek-meting.js: migreer · test_meting' },
+    { sinds: '4.30', wat: 'Nieuwe meting: de vorige antwoorden gaan met de meting mee de lijst in (niets wordt gewist)', waar: 'bij een nieuwe meting', code: 'kma-boek-meting.js: nieuw · test_meting' },
+    { sinds: '4.30', wat: 'Deelmap: map met code i.p.v. Peoplesoft-nummer; oude mappen worden nog gelezen en beschreven', waar: 'bij delen en inlezen', code: 'kma-deelmap.js: psHash, psDirOud · test_deelmap' },
+    { sinds: '4.30', wat: 'Pincode op de website: leesbare pincode wordt omgezet naar een afgeleide code', waar: 'bij de eerste keer goed invoeren', code: 'kma-bridge.js: kmaPin (web) · test_pinweb' },
+    { sinds: '4.30', wat: 'CVS: stress en welzijn uit oude dossiers blijven bewaard maar worden niet getoond', waar: 'bij lezen', code: 'kma-volg-visuals.js, kma-volg-aandacht.js · test_welzijn_cvs' }
   ];
 
   var IMG = /^data:image\/(png|jpe?g|webp|gif|bmp|heic|heif);base64,[A-Za-z0-9+/=\s]+$/i;

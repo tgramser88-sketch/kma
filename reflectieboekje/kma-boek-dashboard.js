@@ -27,15 +27,23 @@
   function getX(k, d) { try { var v = kmaStore.getItem('kma-x-' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
 
   /* ---------------- De stappen van de ontwikkelcyclus ---------------- */
+  /* 4.30 (punt 18): de rode draad in vijf stappen = de vaste basis (hoofdstuk 00 t/m 10). Alles daarbuiten (verdieping 11-13
+     en naslag 14-17) staat onder "Meer hoofdstukken"; de roos komt in stap 3 als hij in de gereedschapskist aanstaat. */
   var FASEN = [
-    ['Ken jezelf', /Cadet Informatie|Introductie|Ontwikkelbiografie|Persoonlijkheidstest|Gedragscode/],
-    ['Leervraag', /SMART|Probleem- en Behoefte/],
-    ['Doen en vastleggen', /Datum-Tijd-Feit|Roos van Leary|Fitheid/],
+    ['Jezelf leren kennen', /Cadet Informatie|Introductie|Ontwikkelbiografie|Persoonlijkheidstest|Gedragscode/],
+    ['Leervraag', /SMART/],
+    ['Doen en vastleggen', /Datum-Tijd-Feit/],
     ['Reflecteren', /5G-T|Korthagen/],
-    ['Beoordeling', /Zelfbeoordelingsformulier|Voorbereiding Cadetbeoordeling|Toetsing/],
-    ['Naslag', /Begrippenlijst|Curriculum|Mijn groei/]
+    ['Feedback en beoordeling', /Zelfbeoordelingsformulier|Voorbereiding Cadetbeoordeling/]
   ];
-  function fase(i) { var t = steps[i].title; for (var f = 0; f < FASEN.length; f++) if (/** @type {RegExp} */ (FASEN[f][1]).test(t)) return f; return FASEN.length - 1; }
+  function gs(k) { return !!(window.kmaGereedschap && kmaGereedschap.aan(k)); }
+  /** Stap van de rode draad (0-4), of -1 = buiten de vaste basis ("Meer hoofdstukken"). */
+  function fase(i) {
+    var t = steps[i].title;
+    if (/Roos van Leary/.test(t) && gs('roos')) return 2;
+    for (var f = 0; f < FASEN.length; f++) if (/** @type {RegExp} */ (FASEN[f][1]).test(t)) return f;
+    return -1;
+  }
   var STATUS_KL = { klaar: 'is-klaar', bezig: 'is-bezig', open: 'is-open' };
 
   /* ---------------- Werkboek (T9, T10, T12) ---------------- */
@@ -44,27 +52,30 @@
     var per = FASEN.map(function () { return { kern: [], verd: [] }; });
     for (var i = 0; i < steps.length; i++) {
       if (steps[i].verborgen) continue;
-      var g = window.kmaChapterGroup ? kmaChapterGroup(i) : 'kern', st = status(i);
       if (zoekterm && steps[i].title.toLowerCase().indexOf(zoekterm) < 0) continue;
-      // T9: verdieping die je nog niet gebruikte, staat achter "Meer hoofdstukken" (behalve bij zoeken)
-      (g === 'verdieping' && st === 'open' && !zoekterm ? per[fase(i)].verd : per[fase(i)].kern).push(i);
+      var f = fase(i);
+      // Buiten de vaste basis: achter "Meer hoofdstukken" (bij zoeken in de laatste stap, zodat je het meteen ziet)
+      if (f < 0) { if (zoekterm) per[FASEN.length - 1].kern.push(i); else per[0].verd.push(i); continue; }
+      per[f].kern.push(i);
     }
     var rij = function (i) {
-      var st = status(i), nr = window.kmaChapterNum ? kmaChapterNum(i) : i;
+      var st = status(i), n = window.kmaChapterNum ? kmaChapterNum(i) : i, nr = /Roos van Leary/.test(steps[i].title) && gs('roos') ? '⚒' : (n < 10 ? '0' + n : String(n));
       return '<button type="button" class="kma-wb-rij" data-wb="' + i + '"><span class="kma-wb-t"><small>' + nr + '</small>' + esc(steps[i].title) + '</span><span class="kma-status ' + STATUS_KL[st] + '">' + st + '</span>' + icon('right') + '</button>';
     };
     var verborgen = 0;
     var html = per.map(function (p, f) {
       verborgen += p.verd.length;
-      if (!p.kern.length) return '';
-      return '<section class="kma-wb-fase"><h3><span>' + (f + 1) + '</span>' + FASEN[f][0] + '</h3><div class="kma-wb-lijst">' + p.kern.map(rij).join('') + '</div></section>';
+      var extra = f === 2 && gs('aar') && window.kmaNabespreking && !zoekterm ? '<button type="button" class="kma-wb-rij" data-wb-aar><span class="kma-wb-t"><small>⚒</small>Nabespreking na een oefening</span>' + icon('right') + '</button>' : '';
+      if (!p.kern.length && !extra) return '';
+      return '<section class="kma-wb-fase"><h3><span>' + (f + 1) + '</span>' + FASEN[f][0] + '</h3><div class="kma-wb-lijst">' + p.kern.map(rij).join('') + extra + '</div></section>';
     }).join('');
     var meer = [];
     per.forEach(function (p) { meer = meer.concat(p.verd); });
-    return '<div class="kma-dash-kop"><h2>Werkboek</h2><p class="muted small">De hoofdstukken in de volgorde van de ontwikkelcyclus: jezelf leren kennen, een leervraag, doen en vastleggen, reflecteren en beoordelen.</p></div>' +
+    if (window.kmaChapterNum) meer.sort(function (a, b) { return kmaChapterNum(a) - kmaChapterNum(b); });
+    return '<div class="kma-dash-kop"><h2>Werkboek</h2><p class="muted small">Je rode draad: de vaste basis (00 tot en met 10) in vijf stappen. ⚒ komt uit je gereedschapskist.</p></div>' +
       '<label class="kma-dash-zoek">' + icon('search') + '<span class="sr-only">Zoek een hoofdstuk</span><input type="search" id="kma-wb-zoek" placeholder="Zoek een hoofdstuk" value="' + esc(zoekterm) + '" autocomplete="off"></label>' +
       (html || '<p class="muted">Geen hoofdstuk gevonden. <button type="button" class="kma-chip-btn" data-wb-alles>Zoek in je hele boekje</button></p>') +
-      (verborgen ? '<details class="kma-wb-meer"><summary>Meer hoofdstukken (' + verborgen + ')</summary><p class="muted small">Verdieping: gebruik ze als het past of als je teamleider ze aanraadt.</p><div class="kma-wb-lijst">' + meer.map(rij).join('') + '</div></details>' : '') +
+      (verborgen ? '<details class="kma-wb-meer"><summary>Meer hoofdstukken (' + verborgen + ')</summary><p class="muted small">Verdieping (11 tot 13) en naslag (14 tot 17): gebruik ze als het past of als je teamleider ze aanraadt.</p><div class="kma-wb-lijst">' + meer.map(rij).join('') + '</div></details>' : '') +
       '<p class="muted small"><button type="button" class="kma-chip-btn" data-wb-alles>' + icon('search') + 'Zoeken in je antwoorden, DTF en reflecties</button></p>';
   }
 
@@ -169,8 +180,9 @@
   }
 
   document.addEventListener('click', function (e) {
-    var t = e.target.closest && e.target.closest('[data-wb],[data-wb-alles],[data-pv],[data-sp],[data-dw],[data-tg],[data-tw]'); if (!t) return;
+    var t = e.target.closest && e.target.closest('[data-wb],[data-wb-aar],[data-wb-alles],[data-pv],[data-sp],[data-dw],[data-tg],[data-tw]'); if (!t) return;
     if (t.hasAttribute('data-wb')) { goToStep(+t.getAttribute('data-wb')); return; }
+    if (t.hasAttribute('data-wb-aar')) { if (window.kmaNabespreking) kmaNabespreking.open(); return; }
     if (t.hasAttribute('data-wb-alles')) { var inp = document.getElementById('search-input'); if (window.kmaTabs) kmaTabs.toon(); if (inp) setTimeout(function () { inp.value = zoekterm; try { inp.focus(); inp.dispatchEvent(new Event('input', { bubbles: true })); } catch (x) {} }, 200); return; }
     if (t.hasAttribute('data-sp')) { var i = +t.getAttribute('data-sp'); if (i >= 0) goToStep(i); return; }
     if (t.hasAttribute('data-dw')) { if (window.kmaWeek) (t.getAttribute('data-dw') === 'doel' ? kmaWeek.doel : kmaWeek.evaluatie)(); return; }

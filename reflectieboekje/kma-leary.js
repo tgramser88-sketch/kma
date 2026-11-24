@@ -168,6 +168,8 @@
   /** Twee stippen: eigen gedrag → reactie van de ander. */
   function dotPaar(a, r) { return dot(a) + (clean(r) ? '<span class="kma-leary-pijl" aria-hidden="true">→</span>' + dot(r).replace('title="Leary: ', 'title="Reactie van de ander: ') : ''); }
 
+  /** 4.30 (punt 80): het CLX staat uit tot Perco toestemming geeft (R2b). De code blijft, de gegevens zijn dezelfde als die van de roos. */
+  var CLX_AAN = false;
   /** 4.24.0 (R2): de vier kwadranten van het communicatie- en leiderschapscircumplex (CLX) van de KMA, uit dezelfde asscores. */
   var KW = [
     { k: 'bs', n: 'Boven-samen', d: 'leidend, helpend', b: 1, s: 1 },
@@ -185,5 +187,5 @@
   }
 
   window.KMALeary = { edit: edit, MIN: MIN, SECT: SECT, clean: clean, fromSector: fromSector, sector: sector, intensity: intensity, label: label,
-    dist: dist, picker: picker, value: value, set: setPick, rose: rose, axisBars: axisBars, dot: dot, paar: paar, PLAN: PLAN, dotPaar: dotPaar, KW: KW, kwadrant: kwadrant, clx: clx };
+    dist: dist, picker: picker, value: value, set: setPick, rose: rose, axisBars: axisBars, dot: dot, paar: paar, PLAN: PLAN, dotPaar: dotPaar, KW: KW, kwadrant: kwadrant, clx: clx, clxAan: CLX_AAN };
 })();

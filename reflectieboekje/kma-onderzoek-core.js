@@ -110,6 +110,7 @@
   var SCHEMA = {
     type: ONE(['kma-onderzoek']), v: ONE([1]), bron: ONE(['boekje', 'cvs']), code: RE(CODE_RE), groep: OPT(RE(HEX_RE)), tl: OPT(RE(HEX_RE)),
     jaar: INT(2020, 2100), moment: ONE(MM), maand: RE(MAAND_RE), app: RE(/^\d+\.\d+\.\d+$/), set: OPT(ONE(['ipip-hexaco-96', 'ipip-hexaco-240'])),
+    instroom: OPT(ONE(['burger', 'doorstromer'])), geslacht: OPT(ONE(['man', 'vrouw', 'anders'])),
     'items.*': INT(1, 5), 'items': function (v) { return Array.isArray(v) && v.length <= 200; },
     'extra.*': INT(1, 5), 'extra': function (v) { return Array.isArray(v) && v.length === 144; }, 'domein240.*': OPT(NUM(0, 100)),
     'domein.*': OPT(NUM(0, 100)), 'facet.*': OPT(NUM(1, 5)),

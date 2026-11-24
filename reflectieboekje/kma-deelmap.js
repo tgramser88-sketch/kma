@@ -3,8 +3,9 @@
  * een map in OneDrive, SharePoint, een netwerkschijf enz. die de teamleider en de cadetten allemaal kiezen.
  *
  *   pelotons/<peloton>/teamsleutel.json                  openbare teamsleutel + per groep een controle met de groepscode
- *   pelotons/<peloton>/cadetten/<peoplesoft>/dossier.json  het dossier van de cadet, alleen te openen met de teamsleutel
- *   pelotons/<peloton>/cadetten/<peoplesoft>/feedback.json feedback van de teamleider, alleen te openen door die ene cadet
+ *   pelotons/<peloton>/cadetten/<code>/dossier.json  het dossier van de cadet, alleen te openen met de teamsleutel
+ *   pelotons/<peloton>/cadetten/<code>/feedback.json feedback van de teamleider, alleen te openen door die ene cadet
+ *   (<code> = afgeleid van het Peoplesoft-nummer, sinds 4.30; oudere versies gebruiken het nummer zelf)
  *   pelotons/<peloton>/staf/<id>.json                      DTF-notities en feedback van teamleider en instructeurs
  *                                                          (alleen te openen met de stafsleutel; cadetten hebben die niet)
  *   pelotons/<peloton>/uitnodigingen/<id>.json             uitnodiging voor een instructeur (alleen te openen met de code)
@@ -58,7 +59,16 @@
   var picked = null;
   window.kmaSharedPicked = function (ok, name) { var f = picked; picked = null; if (f) f(!!ok, name || ''); };
   function pick(cb) { if (!F.native()) { alert('De deelmap werkt alleen in de app op je telefoon.'); return; } picked = cb; A.sharedPick(); }
-  function psDir(ps) { return 'cadetten/' + String(ps).replace(/[^0-9A-Za-z]/g, ''); }
+  /* 4.30 (punt 1): de mapnaam van een cadet is niet meer zijn Peoplesoft-nummer maar een afgeleide code, zodat wie
+     de map opent niet meteen ziet wiens dossier het is. Let op: het is geen geheim; met moeite is het nummer terug te
+     rekenen. De inhoud blijft versleuteld zoals altijd. Oude mappen (nummer) worden nog gelezen en, voor cadetten die
+     nog niet bijgewerkt zijn, ook nog beschreven; het boekje ruimt zijn eigen oude dossier.json op na de overstap. */
+  function psClean(ps) { return String(ps).replace(/[^0-9A-Za-z]/g, ''); }
+  function fnv(s, h) { for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h >>> 0; }
+  function psHash(ps) { var s = 'kma-deelmap:' + psClean(ps); return 'c' + ('0000000' + fnv(s, 2166136261).toString(16)).slice(-8) + ('0000000' + fnv(s + ':2', 3735928559).toString(16)).slice(-8); }
+  function psDir(ps) { return 'cadetten/' + psHash(ps); }
+  function psDirOud(ps) { return 'cadetten/' + psClean(ps); }
+  window.kmaDeelPsHash = psHash;
   /** Mapnaam van een peloton: letters, cijfers, spatie, - en _. */
   function slug(n) { return String(n || '').replace(/[^A-Za-z0-9 _-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40); }
   function pelBase(n) { var p = slug(n); return p ? 'pelotons/' + p + '/' : ''; }
@@ -194,11 +204,16 @@
     var up = function () {
       var s = S(), p = payload(); delete p.sharedAt;
       var body = JSON.stringify(p);
+      // 4.30: staat het dossier nog niet in de nieuwe map (overstap), dan nu schrijven; staat het er al, dan de oude kopie weg
+      var nieuwPad = cbase() + psDir(ps()) + '/dossier.json', oudPad = cbase() + psDirOud(ps()) + '/dossier.json', heeftNieuw = F.read(nieuwPad) != null;
+      if (heeftNieuw && F.read(oudPad) != null) F.remove(oudPad);
       return sha(body).then(function (h) {
-        if (h === s.lastUp) return false;
+        if (h === s.lastUp && heeftNieuw) return false;
         p.sharedAt = new Date().toISOString(); p.deelKey = myKey(); p.groep = s.group || ''; p.peoplesoft = ps(); p.via = 'deelmap';
         return sealTo(JSON.stringify(p), s.pub).then(function (sealed) {
           if (!F.write(cbase() + psDir(ps()) + '/dossier.json', sealed)) throw new Error('schrijven');
+          // 4.30: na de overstap het eigen oude dossier (map met nummer) weghalen; feedback daar blijft leesbaar
+          if (F.read(oudPad) != null) F.remove(oudPad);
           s = S(); s.lastUp = h; s.lastUpAt = p.sharedAt; save(s);
           if (window.kmaMarkShared) kmaMarkShared('de deelmap');
           return true;
@@ -206,7 +221,7 @@
       });
     };
     var down = function () {
-      var t = F.read(cbase() + psDir(ps()) + '/feedback.json'); if (!t) return Promise.resolve(false);
+      var t = F.read(cbase() + psDir(ps()) + '/feedback.json') || F.read(cbase() + psDirOud(ps()) + '/feedback.json'); if (!t) return Promise.resolve(false);
       var o; try { o = kmaLees(t); } catch (e) { return Promise.resolve(false); }
       return decK(o, myKey()).then(function (txt) {
         var d = kmaLees(txt), s = S();
@@ -362,7 +377,7 @@
         return unseal(o, t.priv).then(function (plain) {
           var data = kmaLees(plain), key = data.deelKey; delete data.deelKey;
           var ps = String(data.peoplesoft || d.name);
-          if (String(ps).replace(/[^0-9A-Za-z]/g, '') !== d.name) { res.warn++; return; }   // a dossier in someone else's folder
+          if (psClean(ps) !== d.name && psHash(ps) !== d.name) { res.warn++; return; }   // a dossier in someone else's folder
           var c = cadets.find(function (x) { return cps(x) && String(cps(x)) === ps; });
           if (!c) {
             var nm = data.name || (typeof cvsName === 'function' && cvsName(data.answers)) || 'Cadet ' + ps;
@@ -388,7 +403,11 @@
           if ((s.written || {})[cps(c)] === h) return;
           p.date = new Date().toISOString();
           return encK(JSON.stringify(p), c.deelKey).then(function (txt) {
-            if (F.write(base() + psDir(cps(c)) + '/feedback.json', txt)) { s.written = s.written || {}; s.written[cps(c)] = h; c.feedbackSentAt = p.date; n++; }
+            if (F.write(base() + psDir(cps(c)) + '/feedback.json', txt)) {
+              // 4.30: cadet nog op een oudere versie (map met nummer)? Dan daar ook, zodat hij zijn feedback krijgt
+              if (F.list(base() + 'cadetten').some(function (x) { return x.dir && x.name === psClean(cps(c)); })) F.write(base() + psDirOud(cps(c)) + '/feedback.json', txt);
+              s.written = s.written || {}; s.written[cps(c)] = h; c.feedbackSentAt = p.date; n++;
+            }
           });
         });
       });
@@ -478,7 +497,7 @@
       .then(function (x) { busy = false; return x; }, function () { busy = false; });
   };
   /** Removes a cadet's folder (bewaartermijn, or the dossier was deleted by the teamleider). */
-  window.kmaDeelRemove = function (c) { var p = cps(c); if (p && F.ok() && S2().on && role() === 'teamleider') F.remove(base() + psDir(p)); };
+  window.kmaDeelRemove = function (c) { var p = cps(c); if (p && F.ok() && S2().on && role() === 'teamleider') { F.remove(base() + psDir(p)); F.remove(base() + psDirOud(p)); } };
   window.kmaDeelStatus = function () { var s = S2(); return { on: !!s.on && F.ok(), name: F.name(), last: s.lastSync || '', key: !!team(), peloton: peloton() }; };
 
   /* Team key to colleagues: a file protected with a password the teamleider chooses (still possible; the invitation is easier). */

@@ -29,6 +29,7 @@
         --bg-card: rgba(255, 255, 255, 0.92);
         --bg-card-deep: #ece9dd;
         --bg-widget: #fafaf5;
+        --bg-input: #f3f2eb;   /* invulvakken: iets minder wit, past bij het thema (4.30) */
         --text-primary: #172019;
         --text-muted: #5c645c;
         --header-bg: #18251d;
@@ -44,6 +45,7 @@
         --bg-card: rgba(24, 37, 29, 0.88);
         --bg-card-deep: #1b2a20;
         --bg-widget: #18261e;
+        --bg-input: #142019;
         --text-primary: #f1f0e9;
         --text-muted: #aeb5af;
         --header-bg: #0c140f;
@@ -183,7 +185,7 @@
       .search-box { margin-top: 16px; position: relative; display: flex; align-items: center; }
       .search-box input {
         width: 100%; padding: 10px 14px 10px 36px; border: 1px solid var(--border-color);
-        background: var(--bg-card); color: var(--text-primary); font-size: 13px; border-radius: 2px;
+        background: var(--bg-input, var(--bg-card)); color: var(--text-primary); font-size: 13px; border-radius: 2px;
       }
       .search-box::before { content: ""; position: absolute; left: 12px; width: 15px; height: 15px; opacity: 0.6; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") no-repeat center / contain; }
 
@@ -205,7 +207,7 @@
       .textarea-wrapper { position: relative; }
       .question-card textarea {
         width: 100%; min-height: 110px; resize: vertical; padding: 12px 14px; padding-right: 40px;
-        border: 1px solid var(--border-color); outline: none; color: var(--text-primary); background: var(--bg-widget); font-size: 14px; line-height: 1.5;
+        border: 1px solid var(--border-color); outline: none; color: var(--text-primary); background: var(--bg-input, var(--bg-widget)); font-size: 14px; line-height: 1.5;
       }
       .question-card textarea:focus { border-color: #3f5545; box-shadow: 0 0 0 3px rgba(63, 85, 69, 0.12); }
 
@@ -235,7 +237,7 @@
       .timeline-entry.top { border-left: 3px solid #18251d; }
       .timeline-entry.bottom { border-left: 3px solid var(--accent-red); }
       .timeline-form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-      .timeline-form input, .timeline-form select { padding: 8px 10px; border: 1px solid var(--border-color); font-size: 13px; background: var(--bg-card); color: var(--text-primary); }
+      .timeline-form input, .timeline-form select { padding: 8px 10px; border: 1px solid var(--border-color); font-size: 13px; background: var(--bg-input, var(--bg-card)); color: var(--text-primary); }
 
       /* 5G-T Multi Case Manager */
       .cases-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 12px; }
@@ -347,6 +349,7 @@
         <button type="button" class="button primary" onclick="verifyPin()">Ontgrendelen 🔓</button>
       </div>
       <p id="pin-error-msg" style="color:var(--accent-red-text, var(--accent-red)); font-size:13px; margin-top:12px; display:none;">Onjuiste PIN-code. Probeer opnieuw.</p>
+      <p class="kma-pin-web" style="font-size: 12px; color: #ccc; margin: 12px 16px 0; max-width: 360px; text-align: center; display: none;">Op de website is de pincode een slot tegen meekijken, geen versleuteling: je gegevens staan in deze browser. Gebruik op een gedeelde computer de app.</p>
 
     </div>
 
@@ -3121,12 +3124,16 @@
     <script src="html5-qrcode.min.js"></script>
     <script src="kma-koppel.js"></script>
     <script src="kma-leary.js"></script>
+    <script src="kma-hulp.js"></script>
+    <script src="kma-snelstart.js"></script>
     <script src="kma-datapunten.js"></script>
     <script src="kma-oer.js"></script>
     <script src="kma-leertaken.js"></script>
     <script src="kma-hexaco-core.js"></script>
     <script>window.KMA_PERS_SET = "ipip-hexaco-96"; window.KMA_Q_RENAMES = {"Welke eigenschappen (uit de HEXACO test) kunnen remmend werken op je ontwikkeling tot officier?": "Welke eigenschappen (uit de persoonlijkheidstest) kunnen remmend werken op je ontwikkeling tot officier?", "[Verdieping] Hoe verwacht je dat jouw dominantste HEXACO-eigenschap reageert onder langdurige stress, slaaptekort of oplopende druk?": "[Verdieping] Hoe verwacht je dat jouw sterkste eigenschap uit de persoonlijkheidstest reageert onder langdurige stress, slaaptekort of oplopende druk?"};</script>
     <script src="kma-boek-hexaco.js"></script>
+    <script src="kma-boek-instroom.js"></script>
+    <script src="kma-boek-gereedschap.js"></script>
     <script src="kma-boek-chapters.js"></script>
     <script src="kma-boek-feedback.js"></script>
     <script src="kma-ux-boek.js"></script>
@@ -3144,6 +3151,9 @@
     <script src="kma-onderzoek-core.js"></script>
     <script src="kma-boek-onderzoek.js"></script>
     <script src="kma-boek-hex240.js"></script>
+    <script src="kma-boek-meting.js"></script>
+    <script src="kma-boek-bewijs.js"></script>
+    <script src="kma-boek-oefenen.js"></script>
     <script src="kma-gemak.js"></script>
     <script src="kma-boek-reservekopie.js"></script>
     <script src="kma-versie.js"></script>

@@ -345,7 +345,9 @@
     h.innerHTML = card();
     var planEl = h.firstChild;
     if (first) first.insertAdjacentElement('afterend', planEl); else c.appendChild(planEl);
-    planEl.insertAdjacentHTML('beforebegin', gasCard() + woopCard());
+    // 4.30 (punt 18): WOOP en doel in vijf niveaus komen uit de gereedschapskist; de gegevens blijven ook als ze uit staan
+    var GS = window.kmaGereedschap;
+    planEl.insertAdjacentHTML('beforebegin', (!GS || GS.aan('gas') ? gasCard() : '') + (!GS || GS.aan('woop') ? woopCard() : ''));
     // Check-in: per plan in plaats van één keuze.
     var pick = c.querySelector('.kma-ci-pick');
     if (pick && list().length) {
