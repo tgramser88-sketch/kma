@@ -1,8 +1,9 @@
 /*
  * 4.29.0: de volledige IPIP-HEXACO (240 stellingen) voor deelnemers aan het onderzoek, alleen bij hun eerste meetmoment
  * (besluit gebruiker 23-11). De 96 stellingen van de gewone test zijn een deelverzameling; dit bestand voegt de andere 144 toe
- * (10 per facet in totaal). De app zelf (profiel, SWOT, 4 V's, KMA-norm) blijft altijd de 96 gebruiken, zodat scores nooit
- * worden gemengd. De 144 extra antwoorden en de domeinscores over alle 240 gaan alleen mee naar het onderzoek
+ * (10 per facet in totaal). Sinds 4.30 kiest elke cadet kort of lang (kma-boek-meting.js): de meting (normcurve, groeilijn)
+ * rekent op de 240 zodra ze klaar zijn; de zes eigenschappen, SWOT, 4 V's en de KMA-norm in het CVS blijven op de 96, zodat
+ * scores nooit worden gemengd. Naar het onderzoek gaan de 144 extra antwoorden en de domeinscores over alle 240
  * (set 'ipip-hexaco-240'). Bron: Ashton, Lee en Goldberg (2007), ipip.ori.org, publiek domein; Nederlandse vertaling voor deze app.
  * Copyright (c) 2026 T.T.W. Gramser. Alle rechten voorbehouden.
  */
@@ -188,10 +189,12 @@
     document.body.appendChild(ov); document.body.classList.add('kma-test-open');
     function teken() {
       var q = ITEMS[idx], ans = antwoorden(), done = aantal(), cur = ans[q.id];
+      // 4.31: bij de lange test (keuze 'lang', de 96 klaar) loopt de telling door tot 240
+      var deel2 = !aangeboden() && window.kmaMeting && kmaMeting.keuze() === 'lang' && basisKlaar(), off = deel2 ? 96 : 0, tot = ITEMS.length + off;
       ov.innerHTML = '<div class="kma-test-top"><button type="button" class="kma-test-close" aria-label="Pauzeren">' + icon('x') + '<span>Pauzeren</span></button>' +
-        '<span class="kma-test-who">' + (aangeboden() ? 'Onderzoek · ' : 'Lange test · ') + 'aanvullende stellingen</span></div>' +
-        '<div class="kma-test-progress"><span style="width:' + Math.round(done / ITEMS.length * 100) + '%"></span></div>' +
-        '<div class="kma-test-count">Stelling ' + (idx + 1) + ' van ' + ITEMS.length + ' · ' + done + ' beantwoord</div><div class="kma-test-q"></div>' +
+        '<span class="kma-test-who">' + (aangeboden() ? 'Onderzoek · aanvullende stellingen' : deel2 ? 'Over mezelf · lange test, deel 2 van 2' : 'Lange test · aanvullende stellingen') + '</span></div>' +
+        '<div class="kma-test-progress"><span style="width:' + Math.round((done + off) / tot * 100) + '%"></span></div>' +
+        '<div class="kma-test-count">Stelling ' + (idx + 1 + off) + ' van ' + tot + ' · ' + (done + off) + ' beantwoord</div><div class="kma-test-q"></div>' +
         '<div class="kma-test-options">' + LABELS.map(function (l, i) { return '<button type="button" class="kma-test-opt' + (Number(cur) === i + 1 ? ' chosen' : '') + '" data-v="' + (i + 1) + '"><span class="n">' + (i + 1) + '</span>' + l + '</button>'; }).join('') + '</div>' +
         '<div class="kma-test-nav"><button type="button" class="kma-icon-btn" data-nav="prev"' + (idx === 0 ? ' disabled' : '') + '>' + icon('left') + 'Vorige</button>' +
         (done === ITEMS.length ? '<button type="button" class="kma-icon-btn is-primary" data-nav="finish">' + icon('check') + 'Klaar</button>' : '<button type="button" class="kma-icon-btn" data-nav="next">Sla over' + icon('right') + '</button>') + '</div>';

@@ -80,7 +80,7 @@
       MODELLEN.map(function (m) {
         return '<label class="kma-gs-rij"><input type="checkbox" data-gs="' + m.k + '"' + (v.aan[m.k] ? ' checked' : '') + '><span><b>' + esc(m.t) + '</b><small>' + esc(m.h) + (r.indexOf(m.k) >= 0 ? ' · aangeraden' : '') + '</small></span></label>';
       }).join('') +
-      '<p class="muted small">Uitzetten kan altijd; wat je al invulde blijft bewaard.</p></div>';
+      '<p class="muted small">Uitzetten kan altijd; wat je al invulde blijft bewaard. ' + (window.kmaOnderbouwing ? kmaOnderbouwing.link('gereedschap') : '') + '</p></div>';
   }
   function open() {
     if (!window.kmaSheet) return;

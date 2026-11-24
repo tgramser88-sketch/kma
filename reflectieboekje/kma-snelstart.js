@@ -36,8 +36,8 @@
       "titel": "Snel starten · instructeur",
       "intro": "Je werkt mee in het peloton van een teamleider. Je rol (senior of junior) bepaalt wat je ziet.",
       "stappen": [
-        ["Open de uitnodiging", "Je teamleider stuurt je een uitnodiging met een code. Start het CadetVolgSysteem, kies je rol en voer de code in."],
-        ["Leg waarnemingen vast", "Tik op + voor een DTF-notitie bij een cadet: datum, feit en de V. Kort en feitelijk."],
+        ["Koppel in één stap", "Je teamleider geeft je een uitnodigingscode. Start het CadetVolgSysteem en kies je rol; de uitnodiging opent meteen. Kies de gedeelde map (welke map in het peloton maakt niet uit) en voer de code in."],
+        ["Leg waarnemingen vast", "Tik op + voor een DTF-notitie bij een cadet: datum, feit en de V. Kort en feitelijk. Na het opslaan gaat de notitie meteen naar je teamleider."],
         ["Nabespreking na een oefening", "Menu → Nabespreking oefening: vier vragen met de groep. Wat je vastlegt, kan een DTF-feit worden."],
         ["Lees mee (senior)", "Als senior-instructeur open je dossiers en plannen om mee te kijken; je wijzigt niets aan de beoordeling."],
         ["Oefen", "Menu → Oefenen met beoordelen en Oefenen met een gesprek."]

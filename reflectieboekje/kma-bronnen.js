@@ -11,7 +11,7 @@
 (function () {
   'use strict';
   var DATA = /*JSON-START*/{
-  "versie": "2026-11-22",
+  "versie": "2026-11-24",
   "bronnen": {
     "ashton2007": { "apa": "Ashton, M. C., & Lee, K. (2007). Empirical, theoretical, and practical advantages of the HEXACO model of personality structure. *Personality and Social Psychology Review, 11*(2), 150-166.", "doi": "10.1177/1088868306294907" },
     "ashton2007ipip": { "apa": "Ashton, M. C., Lee, K., & Goldberg, L. R. (2007). The IPIP-HEXACO scales: An alternative, public-domain measure of the personality constructs in the HEXACO model. *Personality and Individual Differences, 42*(8), 1515-1526.", "doi": "10.1016/j.paid.2006.10.027" },
@@ -66,7 +66,11 @@
     "theeboom2014": { "apa": "Theeboom, T., Beersma, B., & van Vianen, A. E. M. (2014). Does coaching work? A meta-analysis on the effects of coaching on individual level outcomes in an organizational context. *The Journal of Positive Psychology, 9*(1), 1-18.", "doi": "10.1080/17439760.2013.837499" },
     "zimmerman2002": { "apa": "Zimmerman, B. J. (2002). Becoming a self-regulated learner: An overview. *Theory Into Practice, 41*(2), 64-70.", "doi": "10.1207/s15430421tip4102_2" },
     "theobald2021": { "apa": "Theobald, M. (2021). Self-regulated learning training programs enhance university students' academic performance, self-regulated learning strategies, and motivation: A meta-analysis. *Contemporary Educational Psychology, 66*, Artikel 101976.", "doi": "10.1016/j.cedpsych.2021.101976" },
-    "day2014": { "apa": "Day, D. V., Fleenor, J. W., Atwater, L. E., Sturm, R. E., & McKee, R. A. (2014). Advances in leader and leadership development: A review of 25 years of research and theory. *The Leadership Quarterly, 25*(1), 63-82.", "doi": "10.1016/j.leaqua.2013.11.004" }
+    "day2014": { "apa": "Day, D. V., Fleenor, J. W., Atwater, L. E., Sturm, R. E., & McKee, R. A. (2014). Advances in leader and leadership development: A review of 25 years of research and theory. *The Leadership Quarterly, 25*(1), 63-82.", "doi": "10.1016/j.leaqua.2013.11.004" },
+    "winstone2017": { "apa": "Winstone, N. E., Nash, R. A., Parker, M., & Rowntree, J. (2017). Supporting learners' agentic engagement with feedback: A systematic review and a taxonomy of recipience processes. *Educational Psychologist, 52*(1), 17-37.", "doi": "10.1080/00461520.2016.1207538" },
+    "carless2018": { "apa": "Carless, D., & Boud, D. (2018). The development of student feedback literacy: Enabling uptake of feedback. *Assessment & Evaluation in Higher Education, 43*(8), 1315-1325.", "doi": "10.1080/02602938.2018.1463354" },
+    "landy1980": { "apa": "Landy, F. J., & Farr, J. L. (1980). Performance rating. *Psychological Bulletin, 87*(1), 72-107.", "doi": "10.1037/0033-2909.87.1.72" },
+    "hoge2004": { "apa": "Hoge, C. W., Castro, C. A., Messer, S. C., McGurk, D., Cotting, D. I., & Koffman, R. L. (2004). Combat duty in Iraq and Afghanistan, mental health problems, and barriers to care. *New England Journal of Medicine, 351*(1), 13-22.", "doi": "10.1056/NEJMoa040603" }
   },
   "onderdelen": [
     {
@@ -124,25 +128,43 @@
       "bronnen": ["oettingen2012", "wang2021", "gollwitzer2006"]
     },
     {
-      "id": "hexaco", "apps": ["boek","cvs"], "titel": "Persoonlijkheidstest (HEXACO, IPIP)", "waar": "Boekje: Persoonlijkheidstest (IPIP), 360-observaties, SWOT. CVS: profiel en KMA-normen.",
+      "id": "hexaco", "apps": ["boek","cvs"], "titel": "Persoonlijkheidstest (HEXACO, IPIP)", "waar": "Boekje: Persoonlijkheidstest (IPIP), metingen en groeilijn, 360-observaties, SWOT met bewijs. CVS: profiel, groei en de verdeling in je peloton.",
       "hoofdstukken": ["Persoonlijkheidstest (IPIP)"],
-      "wat": "96 stellingen over zes eigenschappen: Integriteit, Emotionaliteit, Extraversie, Verdraagzaamheid, Consciëntieusheid en Openheid. Medecadetten kunnen dezelfde stellingen over jou invullen.",
+      "wat": "Kort (96 stellingen, ongeveer 12 minuten) of lang (240 stellingen, 30 tot 40 minuten) over zes eigenschappen: Integriteit, Emotionaliteit, Extraversie, Verdraagzaamheid, Consciëntieusheid en Openheid. Je ziet per eigenschap een percentiel en een band. Medecadetten kunnen dezelfde stellingen over jou invullen. De test is standaard privé; jij kiest of je teamleider hem ziet.",
       "waarom": "Het HEXACO-model is gevonden in taalonderzoek in veel talen, waaronder het Nederlands. De zesde eigenschap, Integriteit (Honesty-Humility), voorspelt integer en niet-integer gedrag op het werk beter dan de Big Five. Extraversie hangt samen met het ontstaan van leiderschap. Anderen zien sommige eigenschappen beter dan jijzelf; daarom de observaties.",
       "effect": "Integriteit is in een meta-analyse de sterkste voorspeller van ongewenst gedrag op het werk.",
-      "grenzen": "De app gebruikt een eigen selectie van 96 vrij te gebruiken IPIP-stellingen; de betrouwbaarheid van deze korte versie en de Nederlandse vertaling zijn nog niet onderzocht (de app meet de alfa zodra er genoeg tests zijn). Scores zijn geen percentiel en niet bedoeld voor selectie of beoordeling. Persoonlijkheid verandert langzaam, ook in een militaire opleiding.",
+      "grenzen": "De app gebruikt vrij te gebruiken IPIP-stellingen; de Nederlandse vertaling is nog niet apart onderzocht. De percentielen komen uit een internationale, online normgroep, niet uit KMA-cadetten. Ligt je score binnen één meetfout van een bandgrens, dan meldt de app een grensgeval. De uitslag is niet bedoeld voor selectie of beoordeling. Persoonlijkheid verandert langzaam, ook in een militaire opleiding.",
       "bronnen": ["ashton2007", "ashton2007ipip", "lee2004", "pletzer2019", "judge2002", "vazire2010", "roberts2006", "jackson2012", "johnson2005", "meade2012"]
     },
     {
-      "id": "swot", "apps": ["boek"], "titel": "SWOT en kernkwadranten", "waar": "Boekje: profiel na de persoonlijkheidstest, koppeling bij DTF-feiten.",
-      "hoofdstukken": [],
-      "wat": "Je sterktes, zwaktes, kansen en bedreigingen, afgeleid uit je testuitslag en aan te vullen met je eigen voorbeelden.",
-      "waarom": "Een SWOT maakt een testuitslag concreet en bespreekbaar, en verbindt hem met gedrag in je DTF-feiten.",
-      "effect": "",
-      "grenzen": "De SWOT is een denkhulp uit de strategische planning. Er is weinig onderzoek naar SWOT als methode, en geen naar SWOT voor persoonlijke ontwikkeling. De afleiding uit de test is een keuze van de ontwikkelaar.",
-      "bronnen": ["helms2010"]
+      "id": "meting", "apps": ["boek","cvs"], "titel": "Herhaalde meting en echte verandering", "waar": "Boekje: Persoonlijkheidstest (IPIP) → metingen, Vandaag (meetmoment). CVS: groei in het profiel van de cadet.",
+      "hoofdstukken": ["Persoonlijkheidstest (IPIP)"],
+      "wat": "Je maakt de test aan het begin, midden en eind van je opleiding, gerekend vanaf je eigen start (burger week 1, doorstromer week 8). De groeilijn toont alleen een echte verandering als het verschil groter is dan de meetfout.",
+      "waarom": "Elke test heeft meetfout: twee keer meten geeft nooit precies dezelfde score. De reliable change index berekent of een verschil groter is dan je door toeval zou verwachten. Zo zie je geen groei of achteruitgang die er niet is. Een lange test heeft een kleinere meetfout en laat dus eerder een echte verandering zien.",
+      "effect": "Persoonlijkheid verandert in de jongvolwassenheid gemiddeld wel, vooral in Consciëntieusheid en emotionele stabiliteit (meta-analyse van 92 studies).",
+      "grenzen": "De meetfout is berekend met een geschatte betrouwbaarheid (ongeveer .80 kort, .90 lang), niet met KMA-gegevens. Een opleiding van een paar jaar is kort voor persoonlijkheid; geen verandering is dus een gewone uitkomst.",
+      "bronnen": ["jacobson1991", "roberts2006", "jackson2012"]
     },
     {
-      "id": "leary", "apps": ["boek","cvs"], "titel": "Roos van Leary", "waar": "Boekje: Roos van Leary (hoofdstuk), roos bij DTF-feiten en feedback. CVS: roos per cadet.",
+      "id": "swot", "apps": ["boek"], "titel": "SWOT met bewijs en kernkwadranten", "waar": "Boekje: profiel na de persoonlijkheidstest, gereedschapskist, koppeling bij DTF-feiten.",
+      "hoofdstukken": [],
+      "wat": "Je sterktes, zwaktes, kansen en bedreigingen, afgeleid uit je testuitslag. Bij elk punt zie je het bewijs: je eigen DTF-feiten en of observatoren dezelfde kant op wijzen (bevestigd, niet bevestigd of nog te weinig gegevens).",
+      "waarom": "Een testuitslag is een eerste aanwijzing, geen feit. Door elk punt naast concreet gedrag (DTF) en het oordeel van anderen te leggen, wordt de SWOT toetsbaar en bespreekbaar. Wat niet bevestigd wordt, blijft een vraag in plaats van een etiket.",
+      "effect": "",
+      "grenzen": "De SWOT is een denkhulp uit de strategische planning. Er is weinig onderzoek naar SWOT als methode, en geen naar SWOT voor persoonlijke ontwikkeling. De afleiding uit de test is een keuze van de ontwikkelaar.",
+      "bronnen": ["helms2010", "flanagan1954", "vazire2010"]
+    },
+    {
+      "id": "gereedschap", "apps": ["boek"], "titel": "Gereedschapskist", "waar": "Boekje: Gereedschapskist (menu en de werkboekfasen).",
+      "hoofdstukken": [],
+      "wat": "De vaste basis van het boekje volgt vijf stappen. Hulpmiddelen die je niet altijd nodig hebt (bijvoorbeeld SWOT, roos van Leary, WOOP, GAS) staan in de gereedschapskist. Je pakt ze erbij als ze bij je leervraag passen.",
+      "waarom": "Zelfsturend leren betekent ook zelf kiezen welke aanpak bij je doel past. Minder verplichte onderdelen houdt de vaste route kort en laat ruimte voor wat jij nodig hebt.",
+      "effect": "",
+      "grenzen": "Of een vrije keuze van hulpmiddelen beter werkt dan een vaste volgorde, is voor deze opleiding niet onderzocht. Wat je in een hulpmiddel invulde, blijft bewaard, ook als je het weer opbergt.",
+      "bronnen": ["zimmerman2002", "theobald2021"]
+    },
+    {
+      "id": "leary", "apps": ["boek","cvs"], "titel": "Roos van Leary", "waar": "Boekje: Roos van Leary (via de gereedschapskist), met één hoofdboodschap. CVS: roos per cadet.",
       "hoofdstukken": ["Roos van Leary"],
       "wat": "Interpersoonlijk gedrag op twee assen: boven tegenover onder (invloed) en samen tegenover tegen (verbondenheid). Je zet een gedraging als stip op de roos.",
       "waarom": "De twee assen van het interpersoonlijk circumplex zijn in veel onderzoek teruggevonden. Gedrag lokt gedrag uit: op de samen-tegen-as roept gedrag hetzelfde gedrag op (samen roept samen op, tegen roept tegen op), op de boven-onder-as het tegenovergestelde (boven lokt onder uit). Metingen van moment tot moment laten zien dat twee mensen in een gesprek zo op elkaar inregelen. In de klas hangt ondersteunend gedrag van de leraar samen met een beter klimaat en dwingend gedrag met een slechter; het beste werkt warm en duidelijk tegelijk. Zo kun je bewuster kiezen hoe je een ander beïnvloedt, en een escalatie doorbreken door niet mee te gaan in tegen-gedrag.",
@@ -151,16 +173,16 @@
       "bronnen": ["leary1957", "wiggins1979", "kiesler1983", "orford1986", "sadler2009", "mainhard2011", "barford2015"]
     },
     {
-      "id": "pss", "apps": ["boek"], "titel": "Stresscheck (PSS-10)", "waar": "Boekje: Fitheid & stress (altijd privé).",
+      "id": "pss", "apps": ["boek"], "titel": "Stresscheck (PSS-10)", "waar": "Boekje: Fitheid & stress (altijd privé, nooit zichtbaar in het CVS).",
       "hoofdstukken": ["Fitheid & stress"],
       "wat": "Tien vragen over hoe onvoorspelbaar, oncontroleerbaar en overbelast je de afgelopen maand je leven ervoer. Score van 0 tot 40.",
       "waarom": "De Perceived Stress Scale is de meest gebruikte vragenlijst voor ervaren stress en heeft in een overzichtsstudie goede betrouwbaarheid. De app vergelijkt vooral met je eigen vorige meting en meldt een betrouwbare stijging (8 punten of meer).",
       "effect": "",
-      "grenzen": "Er zijn geen officiële afkappunten; de indeling is afgeleid van Amerikaanse cijfers voor jongvolwassenen. Het is geen diagnose. De uitslag blijft altijd op je eigen toestel.",
-      "bronnen": ["cohen1983", "cohen1988", "cohen2012", "lee2012", "jacobson1991"]
+      "grenzen": "Er zijn geen officiële afkappunten; de indeling is afgeleid van Amerikaanse cijfers voor jongvolwassenen. Het is geen diagnose. De uitslag blijft altijd op je eigen toestel en wordt nooit gedeeld, ook niet met je teamleider: in militaire opleidingen is de drempel om stress te melden hoog als men vreest dat het de beoordeling raakt.",
+      "bronnen": ["cohen1983", "cohen1988", "cohen2012", "lee2012", "jacobson1991", "hoge2004"]
     },
     {
-      "id": "who5", "apps": ["boek"], "titel": "Welzijnscheck (WHO-5)", "waar": "Boekje: Fitheid & stress (altijd privé).",
+      "id": "who5", "apps": ["boek"], "titel": "Welzijnscheck (WHO-5)", "waar": "Boekje: Fitheid & stress (altijd privé, nooit zichtbaar in het CVS).",
       "hoofdstukken": ["Fitheid & stress"],
       "wat": "Vijf uitspraken over je welbevinden in de afgelopen twee weken, van 0 tot 100.",
       "waarom": "De WHO-5 is in een systematisch overzicht van 213 studies valide gebleken als maat voor welbevinden en om te zien wanneer het verstandig is met iemand te praten (50 of lager).",
@@ -183,8 +205,17 @@
       "wat": "Cadetten geven elkaar korte feedbackkaarten (situatie, feit, effect, V, volgende stap). De ontvanger kiest wat hij ermee doet. De kaart volgt het OFGA-gespreksmodel dat de KMA leert (Opening, Feitelijk, Gewenst, Afsluiting): de letters staan bij de velden; de ontvanger sluit af met wat hij ermee gaat doen.",
       "waarom": "Feedback van medestudenten verhoogt prestaties, ook omdat je leert door zelf goed te kijken en te formuleren. Feedback van meerdere kanten (360 graden) helpt alleen als de ontvanger er doelen en acties aan verbindt; daarom de vraag 'Wat ga je ermee doen?'.",
       "effect": "Feedback van medestudenten: g = 0,31 (54 studies). 360-gradenfeedback: gemiddeld klein, groter met doelen en opvolging.",
-      "grenzen": "Eén kaart van één medecadet is één perspectief. Zonder oefening is feedback van medestudenten minder nauwkeurig; vriendschap en groepsdruk kunnen meespelen.",
+      "grenzen": "Eén kaart van één medecadet is één perspectief. Zonder oefening is feedback van medestudenten minder nauwkeurig; vriendschap en groepsdruk kunnen meespelen. De labels 'blinde vlek' en 'verborgen kracht' verschijnen pas vanaf drie observatoren; daarvoor is het verschil zelf de boodschap. Kaarten van medecadetten tellen niet mee in de beoordeling door de teamleider.",
       "bronnen": ["double2020", "smither2005", "hattie2007"]
+    },
+    {
+      "id": "ontvangen", "apps": ["boek","cvs"], "titel": "Oefenen met feedback ontvangen en geven", "waar": "Boekje: Meer → Oefenen met feedback ontvangen. CVS: Meer → Oefenen met een gesprek.",
+      "hoofdstukken": [],
+      "wat": "Korte casussen. De cadet kiest wat hij eerst doet als hij feedback krijgt; de teamleider oefent hoe hij een gesprek over een blinde vlek begint. Na elke keuze zie je waarom.",
+      "waarom": "Feedback werkt pas als de ontvanger er iets mee doet. Feedback ontvangen is een vaardigheid: eerst begrijpen wat de ander bedoelt, dan pas reageren, en daarna één volgende stap kiezen. Wie dat oefent, gebruikt feedback vaker.",
+      "effect": "Een overzicht van 195 studies vond dat oefeningen, gesprekken en hulpmiddelen rond feedback de betrokkenheid van de ontvanger vergroten.",
+      "grenzen": "De casussen zijn door de ontwikkelaar geschreven en niet apart onderzocht. Oefenen in de app vervangt geen echt gesprek.",
+      "bronnen": ["winstone2017", "carless2018", "kluger1996"]
     },
     {
       "id": "nabespreking", "apps": ["boek","cvs"], "titel": "Nabespreking (After Action Review)", "waar": "Boekje: + Nieuw → Nabespreking. CVS: Nabespreking oefening.",
@@ -212,6 +243,24 @@
       "effect": "Frame-of-reference-training: middelgroot tot groot effect op de nauwkeurigheid van beoordelen (twee meta-analyses).",
       "grenzen": "De voorbeeldoordelen in de app zijn niet door de KMA vastgesteld. Het effect blijft alleen als er regelmatig opnieuw wordt gekalibreerd.",
       "bronnen": ["woehr1994", "roch2012"]
+    },
+    {
+      "id": "beoordelaar", "apps": ["cvs"], "titel": "Eerlijk beoordelen: verdeling, spreiding in de tijd en gesprekken", "waar": "CVS: beoordelingsformulier (waarnemingen per maand, je eigen verdeling), Aandacht (gesprek na 6 weken), verdeling in je peloton.",
+      "hoofdstukken": [],
+      "wat": "Bij elke V zie je hoeveel waarnemingen er per maand zijn. Je ziet je eigen verdeling van scores over je cadetten (privé). Na zes weken zonder gesprek met een cadet geeft de app een signaal. De verdeling van een eigenschap in je peloton verschijnt alleen als vijf of meer cadetten hun test delen, zonder namen.",
+      "waarom": "Beoordelaars maken voorspelbare fouten: recente gebeurtenissen wegen te zwaar (recency), sommigen beoordelen structureel mild of streng, en wie weinig ziet, oordeelt op een indruk. Zichtbaar maken waar je waarnemingen vandaan komen en hoe je scoort, helpt die fouten zelf te zien. Regelmatige gesprekken houden de beoordeling verbonden met de ontwikkeling.",
+      "effect": "Training en bewustwording van beoordelaarsfouten verbeteren de nauwkeurigheid van beoordelen (meta-analyse).",
+      "grenzen": "De app toont wat er is; hij corrigeert geen scores. Een milde verdeling kan ook kloppen als je groep echt sterk is. Kaarten van medecadetten tellen niet mee.",
+      "bronnen": ["landy1980", "woehr1994", "vleuten2012"]
+    },
+    {
+      "id": "deelmap", "apps": ["cvs"], "titel": "Samenwerken in het team (deelmap)", "waar": "CVS: Peloton en team, Deelmap, 'Nieuw van je instructeurs'.",
+      "hoofdstukken": [],
+      "wat": "Instructeurs koppelen in één stap met een uitnodiging van de teamleider. Hun DTF-notities gaan meteen versleuteld naar de teamleider, die ziet wat er nieuw is en van wie.",
+      "waarom": "Een beoordeling is betrouwbaarder als ze rust op veel waarnemingen van meerdere beoordelaars, verspreid over de tijd. Hoe minder stappen het delen kost, hoe meer waarnemingen er bij de teamleider aankomen.",
+      "effect": "",
+      "grenzen": "Alleen DTF-notities en (van senior-instructeurs) feedback worden gedeeld; stress en welzijn nooit. Een notitie is één waarneming van één persoon.",
+      "bronnen": ["vleuten2012", "schuwirth2011"]
     },
     {
       "id": "coaching", "apps": ["boek","cvs"], "titel": "Coaching en gesprekken met teamleider en senior-instructeur", "waar": "Boekje: Bereid je gesprek voor, afspraken op Vandaag. CVS: gespreksverslagen (teamleider), meelezen en feedback (senior-instructeur).",

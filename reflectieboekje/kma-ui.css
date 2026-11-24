@@ -562,3 +562,7 @@ body.kma-has-bottombar .kma-top { bottom: calc(100px + env(safe-area-inset-botto
 .kma-snel-stappen li span { font-size: 13px; color: var(--text-muted); }
 .kma-snel h4 { margin: 12px 0 4px; }
 .kma-snel-rechten { margin: 0; padding-left: 18px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+/* 4.31: deelmap voor instructeurs */
+.kma-invite-steps li.ok { text-decoration: line-through; opacity: .7; }
+.kma-staf-nieuw { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin: 0 0 12px; padding: 12px 14px; border-radius: 12px; background: rgba(47, 158, 91, .14); border: 1px solid rgba(47, 158, 91, .35); }
+.kma-staf-nieuw div { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }

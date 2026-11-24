@@ -11,25 +11,25 @@
   function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   /* Per hoofdstuk (op titel): wat doe je hier, waarom, en welk onderdeel van de onderbouwing ('' = de hele pagina). */
   var OPBOUW = {
-    'Cadet Informatie & Profiel': ['Vul je gegevens in. Dit is de basis van je dossier en je portfolio.', 'Je teamleider weet zo wie je bent en waar je vandaan komt.', ''],
+    'Cadet Informatie & Profiel': ['Vul je gegevens in, ook hoe je instroomt (burger of doorstromer) en wanneer je begon. Dit is de basis van je dossier en je portfolio.', 'Je teamleider weet zo wie je bent en waar je vandaan komt. Je startdatum bepaalt je opleidingsweek en je meetmomenten; je geslacht wordt nooit gedeeld.', 'meting'],
     'Introductie & Drijfveren': ['Beantwoord de vragen over wat je drijft en wat je wilt leren.', 'Weten wat je wilt is de eerste stap van zelfsturend leren: vooruitdenken, doen, terugkijken.', 'zelfregulatie'],
     'Ontwikkelbiografie Tijdlijn': ['Zet belangrijke gebeurtenissen uit je leven op een lijn en schrijf op wat ze met je deden.', 'Leiderschap groeit via ervaring en zelfbeeld; je levenslijn laat zien waar je vandaan komt.', 'coaching'],
-    'Persoonlijkheidstest (IPIP)': ['Maak de test (96 stellingen, ongeveer 15 minuten) en vraag medecadetten om je te observeren.', 'Je ziet je sterke kanten en valkuilen op zes eigenschappen; anderen zien soms wat jij mist.', 'hexaco'],
+    'Persoonlijkheidstest (IPIP)': ['Kies kort (96 stellingen, ongeveer 12 minuten) of lang (240 stellingen, 30 tot 40 minuten) en vraag medecadetten om je te observeren. Herhaal de test op je meetmomenten.', 'Je ziet je sterke kanten en valkuilen op zes eigenschappen, met een percentiel uit een normgroep; anderen zien soms wat jij mist. Alleen een verschil groter dan de meetfout telt als echte groei. De test is standaard privé.', 'hexaco'],
     'Ik en de Gedragscode Defensie': ['Beschrijf per V wat die waarde voor jou betekent, met een eigen voorbeeld.', 'De 4 V\'s zijn de maatstaf bij je beoordeling; met concrete voorbeelden worden ze bespreekbaar.', 'dtf'],
     'Zelfbeoordelingsformulier KMA': ['Beoordeel jezelf op het officiële formulier, met voorbeelden uit je DTF-logboek.', 'Een oordeel dat op feiten rust kun je naast dat van je teamleider leggen en bespreken.', 'datapunten'],
     'Ik als officier': ['Beschrijf wat voor officier je wilt worden.', 'Een helder beeld van waar je naartoe werkt geeft richting aan je leervragen.', 'zelfregulatie'],
-    'SMART Leervraag': ['Schrijf één leervraag, maak een als-dan-plan en check elke week in.', 'Een concreet doel met een als-dan-plan vergroot de kans dat je het in de situatie ook echt doet.', 'smart'],
+    'SMART Leervraag': ['Schrijf één leervraag, maak een als-dan-plan en check elke week in. Pak er gereedschap bij als het past (SWOT, roos, WOOP, GAS).', 'Een concreet doel met een als-dan-plan vergroot de kans dat je het in de situatie ook echt doet. Een plan bijstellen na feedback telt als vooruitgang.', 'smart'],
     'Zelfreflectie Leervraag (5G-T)': ['Kies een situatie en loop de vier stappen door: 5G, verdieping, invloed en toekomst.', 'Je toetst je gedachte aan de feiten en kiest bewust wat je de volgende keer doet.', '5gt'],
     'Procesreflectie (Korthagen)': ['Loop een situatie door in vijf fasen en eindig met iets om uit te proberen.', 'Reflectie levert pas iets op als ze eindigt in ander gedrag.', 'korthagen'],
     'Probleem- en Behoefteanalyse': ['Ontleed een probleem: wat speelt er, wat heb je nodig en wat ga je doen?', 'Eerst ontleden en dan kiezen voorkomt dat je het verkeerde probleem oplost.', ''],
     'Datum-Tijd-Feit Logboek': ['Leg na een gebeurtenis kort vast: datum, tijd, wat er feitelijk gebeurde en bij welke V het hoort.', 'Feiten kun je bespreken en verbeteren, oordelen niet. Ze zijn je bewijs bij de beoordeling.', 'dtf'],
     'Begrippenlijst & Vakjargon': ['Zoek begrippen op of voeg je eigen begrippen toe.', 'Een gedeelde taal maakt feedback en gesprekken duidelijker.', ''],
     'Voorbereiding Cadetbeoordeling': ['Bekijk je datapunten per V en bereid je beoordelingsgesprek voor.', 'Een beoordeling rust op veel observaties uit meerdere bronnen; hier zie je wat je teamleider van je weet.', 'datapunten'],
-    'Fitheid & stress': ['Houd je trainingen bij en doe af en toe de stress- en welzijnscheck. Dit blijft altijd privé.', 'Je ziet op tijd of de druk oploopt, vergeleken met je eigen vorige meting.', 'pss'],
+    'Fitheid & stress': ['Houd je trainingen bij en doe af en toe de stress- en welzijnscheck. Dit blijft altijd privé en is nooit zichtbaar in het CadetVolgSysteem.', 'Je ziet op tijd of de druk oploopt, vergeleken met je eigen vorige meting. Omdat niemand anders het ziet, kun je eerlijk invullen.', 'pss'],
     'Toetsing en examinering DKOO': ['Zoek op hoe toetsing en examinering in de opleiding werken.', 'Weten hoe je beoordeeld wordt helpt je gericht te leren en datapunten te verzamelen.', 'datapunten'],
     'Mijn groei & ontwikkeling': ['Kijk terug: wat is er over de tijd veranderd?', 'Terugkijken is de derde stap van zelfsturend leren; zonder terugblik blijft groei onzichtbaar.', 'zelfregulatie'],
     'Curriculum vitae': ['Houd je opleidingen, functies en prestaties bij.', 'Je portfolio en latere sollicitaties beginnen hier.', ''],
-    'Roos van Leary': ['Bekijk hoe jij en anderen je gedrag op de roos zetten.', 'Gedrag lokt gedrag uit; als je je positie kent, kun je bewuster kiezen hoe je een ander beïnvloedt.', 'leary']
+    'Roos van Leary': ['Bekijk hoe jij en anderen je gedrag op de roos zetten (ook via de gereedschapskist). Lees eerst de hoofdboodschap.', 'Gedrag lokt gedrag uit; als je je positie kent, kun je bewuster kiezen hoe je een ander beïnvloedt. Een verschil met anderen heet pas blinde vlek vanaf drie observatoren.', 'leary']
   };
   /* Leertaken uit het O&iT-voorstel DKOO die bij dit hoofdstuk horen (4.18.0, blok R0; alleen volledig of deels in de app). */
   var LEERTAKEN = {

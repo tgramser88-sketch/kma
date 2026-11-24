@@ -170,7 +170,7 @@
   function h240Html() {
     var X = window.kmaHex240; if (!X || !X.aangeboden()) return '';
     var n = X.aantal();
-    return '<div class="kma-ok-box kma-ok-240"><p><b>Eenmalig: 144 aanvullende stellingen</b></p><p class="small">Alleen bij je eerste meetmoment. Samen met je 96 stellingen is dat de volledige test (240), waarmee de onderzoeker de onderdelen van je persoonlijkheid nauwkeuriger kan meten. Ongeveer 20 minuten, je kunt pauzeren. Vrijwillig: je profiel in het boekje verandert er niet door.</p>' +
+    return '<div class="kma-ok-box kma-ok-240"><p><b>Eenmalig: 144 aanvullende stellingen</b></p><p class="small">Alleen bij je eerste meetmoment. Samen met je 96 stellingen is dat de volledige test (240), waarmee de onderzoeker de onderdelen van je persoonlijkheid nauwkeuriger kan meten. Ongeveer 20 minuten, je kunt pauzeren. Vrijwillig. Je zes eigenschappen, je SWOT en je 4 V\'s blijven op de 96; je meting (normgroep en groeilijn) wordt er nauwkeuriger door.</p>' +
       '<p class="small">' + (X.klaar() ? icon('check') + 'Klaar: gaat mee met je volgende verzending.' : n + ' van 144 beantwoord.') + '</p>' +
       (X.klaar() ? '' : '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-ok="h240">' + (n ? 'Verder met de stellingen' : 'Start de 144 stellingen') + '</button></div>') + '</div>';
   }

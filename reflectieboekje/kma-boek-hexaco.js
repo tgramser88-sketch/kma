@@ -60,12 +60,14 @@
 
     function render() {
       var q = qs[idx], done = H.answeredCount(ans), cur = ans[q.id];
+      // 4.31: bij de lange test telt de app tot 240 (deel 1: deze 96, deel 2: de 144 aanvullende)
+      var lang = mode === 'self' && window.kmaMeting && kmaMeting.keuze() === 'lang', tot = lang ? 240 : qs.length;
       overlay.innerHTML =
         '<div class="kma-test-top">' +
         '<button type="button" class="kma-test-close" aria-label="Pauzeren">' + icon('x') + '<span>Pauzeren</span></button>' +
-        '<span class="kma-test-who">' + (mode === 'self' ? 'Over mezelf' : 'Over ' + esc(cadetName()) + ' · door ' + esc(obs.name)) + '</span></div>' +
-        '<div class="kma-test-progress"><span style="width:' + Math.round(done / qs.length * 100) + '%"></span></div>' +
-        '<div class="kma-test-count">Stelling ' + (idx + 1) + ' van ' + qs.length + ' · ' + done + ' beantwoord</div>' +
+        '<span class="kma-test-who">' + (mode === 'self' ? 'Over mezelf' + (lang ? ' · lange test, deel 1 van 2' : '') : 'Over ' + esc(cadetName()) + ' · door ' + esc(obs.name)) + '</span></div>' +
+        '<div class="kma-test-progress"><span style="width:' + Math.round(done / tot * 100) + '%"></span></div>' +
+        '<div class="kma-test-count">Stelling ' + (idx + 1) + ' van ' + tot + ' · ' + done + ' beantwoord</div>' +
         '<div class="kma-test-q"></div>' +
         '<div class="kma-test-options">' + LABELS.map(function (l, i) {
           return '<button type="button" class="kma-test-opt' + (Number(cur) === i + 1 ? ' chosen' : '') + '" data-v="' + (i + 1) + '"><span class="n">' + (i + 1) + '</span>' + l + '</button>';
@@ -236,11 +238,12 @@
 
   function emptyHtml() {
     var n = H.answeredCount(hexacoSelfAnswers), total = hexacoQuestionsSelf.length;
+    var lang = window.kmaMeting && kmaMeting.keuze() === 'lang';
     return '<div class="kma-hex">' + (window.kmaMeting ? kmaMeting.keuzeHtml() : '') + '<div class="kma-card-block kma-empty-hex">' + icon('chart', 'big') +
       '<h4>' + (n ? 'Ga verder met je persoonlijkheidstest' : 'Je hebt de test nog niet gedaan') + '</h4>' +
-      '<p>' + total + ' korte stellingen · ongeveer 12 minuten · één stelling per scherm. Je kunt altijd pauzeren; je antwoorden worden bewaard.</p>' +
+      '<p id="kma-hex-omvang">' + (lang ? '240 korte stellingen · 30 tot 40 minuten, in twee delen (96 en daarna 144 aanvullende)' : total + ' korte stellingen · ongeveer 12 minuten') + ' · één stelling per scherm. Je kunt altijd pauzeren; je antwoorden worden bewaard.</p>' +
       (n ? '<div class="kma-test-progress inline"><span style="width:' + Math.round(n / total * 100) + '%"></span></div><p class="muted">' + n + ' van ' + total + ' beantwoord</p>' : '') +
-      '<button type="button" class="kma-icon-btn is-primary" data-act="start">' + (n ? 'Ga verder bij stelling ' + (n + 1) : 'Start de test') + icon('right') + '</button>' +
+      '<button type="button" class="kma-icon-btn is-primary" data-act="start" id="kma-hex-start">' + (n ? 'Ga verder bij stelling ' + (n + 1) : (lang ? 'Start de lange test' : 'Start de korte test')) + icon('right') + '</button>' +
       '<p class="muted">Je profiel, je SWOT en de vertaling naar de 4 V\'s verschijnen hier zodra je klaar bent.</p></div>' + observersHtml() + '</div>';
   }
 

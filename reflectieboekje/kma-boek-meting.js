@@ -93,9 +93,10 @@
     Object.keys(hexacoSelfAnswers).forEach(function (k) { delete hexacoSelfAnswers[k]; });
     try { kmaStore.setItem('kma-pers-self-ans', JSON.stringify(hexacoSelfAnswers)); var DB = /** @type {any} */ (window).dbSet; if (typeof DB === 'function') DB('kma-pers-self-ans', hexacoSelfAnswers); } catch (e) { /* opslag */ }
     if (window.kmaHex240 && kmaHex240.wis) kmaHex240.wis();
-    kmaStore.setItem('kma-x-hex-keuze', set === 'lang' ? 'lang' : 'kort');
+    kmaStore.setItem('kma-x-hex-keuze', JSON.stringify(set === 'lang' ? 'lang' : 'kort'));
   }
-  function keuze() { return kmaStore.getItem('kma-x-hex-keuze') === 'lang' ? 'lang' : 'kort'; }
+  // 4.31: de keuze staat als JSON ('"lang"'), zodat hij meegaat in de back-up (kmaCollectExtras leest alleen JSON); de oude vorm (lang) blijft gelden
+  function keuze() { var v = kmaStore.getItem('kma-x-hex-keuze'); return v === 'lang' || v === '"lang"' ? 'lang' : 'kort'; }
   function titel() { try { var i = steps.findIndex(function (s) { return s.widget === 'hexaco'; }); return i >= 0 ? steps[i].title : ''; } catch (e) { return ''; } }
   /* ---------- Meetmomenten vanaf de eigen start ---------- */
   /** @type {Array<[string, number, number]>} */
@@ -150,7 +151,7 @@
     }
     return '<div class="kma-card-block kma-metingen" id="kma-metingen"><h4>' + icon('trend') + 'Metingen</h4>' + mm + zonderStart + lijn +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-meting="nieuw-kort">Nieuwe meting: kort</button><button type="button" class="kma-icon-btn" data-meting="nieuw-lang">Nieuwe meting: lang</button></div>' +
-      '<p class="muted small">Bij een nieuwe meting blijven je vorige antwoorden bewaard.</p></div>';
+      '<p class="muted small">Bij een nieuwe meting blijven je vorige antwoorden bewaard. ' + (window.kmaOnderbouwing ? kmaOnderbouwing.link('meting') : '') + '</p></div>';
   }
   function keuzeHtml() {
     var k = keuze(), c = function (w, t, s) { return '<label class="kma-instroom-keuze' + (k === w ? ' on' : '') + '"><input type="radio" name="kma-hex-keuze" value="' + w + '"' + (k === w ? ' checked' : '') + '><span><b>' + t + '</b><small>' + s + '</small></span></label>'; };
@@ -169,8 +170,12 @@
   }
   document.addEventListener('change', function (e) {
     var t = e.target; if (!t || t.name !== 'kma-hex-keuze') return;
-    kmaStore.setItem('kma-x-hex-keuze', t.value === 'lang' ? 'lang' : 'kort');
+    kmaStore.setItem('kma-x-hex-keuze', JSON.stringify(t.value === 'lang' ? 'lang' : 'kort'));
     document.querySelectorAll('#kma-hex-keuze .kma-instroom-keuze').forEach(function (l) { var i = l.querySelector('input'); l.classList.toggle('on', !!(i && i.checked)); });
+    // 4.31: de uitleg en de startknop volgen meteen de keuze
+    var lang = t.value === 'lang', om = document.getElementById('kma-hex-omvang'), st = document.getElementById('kma-hex-start');
+    if (om) om.textContent = (lang ? '240 korte stellingen · 30 tot 40 minuten, in twee delen (96 en daarna 144 aanvullende)' : '96 korte stellingen · ongeveer 12 minuten') + ' · één stelling per scherm. Je kunt altijd pauzeren; je antwoorden worden bewaard.';
+    if (st && /^Start de/.test(st.textContent || '')) { var ic = st.querySelector('svg, .kma-ic, i'); st.textContent = lang ? 'Start de lange test' : 'Start de korte test'; if (ic) st.appendChild(ic); }
   });
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-meting]'); if (!b) return;

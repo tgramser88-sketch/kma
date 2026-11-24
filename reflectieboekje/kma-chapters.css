@@ -1979,6 +1979,9 @@ body.kma-cvs-dash #kma-fab { bottom: calc(76px + env(safe-area-inset-bottom)) !i
 .kma-instroom-keuze.on { border: 2px solid var(--accent-gold-text); background: var(--bg-card-deep); }
 .kma-instroom-keuze input { margin-top: 3px; accent-color: var(--accent-gold-text); }
 .kma-instroom-keuze span { display: flex; flex-direction: column; gap: 2px; }
+/* 4.31: eigen tekstkleur, zodat de keuze niet de (overgaande) kleur van de kaart erft (contrast in donker) */
+.kma-instroom-keuze b { color: var(--text-primary); }
+.kma-instroom-keuze small { color: var(--text-primary); }
 .kma-instroom-keuze small, .kma-instroom-veld small { font-size: 12px; }
 .kma-instroom-veld { display: flex; flex-direction: column; gap: 4px; font-weight: 600; font-size: 14px; }
 .kma-instroom-veld input, .kma-instroom-veld select { font-weight: 400; }

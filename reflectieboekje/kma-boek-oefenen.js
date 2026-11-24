@@ -41,7 +41,7 @@
       '<div class="kma-sheet-title">Feedback ontvangen</div><div class="kma-code-body">' +
       '<p class="muted small">Casus ' + (idx + 1) + ' van ' + CASUS.length + '</p><p><b>' + esc(c.s) + '</b></p><p>' + esc(c.q) + '</p>' +
       c.o.map(function (x, i) { return '<button type="button" class="kma-oef-opt' + (keuze === i ? (x[1] ? ' goed' : ' fout') : '') + '" data-oef="' + i + '"' + (keuze >= 0 ? ' disabled' : '') + '>' + esc(x[0]) + '</button>'; }).join('') +
-      (o ? '<p class="kma-oef-uitleg" role="status">' + (o[1] ? '<b>Goed.</b> ' : '') + esc(String(o[2]).replace(/^Goed\.\s*/, '')) + '</p>' : '') +
+      (o ? '<p class="kma-oef-uitleg" role="status">' + (o[1] ? '<b>Goed.</b> ' : '') + esc(String(o[2]).replace(/^Goed\.\s*/, '')) + '</p>' + (window.kmaOnderbouwing ? kmaOnderbouwing.link('ontvangen') : '') : '') +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-oef-x>Sluiten</button>' +
       (o ? (idx < CASUS.length - 1 ? '<button type="button" class="kma-icon-btn is-primary" data-oef-volgende>Volgende casus</button>' : '<button type="button" class="kma-icon-btn is-primary" data-oef-x>Klaar</button>') : '') + '</div>' +
       (idx === CASUS.length - 1 && o ? '<p class="muted small">Mijlpaal: je krijgt een insigne als je een plan bijstelt na feedback, niet voor het aantal invoeringen.' + (planBijgesteld() ? ' Die heb je al.' : '') + '</p>' : '') +

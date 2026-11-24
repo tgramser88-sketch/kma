@@ -41,7 +41,10 @@
     { sinds: '4.30', wat: 'Nieuwe meting: de vorige antwoorden gaan met de meting mee de lijst in (niets wordt gewist)', waar: 'bij een nieuwe meting', code: 'kma-boek-meting.js: nieuw · test_meting' },
     { sinds: '4.30', wat: 'Deelmap: map met code i.p.v. Peoplesoft-nummer; oude mappen worden nog gelezen en beschreven', waar: 'bij delen en inlezen', code: 'kma-deelmap.js: psHash, psDirOud · test_deelmap' },
     { sinds: '4.30', wat: 'Pincode op de website: leesbare pincode wordt omgezet naar een afgeleide code', waar: 'bij de eerste keer goed invoeren', code: 'kma-bridge.js: kmaPin (web) · test_pinweb' },
-    { sinds: '4.30', wat: 'CVS: stress en welzijn uit oude dossiers blijven bewaard maar worden niet getoond', waar: 'bij lezen', code: 'kma-volg-visuals.js, kma-volg-aandacht.js · test_welzijn_cvs' }
+    { sinds: '4.30', wat: 'CVS: stress en welzijn uit oude dossiers blijven bewaard maar worden niet getoond', waar: 'bij lezen', code: 'kma-volg-visuals.js, kma-volg-aandacht.js · test_welzijn_cvs' },
+    { sinds: '4.31', wat: 'Deelmap CVS: niveau van de gekozen map (hoofdmap, pelotons of peloton) en "nieuw van je instructeurs"; oude koppelingen zonder niveau werken als hoofdmap', waar: 'bij koppelen en synchroniseren', code: 'kma-deelmap.js: niveau, pelBase, kmaStafNieuw · test_peloton' },
+    { sinds: '4.31', wat: 'Keuze korte/lange test als JSON bewaard, zodat hij meegaat in de back-up; de oude vorm (lang) blijft gelden', waar: 'bij lezen en bij de volgende keuze', code: 'kma-boek-meting.js: keuze · test_controle431' },
+    { sinds: '4.31', wat: 'Deelmap CVS: kiest een instructeur later een andere laag van de map, dan zoekt de app het niveau opnieuw (niets gaat verloren)', waar: 'bij synchroniseren', code: 'kma-deelmap.js: findMyPeloton, eigenSleutel · test_controle431' }
   ];
 
   var IMG = /^data:image\/(png|jpe?g|webp|gif|bmp|heic|heif);base64,[A-Za-z0-9+/=\s]+$/i;
