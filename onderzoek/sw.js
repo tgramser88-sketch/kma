@@ -1,8 +1,8 @@
-/* KMA web-app met wachtwoord. Versie: bd54ff3c3a6d
+/* KMA web-app met wachtwoord. Versie: a9913e533f2f
    De app-bestanden staan versleuteld op de server (*.enc). Deze service worker ontsleutelt ze op het toestel
    met de sleutel die bij het inloggen is afgeleid van het wachtwoord. Zonder sleutel: naar login.html. */
-const APP = 'onderzoek', CACHE = 'kma-' + APP + '-bd54ff3c3a6d', START = 'onderzoek.html';
-const ENC = new Set(["fonts/DejaVuSans-Bold.ttf","fonts/DejaVuSans.ttf","fonts/LICENSE-DejaVu.txt","fonts/fonts.css","kma-bridge.js","kma-embleem.svg","kma-oanalyse.js","kma-odata.js","kma-oexport.js","kma-ografiek.js","kma-onderzoek-core.js","kma-oui.js","kma-stats.js","kma-versie.js","kma-web-veilig.js","kma-web.js","onderzoek.html","qrcode.min.js"]);
+const APP = 'onderzoek', CACHE = 'kma-' + APP + '-a9913e533f2f', START = 'onderzoek.html';
+const ENC = new Set(["fonts/DejaVuSans-Bold.ttf","fonts/DejaVuSans.ttf","fonts/LICENSE-DejaVu.txt","fonts/fonts.css","kma-bridge.js","kma-embleem.svg","kma-oanalyse.js","kma-odata.js","kma-oexport.js","kma-ografiek.js","kma-onderzoek-core.js","kma-oui.js","kma-ouitleg.js","kma-overslag.js","kma-stats.js","kma-versie.js","kma-web-veilig.js","kma-web.js","onderzoek.html","qrcode.min.js"]);
 const PLAIN = ["login.html","manifest.webmanifest","icon-192.png","icon-512.png","icon-maskable.png","apple-touch-icon.png"];
 const TYPES = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8', svg: 'image/svg+xml', json: 'application/json',
   png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', mp4: 'video/mp4', pdf: 'application/pdf', ttf: 'font/ttf', woff2: 'font/woff2', txt: 'text/plain; charset=utf-8' };

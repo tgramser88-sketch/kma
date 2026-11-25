@@ -51,8 +51,8 @@
         ["Maak een sleutel", "Stap 1: maak een sleutelpaar met een wachtwoord. Noteer de vingerafdruk; die vergelijken cadetten met de jouwe."],
         ["Geef de sleutel", "Laat de QR-code scannen of geef het bestand. Pas als een cadet zelf de sleutel invoert, vraagt het boekje toestemming."],
         ["Lees de gegevens in", "Stap 2: Deelmap inlezen (map onderzoek/inbox) of kies bestanden. Daarna kun je de inbox opruimen."],
-        ["Voer de analyses uit", "Stap 3: beschrijvend, verdelingen, hypothesen, verandering, deelname en power. Groepen kleiner dan vijf worden onderdrukt."],
-        ["Exporteer", "Stap 4: CSV, SPSS-syntax, R-script en preregistratie. Geen namen, nummers of tekst."]
+        ["Voer de analyses uit", "Stap 3: de uitkomsten per onderzoeksvraag, met knoppen naar elke vraag. Per analyse: wat we meten, wat we vonden en wat dat betekent. Groepen kleiner dan vijf worden onderdrukt."],
+        ["Exporteer", "Stap 4: Verslag (PDF) als wetenschappelijk artikel, CSV, SPSS-syntax, R-script en preregistratie. Geen namen, nummers of tekst."]
       ],
       "rechten": ["Er gaan nooit namen, Peoplesoft-nummers of vrije tekst mee.", "Geslacht staat alleen in totalen, nooit per cadet.", "Uitkomsten worden nooit gebruikt voor beslissingen over een cadet."]
     }
