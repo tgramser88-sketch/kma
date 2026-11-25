@@ -295,7 +295,10 @@
   var team = function () { return getJ(TK, null); };
   var role = function () { return window.kmaRole ? kmaRole() : 'teamleider'; };
   var me = function () { return window.kmaMe ? kmaMe() : ''; };
-  var cps = function (c) { return (c && c.deelPs) || (typeof cvsPeoplesoft === 'function' && cvsPeoplesoft((c.data || {}).answers)) || ''; };
+  // 4.32.1: Peoplesoft-nummer altijd zonder spaties vergelijken (de cadet typt soms "123 4567"); anders vielen DTF-notities van instructeurs weg
+  var normPs = function (x) { return String(x == null ? '' : x).replace(/\s/g, ''); };
+  var cps = function (c) { return normPs((c && c.deelPs) || (typeof cvsPeoplesoft === 'function' && cvsPeoplesoft((c.data || {}).answers)) || ''); };
+  var nmKey = function (n) { return String(n || '').trim().toLowerCase().replace(/\s+/g, ' '); };
   function hex(n) { return Array.prototype.map.call(crypto.getRandomValues(new Uint8Array(n)), function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''); }
 
   /* ---------------- Peloton ---------------- */
@@ -434,7 +437,7 @@
     return sha(JSON.stringify(cmp)).then(function (h) {
       if (S2().staffHash === h) return false;
       return encK(JSON.stringify(p), sk).then(function (txt) {
-        if (!F.write(base() + 'staf/' + myId() + '.json', txt)) return false;
+        if (!F.write(base() + 'staf/' + myId() + '.json', txt)) { if (role() !== 'teamleider') toast('Je notities konden niet in de deelmap worden gezet. Controleer de deelmap (⋮ → Deelmap).', 'error'); return false; }
         var s = S2(); s.staffHash = h; save2(s); return true;
       });
     });
@@ -454,7 +457,7 @@
   function pullStaff() {
     var sk = staffKey(); if (!sk || !window.kmaImportColleague) return Promise.resolve(0);
     var files = F.list(base() + 'staf').filter(function (f) { return !f.dir && /\.json$/.test(f.name); });
-    var seen = S2().staffSeen || {}, n = 0, tl = role() === 'teamleider', staff = staffList();
+    var seen = S2().staffSeen || {}, fout = S2().staffFout || {}, n = 0, tl = role() === 'teamleider', staff = staffList();
     return files.reduce(function (pr, f) {
       return pr.then(function () {
         var id = f.name.replace(/\.json$/, '');
@@ -475,7 +478,7 @@
               else (d.cadets || []).forEach(function (e) { delete e.plans; });
             }
             // only cadets of this peloton that are already known here; no empty dossiers
-            d.cadets = (d.cadets || []).filter(function (e) { return e && e.peoplesoft && cadets.some(function (c) { return String(cps(c)) === String(e.peoplesoft); }); })
+            d.cadets = (d.cadets || []).filter(function (e) { var q = e && normPs(e.peoplesoft); return e && cadets.some(function (c) { return q ? cps(c) === q : nmKey(c.name) === nmKey(e.name) && !!e.name; }); })
               .map(function (e) { var x = Object.assign({}, e); delete x.data; return x; });
             if (d.cadets.length) {
               var tq = window.kmaToast; window.kmaToast = function () {};
@@ -484,12 +487,12 @@
               // 4.31 (punt 3): nieuwe DTF-notities van instructeurs bewaren tot de teamleider ze heeft gezien (per schrijver)
               if (voor) nieuwBij(voor, d.from && d.from.name || 'Instructeur');
             }
-            seen[id] = h; n++;
-          }, function () {});
+            seen[id] = h; n++; if (fout[id]) delete fout[id];
+          }, function () { fout[id] = new Date().toISOString(); });   // 4.32.1: niet te openen (andere teamsleutel): laten zien bij Peloton en team
         });
       });
     }, Promise.resolve()).then(function () {
-      var s = S2(); s.staffSeen = seen; save2(s);
+      var s = S2(); s.staffSeen = seen; s.staffFout = fout; save2(s);
       if (tl) saveStaff(staff);
       return n;
     });
@@ -591,7 +594,8 @@
   function acceptFile(o, code) { return KMAX.decrypt(o, [code]).then(function (txt) { return { b: kmaLees(txt), path: '' }; }); }
 
   function staffRow(x) {
-    var st = x.seen ? 'actief · ' + esc(ago(x.seen)) : 'uitgenodigd';
+    var fout = (S2().staffFout || {})[x.id];
+    var st = fout ? '<b class="kma-staff-fout">bestand niet te openen: tik op Nieuwe code en laat de instructeur die gebruiken</b>' : x.seen ? 'actief · ' + esc(ago(x.seen)) : 'uitgenodigd';
     return '<div class="kma-staff-row" data-sid="' + esc(x.id) + '"><div><strong>' + esc(((x.rank ? x.rank + ' ' : '') + x.name).trim()) + '</strong><small>' + esc(LABEL[x.role] || x.role) + ' · ' + st + '</small></div>' +
       '<button type="button" class="kma-chip-btn" data-s="again">Nieuwe code</button><button type="button" class="kma-chip-btn" data-s="del">Verwijderen</button></div>';
   }

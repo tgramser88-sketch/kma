@@ -1227,6 +1227,7 @@ details.kma-tp-blok > summary em { font-style: normal; font-weight: 600; font-si
 .kma-staff-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 12px; }
 .kma-staff-row > div { flex: 1; min-width: 0; display: grid; }
 .kma-staff-row small { color: var(--text-muted); font-size: 13px; }
+.kma-staff-row small .kma-staff-fout { color: var(--danger-color, #b33a3a); font-weight: 600; }
 .kma-invite-code { margin: 12px 0; text-align: center; }
 .kma-invite-code code { display: inline-block; white-space: nowrap; font-size: clamp(18px, 6.5vw, 26px); letter-spacing: .08em; padding: 12px 18px; border-radius: 12px; border: 2px solid var(--accent-gold); font-weight: 700; user-select: all; }
 .kma-invite-steps { margin: 8px 0 12px 18px; padding: 0; display: grid; gap: 6px; font-size: 14px; }
