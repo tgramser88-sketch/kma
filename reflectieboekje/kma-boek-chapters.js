@@ -101,6 +101,13 @@
       else if (Array.isArray(out['hex-metingen'])) out['hex-metingen'] = out['hex-metingen'].map(function (m) { return m && { datum: m.datum, set: m.set, d: m.d }; }).filter(Boolean);
       // 4.30: eigen hulpgegevens blijven op de telefoon
       delete out.fouten; delete out['opslag-melding']; delete out.oefenen;
+      /* 4.33.1: sleutels, concepten en schermstanden blijven ook op de telefoon. Voorheen gingen o.a. de sleutel van de
+         reservekopie, de privésleutel en de kaartenbak van Kameraden en niet-opgeslagen concepten mee naar het CVS. Ze
+         maakten het dossier bovendien "veranderd" zodra ze voor het eerst werden aangemaakt, waardoor het opnieuw werd gedeeld. */
+      ['kameraden', 'reserve-sleutel', 'reserve-kopie', 'reserve-toestel', 'reserve-laatste', 'concepten', 'laatste-keuze', 'lijst-uitgebreid',
+        'startwizard', 'snelstart-gezien', 'demo', 'hex-keuze'].forEach(function (k) { delete out[k]; });
+      // vangnet: nooit iets met een sleutel in JWK-vorm (zoals een privésleutel) delen
+      Object.keys(out).forEach(function (k) { try { if (/"kty"\s*:/.test(JSON.stringify(out[k]))) delete out[k]; } catch (e) { delete out[k]; } });
     }
     return out;
   }

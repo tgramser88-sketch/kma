@@ -1034,14 +1034,29 @@
     }
     zet(); return true;
   };
+  setTimeout(function () { try { if (schoonExtras() && typeof saveCVS === 'function') saveCVS(); } catch (e) { /* geen dossiers */ } }, 1500);
   setTimeout(function () { window.kmaDeelSync(false); }, 3000);
   setInterval(function () { if (!document.hidden) window.kmaDeelSync(false); }, 90000);
   autoBij();
+  /* 4.33.1: oudere boekjes stuurden sleutels en concepten van de cadet mee in extras (o.a. de reservekopiesleutel en de
+     privésleutel van Kameraden). Die horen niet bij de teamleider: bij het opslaan worden ze uit de dossiers gehaald. De rest
+     van extras (zoals fb-reply, plannen, cv) blijft staan. */
+  var GEHEIM_X = ['kameraden', 'reserve-sleutel', 'reserve-kopie', 'reserve-toestel', 'reserve-laatste', 'concepten', 'groupcode', 'deel', 'koppel', 'onderzoek'];
+  function schoonExtras() {
+    var n = 0;
+    (typeof cadets !== 'undefined' ? cadets : []).forEach(function (c) {
+      var x = c && c.data && c.data.extras; if (!x || typeof x !== 'object') return;
+      GEHEIM_X.forEach(function (k) { if (k in x) { delete x[k]; n++; } });
+    });
+    return n;
+  }
+  window.kmaSchoonExtras = schoonExtras;
   /* 4.31 (punt 2): na elke wijziging (bijv. een nieuwe DTF-notitie) meteen synchroniseren, niet pas na een minuut */
   var sTimer = null;
   if (typeof window.saveCVS === 'function' || typeof saveCVS === 'function') {
     var origSave = window.saveCVS || saveCVS;
     window.saveCVS = saveCVS = function () {
+      try { schoonExtras(); } catch (e) { /* geen dossiers */ }
       var r = origSave.apply(this, arguments);
       try { if (!busy && F.ok() && S2().on && team()) { clearTimeout(sTimer); sTimer = setTimeout(function () { window.kmaDeelSync(false); }, 1500); } } catch (e) { /* geen deelmap */ }
       return r;

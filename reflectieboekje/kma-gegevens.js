@@ -46,7 +46,8 @@
     { sinds: '4.31', wat: 'Keuze korte/lange test als JSON bewaard, zodat hij meegaat in de back-up; de oude vorm (lang) blijft gelden', waar: 'bij lezen en bij de volgende keuze', code: 'kma-boek-meting.js: keuze · test_controle431' },
     { sinds: '4.31', wat: 'Deelmap CVS: kiest een instructeur later een andere laag van de map, dan zoekt de app het niveau opnieuw (niets gaat verloren)', waar: 'bij synchroniseren', code: 'kma-deelmap.js: findMyPeloton, eigenSleutel · test_controle431' },
     { sinds: '4.33', wat: 'CVS-back-up: de beveiligde vorm is een object (cadetten + teamsleutel, instructeurs, peloton, groepscodes); de oude vorm (lijst cadetten) wordt nog gelezen, instructeurs worden samengevoegd', waar: 'bij terugzetten', code: 'kma-transfer.js: cvsTekst; kma-ui-volg.js: importInstructorData; kma-deelmap.js: kmaDeelHerstel · test_deelmap433' },
-    { sinds: '4.33', wat: 'Deelmap: nieuwe bestanden ontvangst.json (cadet) en ontvangst/<id>.json (instructeur); oudere versies negeren ze, conflictkopieën van eigen bestanden worden opgeruimd', waar: 'bij synchroniseren', code: 'kma-deelmap.js: ontvangstNaarCadetten, ontvangstNaarStaf, opruimen · test_deelmap433' }
+    { sinds: '4.33', wat: 'Deelmap: nieuwe bestanden ontvangst.json (cadet) en ontvangst/<id>.json (instructeur); oudere versies negeren ze, conflictkopieën van eigen bestanden worden opgeruimd', waar: 'bij synchroniseren', code: 'kma-deelmap.js: ontvangstNaarCadetten, ontvangstNaarStaf, opruimen · test_deelmap433' },
+    { sinds: '4.33.1', wat: 'CVS: sleutels en concepten die oudere boekjes in extras meestuurden (kameraden, reserve-*, concepten) worden uit de dossiers gehaald; de rest van extras blijft', waar: 'bij de start en bij elk opslaan', code: 'kma-deelmap.js: schoonExtras · test_extras4331' }
   ];
 
   var IMG = /^data:image\/(png|jpe?g|webp|gif|bmp|heic|heif);base64,[A-Za-z0-9+/=\s]+$/i;
