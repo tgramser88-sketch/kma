@@ -1,1 +1,1 @@
-window.KMA_APPVERSIE = '4.33.1';
+window.KMA_APPVERSIE = '4.34.0';
