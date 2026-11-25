@@ -9,6 +9,8 @@
  *   pelotons/<peloton>/staf/<id>.json                      DTF-notities en feedback van teamleider en instructeurs
  *                                                          (alleen te openen met de stafsleutel; cadetten hebben die niet)
  *   pelotons/<peloton>/uitnodigingen/<id>.json             uitnodiging voor een instructeur (alleen te openen met de code)
+ *   pelotons/<peloton>/cadetten/<code>/ontvangst.json  4.33: ontvangst en "gelezen" van de teamleider, alleen voor die cadet
+ *   pelotons/<peloton>/ontvangst/<id>.json                4.33: ontvangst en "gezien" van de notities van instructeur <id> (stafsleutel)
  * Elke teamleider beheert zijn eigen peloton; meerdere pelotons kunnen in dezelfde SharePoint-map staan.
  * Zonder pelotonnaam (oudere versies) staat alles direct in de map.
  *
@@ -135,6 +137,55 @@
   }
   function row(label, value, cls) { return '<div class="kma-deel-row' + (cls ? ' ' + cls : '') + '"><span>' + esc(label) + '</span><strong>' + value + '</strong></div>'; }
 
+  /* 4.33 (punt 7): OneDrive en SharePoint maken een conflictkopie als twee toestellen tegelijk schrijven, bijvoorbeeld
+     "dossier (1).json" of "dossier-LAPTOP-12.json". De app ruimt alleen kopieën op van bestanden die hij zelf schrijft. */
+  function conflictVan(naam, origineel) {
+    var b = String(origineel).replace(/\.json$/i, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return naam !== origineel && new RegExp('^' + b + '( \\(\\d+\\)|-[A-Za-z0-9_]{2,30}(-[A-Za-z0-9_]{1,30})?)\\.json$', 'i').test(naam);
+  }
+  /** Verwijdert in map dir de conflictkopieën van de genoemde bestanden. Geeft het aantal terug. */
+  function opruimen(dir, namen) {
+    dir = String(dir || '').replace(/\/$/, ''); var n = 0;
+    F.list(dir).forEach(function (f) { if (!f.dir && namen.some(function (o) { return conflictVan(f.name, o); }) && F.remove((dir ? dir + '/' : '') + f.name)) n++; });
+    return n;
+  }
+  window.kmaDeelConflict = conflictVan;
+  var TIP_BESCHIKBAAR = 'Tip: zet de gedeelde map in OneDrive op <b>Altijd behouden op dit apparaat</b> (in de OneDrive-app: ⋮ bij de map → Offline beschikbaar maken). Dan kan de app de bestanden ook lezen als je even geen bereik hebt.';
+  /* 4.33 (punt 4): automatisch bijwerken; "Bijgewerkt: x min geleden" in het menu en de dialoog */
+  function bijgewerkt(iso) { return iso ? 'bijgewerkt ' + ago(iso) : 'nog niet bijgewerkt'; }
+  /* 4.33 (punt 1): Deelmap controleren. Toont alleen wat er mis is, met wat je kunt doen. Het foutrapport is anoniem:
+     geen namen, Peoplesoft-nummers, mapnamen of inhoud; alleen codes en aantallen. */
+  function rapportTekst(app, info, lijst) {
+    var regels = ['KMA-apps foutrapport (anoniem: geen namen, nummers, mapnamen of inhoud)', 'App: ' + app + ' ' + (window.KMA_APPVERSIE || '?'),
+      'Datum: ' + new Date().toISOString().slice(0, 16).replace('T', ' '), 'Toestel: ' + (F.native() ? 'app' : 'browser') + (/android/i.test(navigator.userAgent) ? ', Android' : /iphone|ipad/i.test(navigator.userAgent) ? ', iOS' : '')];
+    Object.keys(info).forEach(function (k) { regels.push(k + ': ' + info[k]); });
+    regels.push('Problemen: ' + (lijst.length ? lijst.map(function (x) { return x.c; }).join(', ') : 'geen'));
+    return regels.join('\n');
+  }
+  function controleSheet(app, uitkomst, opnieuw) {
+    var l = uitkomst.lijst, rap = rapportTekst(app, uitkomst.info, l);
+    window.__kmaFoutrapport = rap;
+    var body = (l.length ? '<ul class="kma-controle">' + l.map(function (x) { return '<li class="kma-controle-' + (x.ernst || 'fout') + '"><b>' + esc(x.t) + '</b><span>' + esc(x.d) + '</span></li>'; }).join('') + '</ul>'
+      : '<p class="kma-controle-ok"><b>Geen problemen gevonden.</b> De deelmap werkt zoals het hoort.</p>') +
+      (uitkomst.opgeruimd ? '<p class="muted small">Opgeruimd: ' + uitkomst.opgeruimd + ' conflictkopie' + (uitkomst.opgeruimd === 1 ? '' : 'ën') + ' van OneDrive of SharePoint (bijv. "dossier (1).json").</p>' : '') +
+      '<p class="muted small">Lukt het niet? Stuur het foutrapport naar de ontwikkelaar (of plak het in een gesprek met Claude). Het rapport bevat geen namen, Peoplesoft-nummers, mapnamen of inhoud, alleen codes en aantallen.</p>' +
+      '<details class="kma-controle-rap"><summary class="muted small">Wat staat er in het foutrapport?</summary><pre>' + esc(rap) + '</pre></details>' +
+      '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-c="again">Opnieuw controleren</button><button type="button" class="kma-icon-btn is-primary" data-c="rap">Foutrapport delen</button></div>';
+    sheet('Deelmap controleren', body, function (e, ov) {
+      if (e.target.closest('[data-c="again"]')) { ov.remove(); opnieuw(); return; }
+      if (!e.target.closest('[data-c="rap"]')) return;
+      try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(rap).catch(function () {}); } catch (x) {}
+      if (window.kmaShareFile) kmaShareFile('KMA_Foutrapport_' + new Date().toISOString().slice(0, 10) + '.txt', rap);
+      toast('Foutrapport gekopieerd en klaar om te delen');
+    });
+  }
+  /** 4.33 (punt 4): bijwerken bij openen, terugkeren naar de app en weer online komen (niet vaker dan elke 20 seconden). */
+  function autoBij() {
+    var laatst = 0, go = function () { if (document.hidden || Date.now() - laatst < 20000) return; laatst = Date.now(); window.kmaDeelSync(false); };
+    document.addEventListener('visibilitychange', go); window.addEventListener('focus', go); window.addEventListener('online', go); document.addEventListener('resume', go);
+  }
+  function oud(iso, uren) { return !iso || Date.now() - new Date(iso).getTime() > uren * 3600000; }
+
   /* =====================================================================================
      Reflectieboekje (cadet)
      ===================================================================================== */
@@ -219,12 +270,35 @@
           if (!F.write(cbase() + psDir(ps()) + '/dossier.json', sealed)) throw new Error('schrijven');
           // 4.30: na de overstap het eigen oude dossier (map met nummer) weghalen; feedback daar blijft leesbaar
           if (F.read(oudPad) != null) F.remove(oudPad);
+          opruimen(cbase() + psDir(ps()), ['dossier.json']);
           s = S(); s.lastUp = h; s.lastUpAt = p.sharedAt; save(s);
           if (window.kmaMarkShared) kmaMarkShared('de deelmap');
           return true;
         });
       });
     };
+    /* 4.33 (punt 5): ontvangstbevestiging van de teamleider (alleen door deze cadet te openen) */
+    var ontvangst = function () {
+      var t = F.read(cbase() + psDir(ps()) + '/ontvangst.json'); if (!t) return Promise.resolve(false);
+      var o; try { o = JSON.parse(t); } catch (e) { return Promise.resolve(false); }
+      return decK(o, myKey()).then(function (txt) {
+        var d = kmaLees(txt); if (!d || d.type !== 'kma-ontvangst') return false;
+        var s = S(), nieuwGelezen = d.gelezen && (!s.ontv || s.ontv.gelezen !== d.gelezen) && d.dossier === s.lastUpAt;
+        s.ontv = { dossier: d.dossier || '', gelezen: d.gelezen || '', at: d.at || '' }; save(s);
+        if (nieuwGelezen) toast('Je dossier is gelezen door je teamleider');
+        return true;
+      }, function () { return false; });
+    };
+    var ontvangstTekst = function () {
+      var s = S(), o = s.ontv || {};
+      if (!s.lastUpAt) return '';
+      if (o.dossier === s.lastUpAt && o.gelezen) return 'Gelezen door je teamleider (' + ago(o.gelezen) + ')';
+      if (o.dossier === s.lastUpAt) return 'Ontvangen door je teamleider';
+      // de cadet heeft sindsdien opnieuw gedeeld: zeg wat er wel binnen is
+      if (o.dossier && o.dossier < s.lastUpAt) return (o.gelezen ? 'Gelezen' : 'Ontvangen') + ' door je teamleider (versie van ' + ago(o.dossier) + '); je laatste wijzigingen nog niet';
+      return 'Verstuurd; nog niet opgehaald door je teamleider';
+    };
+    window.kmaDeelOntvangst = ontvangstTekst;
     var down = function () {
       var t = F.read(cbase() + psDir(ps()) + '/feedback.json') || F.read(cbase() + psDirOud(ps()) + '/feedback.json'); if (!t) return Promise.resolve(false);
       var o; try { o = kmaLees(t); } catch (e) { return Promise.resolve(false); }
@@ -242,7 +316,7 @@
       busy = true;
       return verify().then(function (err) {
         if (err) { var s = S(); s.err = err; save(s); if (manual) toast(err, 'error'); return null; }
-        return up().then(function (sent) { return down().then(function (got) {
+        return up().then(function (sent) { return down().then(function (got) { return ontvangst().then(function () { return got; }); }).then(function (got) {
           var s = S(); s.err = ''; s.lastSync = new Date().toISOString(); save(s);
           if (manual) toast(sent || got ? (sent ? 'Je dossier is gedeeld' : '') + (sent && got ? ' · ' : '') + (got ? 'nieuwe feedback ontvangen' : '') : 'Alles is bijgewerkt');
           return { sent: sent, got: got };
@@ -250,17 +324,42 @@
       }).catch(function () { var s = S(); s.err = 'De deelmap kon niet worden bijgewerkt. Is de map nog bereikbaar?'; save(s); if (manual) toast(s.err, 'error'); return null; })
         .then(function (r) { busy = false; return r; }, function () { busy = false; });
     };
-  window.kmaDeelStatus = function () { var s = S(); return { on: !!s.on && F.ok(), name: F.name(), last: s.lastSync || '', err: s.err || '', group: s.group || '', peloton: s.peloton || '' }; };
+  window.kmaDeelStatus = function () { var s = S(); return { on: !!s.on && F.ok(), name: F.name(), last: s.lastSync || '', bij: bijgewerkt(s.lastSync), err: s.err || '', group: s.group || '', peloton: s.peloton || '', ontvangst: ontvangstTekst() }; };
+    /** 4.33 (punt 1): alle controles van de cadetkant; geeft {lijst, info, opgeruimd} */
+    var controle = function () {
+      var s = S(), l = [], info = {}, on = !!s.on && F.ok(), add = function (c, t, d, ernst) { l.push({ c: c, t: t, d: d, ernst: ernst }); };
+      info.gekoppeld = on ? 'ja' : 'nee'; info.groepscode = window.KMAX && KMAX.myCode() ? 'ja' : 'nee'; info.peoplesoft = ps() ? 'ja' : 'nee';
+      info.laatst = s.lastSync ? Math.round((Date.now() - new Date(s.lastSync).getTime()) / 60000) + ' min' : 'nooit';
+      if (!F.native()) { add('B-geen-app', 'Alleen in de app', 'De deelmap werkt alleen in de app op je telefoon, niet in een browser.'); return Promise.resolve({ lijst: l, info: info, opgeruimd: 0 }); }
+      if (info.groepscode === 'nee') add('B-geen-code', 'Geen groepscode', 'Koppel met je teamleider (⋮ → Koppelen met je teamleider) of vul de groepscode in (⋮ → Versleuteld delen).');
+      if (!ps()) add('B-geen-ps', 'Geen Peoplesoft-nummer', 'Vul je Peoplesoft-nummer in bij Profiel (hoofdstuk 0). Daaruit maakt de app de naam van jouw map.');
+      if (!on) { add('B-niet-gekoppeld', 'Deelmap niet gekoppeld', 'Tik in Deelmap op Map kiezen en kies de map die je teamleider heeft gedeeld.'); return Promise.resolve({ lijst: l, info: info, opgeruimd: 0 }); }
+      if (!window.KMAX || !KMAX.myCode()) return Promise.resolve({ lijst: l, info: info, opgeruimd: 0 });
+      return verify().then(function (err) {
+        info.teamsleutel = err ? 'nee' : 'ja';
+        if (err) { add('B-teamsleutel', 'Teamsleutel niet gevonden', err); return { lijst: l, info: info, opgeruimd: 0 }; }
+        var n = ps() ? opruimen(cbase() + psDir(ps()), ['dossier.json']) : 0;
+        info.conflictkopieen = n;
+        if (ps() && F.read(cbase() + psDir(ps()) + '/dossier.json') == null) add('B-geen-dossier', 'Je dossier staat nog niet in de map', 'Wacht een minuut of open de app opnieuw. Blijft dit staan, kies dan in Deelmap opnieuw de map van je teamleider.');
+        if (s.err) add('B-fout', 'Laatste keer bijwerken mislukt', s.err);
+        if (oud(s.lastSync, 24)) add('B-oud', 'Lang niet bijgewerkt', 'De app werkt bij als je hem opent. Is de map bereikbaar? Zet de map in OneDrive op "Altijd behouden op dit apparaat".', 'let');
+        var o = s.ontv || {}; info.ontvangen = o.dossier && o.dossier === s.lastUpAt ? 'ja' : 'nee';
+        if (s.lastUpAt && o.dossier !== s.lastUpAt && oud(s.lastUpAt, 72)) add('B-niet-opgehaald', 'Je teamleider heeft je dossier nog niet opgehaald', 'Dat gebeurt vanzelf als je teamleider het CadetVolgSysteem opent. Duurt het langer dan een paar dagen, vraag dan of de deelmap bij hem werkt.', 'let');
+        return { lijst: l, info: info, opgeruimd: n };
+      });
+    };
+    window.kmaDeelControle = function () { return controle().then(function (u) { controleSheet('Reflectieboekje', u, window.kmaDeelControle); return u; }); };
     window.kmaDeelDialog = function () {
       var s = S(), on = !!s.on && F.ok();
       var kp = window.KMAKoppel && KMAKoppel.info();
       var body = '<p class="muted">Een gedeelde map die je teamleider heeft ingesteld (bijv. in OneDrive of SharePoint). De hoofdstukken die je deelt gaan automatisch en versleuteld naar je eigen map daarin; feedback van je teamleider komt vanzelf binnen. Andere cadetten kunnen jouw gegevens niet lezen.</p>' +
         (kp && kp.m && !on ? '<p class="kma-koppel-hint">Je teamleider: de deelmap staat in <b>' + esc(kp.m) + '</b></p>' : '') +
-        row('Map', on ? esc(F.name()) : 'niet gekoppeld') + (on && s.peloton ? row('Peloton', esc(s.peloton)) : '') + (on ? row('Groep', esc(s.group || '-')) + row('Laatst bijgewerkt', esc(ago(s.lastSync))) : '') +
-        (s.err && on ? '<p class="kma-code-err">' + esc(s.err) + '</p>' : '') +
+        row('Map', on ? esc(F.name()) : 'niet gekoppeld') + (on && s.peloton ? row('Peloton', esc(s.peloton)) : '') + (on ? row('Groep', esc(s.group || '-')) + row('Bijgewerkt', esc(ago(s.lastSync)) + ' · automatisch') + (ontvangstTekst() ? row('Je dossier', esc(ontvangstTekst()), /Gelezen|Ontvangen/.test(ontvangstTekst()) ? 'ok' : '') : '') : '') +
+        (s.err && on ? '<p class="kma-code-err">' + esc(s.err) + '</p>' : '') + (!on ? '<p class="muted small kma-deel-tip">' + TIP_BESCHIKBAAR + '</p>' : '') +
         (!window.KMAX || !KMAX.myCode() ? '<p class="kma-code-err">Koppel eerst met je teamleider (⋮ → Koppelen met je teamleider) of vul de groepscode in.</p>' : '') +
-        '<div class="kma-row-btns">' + (on ? '<button type="button" class="kma-icon-btn" data-d="off">Ontkoppelen</button><button type="button" class="kma-icon-btn is-primary" data-d="sync">Nu bijwerken</button>' :
-          '<button type="button" class="kma-icon-btn" data-x="close">Annuleren</button><button type="button" class="kma-icon-btn is-primary" data-d="pick">Map kiezen</button>') + '</div>';
+        '<div class="kma-row-btns">' + (on ? '<button type="button" class="kma-icon-btn" data-d="off">Ontkoppelen</button><button type="button" class="kma-icon-btn is-primary" data-d="check">Deelmap controleren</button>' :
+          '<button type="button" class="kma-icon-btn" data-x="close">Annuleren</button><button type="button" class="kma-icon-btn is-primary" data-d="pick">Map kiezen</button>') + '</div>' +
+        (on ? '<div class="kma-row-btns kma-deel-btns"><button type="button" class="kma-chip-btn" data-d="sync">Nu bijwerken</button></div>' : '<div class="kma-row-btns kma-deel-btns"><button type="button" class="kma-chip-btn" data-d="check">Deelmap controleren</button></div>');
       sheet('Deelmap', body, function (e, ov) {
         if (e.target.closest('[data-d="pick"]')) {
           if (!window.KMAX || !KMAX.myCode()) { toast('Vul eerst de groepscode in', 'error'); return; }
@@ -269,10 +368,11 @@
             if (!ok) return;
             verify().then(function (err) {
               if (err) { alert(err); return; }
-              var s2 = S(); s2.on = true; s2.lastUp = ''; save(s2); toast('Deelmap gekoppeld'); window.kmaDeelSync(true);
+              var s2 = S(); s2.on = true; s2.lastUp = ''; save(s2); toast('Deelmap gekoppeld. Tip: zet de map in OneDrive op "Altijd behouden op dit apparaat".'); window.kmaDeelSync(true);
             });
           });
         } else if (e.target.closest('[data-d="sync"]')) { ov.remove(); window.kmaDeelSync(true); }
+        else if (e.target.closest('[data-d="check"]')) { ov.remove(); window.kmaDeelControle(); }
         else if (e.target.closest('[data-d="off"]')) {
           kmaConfirm('Deelmap ontkoppelen? Je dossier wordt dan niet meer automatisch gedeeld.', { ok: 'Ontkoppelen', danger: true }).then(function (ok) { if (!ok) return;
           var s3 = S(); s3.on = false; save(s3); try { A.sharedClear(); } catch (x) {} ov.remove(); toast('Deelmap ontkoppeld');
@@ -282,7 +382,7 @@
     };
     setTimeout(function () { window.kmaDeelSync(false); }, 2500);
     setInterval(function () { if (!document.hidden) window.kmaDeelSync(false); }, 60000);
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) window.kmaDeelSync(false); });
+    autoBij();
     return;
   }
 
@@ -421,7 +521,21 @@
           });
         });
       });
-    }, Promise.resolve()).then(function () { save2(s); return n; });
+    }, Promise.resolve()).then(function () { save2(s); return ontvangstNaarCadetten().then(function () { return n; }); });
+  }
+  /* 4.33 (punt 5): ontvangstbevestiging naar de cadet: welk dossier de teamleider heeft binnengehaald en of hij het heeft
+     geopend. In een eigen bestand (ontvangst.json), versleuteld met de sleutel van die ene cadet. */
+  function ontvangstNaarCadetten() {
+    if (role() !== 'teamleider') return Promise.resolve(0);
+    var s = S2(); s.ontvC = s.ontvC || {}; var n = 0;
+    return cadets.filter(function (c) { return c.deelKey && cps(c) && c.data && c.data.sharedAt; }).reduce(function (pr, c) {
+      return pr.then(function () {
+        var o = { type: 'kma-ontvangst', v: 1, dossier: String(c.data.sharedAt), gelezen: c.deelGelezenVoor === String(c.data.sharedAt) ? c.deelGelezen || '' : '' };
+        var key = o.dossier + '|' + o.gelezen; if (s.ontvC[cps(c)] === key) return;
+        o.at = new Date().toISOString();
+        return encK(JSON.stringify(o), c.deelKey).then(function (txt) { if (F.write(base() + psDir(cps(c)) + '/ontvangst.json', txt)) { s.ontvC[cps(c)] = key; n++; } });
+      });
+    }, Promise.resolve()).then(function () { var s2 = S2(); s2.ontvC = s.ontvC; save2(s2); return n; });
   }
 
   /* ---------------- Notes and feedback of teamleider and instructors ---------------- */
@@ -438,7 +552,8 @@
       if (S2().staffHash === h) return false;
       return encK(JSON.stringify(p), sk).then(function (txt) {
         if (!F.write(base() + 'staf/' + myId() + '.json', txt)) { if (role() !== 'teamleider') toast('Je notities konden niet in de deelmap worden gezet. Controleer de deelmap (⋮ → Deelmap).', 'error'); return false; }
-        var s = S2(); s.staffHash = h; save2(s); return true;
+        opruimen(base() + 'staf', [myId() + '.json']);
+        var s = S2(); s.staffHash = h; s.staffAt = p.at || new Date().toISOString(); save2(s); return true;
       });
     });
   }
@@ -488,6 +603,7 @@
               if (voor) nieuwBij(voor, d.from && d.from.name || 'Instructeur');
             }
             seen[id] = h; n++; if (fout[id]) delete fout[id];
+            if (tl && who) { var so = S2(); so.ontv = so.ontv || {}; so.ontv[id] = d.at || new Date().toISOString(); save2(so); }
           }, function () { fout[id] = new Date().toISOString(); });   // 4.32.1: niet te openen (andere teamsleutel): laten zien bij Peloton en team
         });
       });
@@ -498,6 +614,42 @@
     });
   }
 
+  /* 4.33 (punt 5): de teamleider schrijft per instructeur een ontvangstbevestiging (ontvangst/<id>.json, met de stafsleutel):
+     wanneer hij diens laatste notities binnenhaalde en wanneer hij op Gezien tikte. */
+  function ontvangstNaarStaf() {
+    if (role() !== 'teamleider') return Promise.resolve(0);
+    var sk = staffKey(); if (!sk) return Promise.resolve(0);
+    var s = S2(), ontv = s.ontv || {}, h = s.ontvH || {}, n = 0;
+    return staffList().reduce(function (pr, x) {
+      return pr.then(function () {
+        if (!ontv[x.id]) return;
+        var o = { type: 'kma-ontvangst', v: 1, ontvangen: ontv[x.id], gezien: s.gezienAt && (s.ontvAt || {})[x.id] === ontv[x.id] ? s.gezienAt : '' };
+        var key = o.ontvangen + '|' + o.gezien; if (h[x.id] === key) return;
+        return encK(JSON.stringify(o), sk).then(function (txt) { if (F.write(base() + 'ontvangst/' + x.id + '.json', txt)) { h[x.id] = key; n++; } });
+      });
+    }, Promise.resolve()).then(function () { var s2 = S2(); s2.ontvH = h; save2(s2); return n; });
+  }
+  /** Instructeur: leest zijn eigen ontvangstbevestiging. */
+  function ontvangstLezen() {
+    if (role() === 'teamleider') return Promise.resolve(false);
+    var sk = staffKey(), t = sk && F.read(base() + 'ontvangst/' + myId() + '.json'); if (!t) return Promise.resolve(false);
+    var o; try { o = JSON.parse(t); } catch (e) { return Promise.resolve(false); }
+    return decK(o, sk).then(function (txt) {
+      var d = kmaLees(txt); if (!d || d.type !== 'kma-ontvangst') return false;
+      var s = S2(), was = s.bev || {}; s.bev = { ontvangen: d.ontvangen || '', gezien: d.gezien || '' }; save2(s);
+      if (d.gezien && d.gezien !== was.gezien && d.ontvangen === s.staffAt) toast('Je notities zijn gelezen door je teamleider');
+      return true;
+    }, function () { return false; });
+  }
+  function stafOntvangstTekst() {
+    var s = S2(), b = s.bev || {};
+    if (role() === 'teamleider' || !s.staffAt) return '';
+    if (b.ontvangen === s.staffAt && b.gezien) return 'Gelezen door je teamleider (' + ago(b.gezien) + ')';
+    if (b.ontvangen === s.staffAt) return 'Ontvangen door je teamleider';
+    if (b.ontvangen && b.ontvangen < s.staffAt) return (b.gezien ? 'Gelezen' : 'Ontvangen') + ' door je teamleider (eerdere notities); je laatste nog niet';
+    return 'Verstuurd; nog niet opgehaald door je teamleider';
+  }
+  window.kmaStafOntvangst = stafOntvangstTekst;
   window.kmaDeelSync = function (manual) {
     if (busy || !F.ok() || !S2().on) return Promise.resolve(null);
     if (!team()) { if (manual) toast(role() === 'teamleider' ? 'Maak eerst de teamsleutel (Deelmap)' : 'Gebruik eerst de uitnodiging van je teamleider (⋮ → Peloton en team)', 'error'); return Promise.resolve(null); }
@@ -515,8 +667,9 @@
     return publish().then(pull).then(function (r) {
       return pullStaff().then(function (st) {
         return push().then(function (w) {
-          return pushStaff().then(function (sw) {
+          return pushStaff().then(function (sw) { return ontvangstNaarStaf().then(ontvangstLezen).then(function () { return sw; }); }).then(function (sw) {
             var s = S2(); s.lastSync = new Date().toISOString(); s.err = ''; save2(s);
+            if (oud(s.opruimAt, 1)) { try { cvsOpruimen(); } catch (e) { /* map niet bereikbaar */ } }
             if (r.n || r.added || w || st) { saveCVS(); try { renderCadets(); } catch (e) {} }
             if (manual || r.added || r.n || st) toast('Deelmap: ' + r.n + ' dossier' + (r.n === 1 ? '' : 's') + ' bijgewerkt' + (r.added ? ' (' + r.added + ' nieuw)' : '') +
               (st ? ' · bijdragen van ' + st + ' collega' + (st === 1 ? '' : "'s") : '') +
@@ -529,9 +682,48 @@
     }).catch(function () { var s = S2(); s.err = 'De deelmap kon niet worden bijgewerkt.'; save2(s); if (manual) toast(s.err, 'error'); return null; })
       .then(function (x) { busy = false; return x; }, function () { busy = false; });
   };
+  /** 4.33 (punt 7): conflictkopieën van de eigen bestanden weghalen (teamleider: teamsleutel, feedback, ontvangst; iedereen: eigen stafbestand). */
+  function cvsOpruimen() {
+    var n = opruimen(base() + 'staf', [myId() + '.json']);
+    if (role() === 'teamleider') {
+      n += opruimen(base(), ['teamsleutel.json']);
+      F.list(base() + 'cadetten').forEach(function (d) { if (d.dir) n += opruimen(base() + 'cadetten/' + d.name, ['feedback.json', 'ontvangst.json']); });
+      n += opruimen(base() + 'ontvangst', staffList().map(function (x) { return x.id + '.json'; }));
+    }
+    var s = S2(); s.opruimAt = new Date().toISOString(); s.opgeruimd = (s.opgeruimd || 0) + n; save2(s);
+    return n;
+  }
+  /** 4.33 (punt 1): alle controles van het CadetVolgSysteem; geeft {lijst, info, opgeruimd} */
+  function cvsControle() {
+    var s = S2(), l = [], info = {}, on = !!s.on && F.ok(), tl = role() === 'teamleider', t = team(), add = function (c, tx, d, ernst) { l.push({ c: c, t: tx, d: d, ernst: ernst }); };
+    info.rol = role(); info.gekoppeld = on ? 'ja' : 'nee'; info.teamsleutel = t ? 'ja' : 'nee'; info.peloton = peloton() ? 'ja' : 'nee'; info.niveau = niveau() || 'hoofdmap';
+    info.cadetten = cadets.length; info.laatst = s.lastSync ? Math.round((Date.now() - new Date(s.lastSync).getTime()) / 60000) + ' min' : 'nooit';
+    if (!F.native()) { add('C-geen-app', 'Alleen in de app', 'De deelmap werkt alleen in de app op je telefoon, niet in een browser.'); return { lijst: l, info: info, opgeruimd: 0 }; }
+    if (tl && !peloton()) add('C-geen-peloton', 'Geen pelotonnaam', 'Vul de naam van je peloton in (⋮ → Peloton en team).');
+    if (!on) { add('C-niet-gekoppeld', 'Deelmap niet gekoppeld', tl ? 'Tik in Deelmap op Map kiezen en kies de gedeelde map (bijv. in SharePoint).' : 'Kies bij ⋮ → Peloton en team → Uitnodiging gebruiken de map van je teamleider.'); return { lijst: l, info: info, opgeruimd: 0 }; }
+    if (!t) { add('C-geen-teamsleutel', tl ? 'Nog geen teamsleutel' : 'Nog niet uitgenodigd', tl ? 'Tik in Deelmap op Map kiezen; de app maakt dan de teamsleutel.' : 'Vraag je teamleider om een uitnodigingscode en gebruik die bij ⋮ → Peloton en team.'); return { lijst: l, info: info, opgeruimd: 0 }; }
+    var codes = window.KMAX ? ['ALFA', 'BRAVO', 'CHARLIE', 'DELTA'].filter(function (g) { return KMAX.codeForGroup(g); }) : [];
+    if (tl) { info.groepscodes = codes.length; if (!codes.length) add('C-geen-codes', 'Geen groepscodes', 'Maak een groepscode per groep (⋮ → Groepscodes) en geef die aan je cadetten. Zonder code kunnen zij de teamsleutel niet vinden.'); }
+    var eig = eigenSleutel(); info.sleutelInMap = eig ? 'ja' : 'nee';
+    if (!eig) {
+      if (tl) add('C-sleutel-weg', 'Teamsleutel staat niet in de map', 'Wacht een minuut (OneDrive of SharePoint synchroniseert nog) of tik op Nu bijwerken. Blijft dit staan, kies dan de map opnieuw.');
+      else if (!findMyPeloton()) add('C-peloton-weg', 'Je peloton staat niet in deze map', 'Ontkoppel in Deelmap en kies de hoofdmap van je teamleider (de map waarin "pelotons" staat).');
+    }
+    var fout = Object.keys(s.staffFout || {}).length; info.stafNietTeOpenen = fout;
+    if (fout) add('C-staf-fout', fout + (fout === 1 ? ' bestand van een collega' : " bestanden van collega's") + ' niet te openen', tl ? 'Tik bij Peloton en team bij die instructeur op Nieuwe code en laat hem de nieuwe code gebruiken.' : 'Gebruik een nieuwe uitnodiging van je teamleider.');
+    var warn = cadets.filter(function (c) { return c.deelWarn; }).length; info.dossierWaarschuwing = warn;
+    if (warn) add('C-dossier-warn', warn + ' dossier' + (warn === 1 ? '' : 's') + ' niet ingelezen', 'Open het dossier: daar staat wat er aan de hand is (meestal heeft de cadet de app opnieuw geïnstalleerd).');
+    if (s.err) add('C-fout', 'Laatste keer bijwerken mislukt', s.err);
+    if (oud(s.lastSync, 24)) add('C-oud', 'Lang niet bijgewerkt', 'De app werkt bij als je hem opent. Is de map bereikbaar? Zet de map in OneDrive op "Altijd behouden op dit apparaat".', 'let');
+    if (tl) { var nooit = staffList().filter(function (x) { return !x.seen && oud(x.at, 72); }).length; info.instructeursNietActief = nooit; if (nooit) add('C-staf-stil', nooit + ' instructeur' + (nooit === 1 ? '' : 's') + ' nog niet actief', 'Een uitnodiging werkt pas als de instructeur dezelfde map kiest en de code invult. Maak zo nodig een nieuwe code (Peloton en team).', 'let'); }
+    else { var b = s.bev || {}; info.ontvangen = s.staffAt && b.ontvangen === s.staffAt ? 'ja' : 'nee'; if (s.staffAt && b.ontvangen !== s.staffAt && oud(s.staffAt, 72)) add('C-niet-opgehaald', 'Je teamleider heeft je notities nog niet opgehaald', 'Dat gebeurt vanzelf als je teamleider het CadetVolgSysteem opent. Duurt het langer, vraag dan of jij nog in zijn lijst met instructeurs staat.', 'let'); }
+    var n = cvsOpruimen(); info.conflictkopieen = n;
+    return { lijst: l, info: info, opgeruimd: n };
+  }
+  window.kmaDeelControle = function () { var u = cvsControle(); controleSheet('CadetVolgSysteem', u, window.kmaDeelControle); return Promise.resolve(u); };
   /** Removes a cadet's folder (bewaartermijn, or the dossier was deleted by the teamleider). */
   window.kmaDeelRemove = function (c) { var p = cps(c); if (p && F.ok() && S2().on && role() === 'teamleider') { F.remove(base() + psDir(p)); F.remove(base() + psDirOud(p)); } };
-  window.kmaDeelStatus = function () { var s = S2(); return { on: !!s.on && F.ok(), name: F.name(), last: s.lastSync || '', key: !!team(), peloton: peloton() }; };
+  window.kmaDeelStatus = function () { var s = S2(); return { on: !!s.on && F.ok(), name: F.name(), last: s.lastSync || '', bij: bijgewerkt(s.lastSync), key: !!team(), peloton: peloton(), ontvangst: stafOntvangstTekst() }; };
 
   /* Team key to colleagues: a file protected with a password the teamleider chooses (still possible; the invitation is easier). */
   function shareKey() {
@@ -607,8 +799,15 @@
       '<li>' + (x.wrote ? 'Hij of zij kiest dezelfde gedeelde map (' + esc(F.name()) + ') en vult deze code in.' : 'Stuur het uitnodigingsbestand (knop hieronder) en geef de code apart door.') + '</li>' +
       '<li>Daarna staan de dossiers van je peloton bij hem of haar, en komen DTF-notities' + (r === 'senior' ? ' en feedback' : '') + ' vanzelf bij jou binnen.</li></ol>' +
       '<p class="kma-code-err">Geef de code mondeling of persoonlijk door, niet in hetzelfde bericht als het bestand. De code werkt één keer.</p>' +
-      '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-i="file">Uitnodiging als bestand</button><button type="button" class="kma-icon-btn is-primary" data-i="done">Klaar</button></div>';
+      '<div id="kma-inv-qr" class="kma-invite-qr" hidden></div>' +
+      '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-i="file">Uitnodiging als bestand</button>' + (window.QRCode ? '<button type="button" class="kma-icon-btn" data-i="qr">QR-code tonen</button>' : '') + '<button type="button" class="kma-icon-btn is-primary" data-i="done">Klaar</button></div>';
     sheet('Instructeur toegevoegd', body, function (e, ov) {
+      /* 4.33 (punt 3): de code als QR, voor als de instructeur naast je staat (extra optie naast intypen) */
+      if (e.target.closest('[data-i="qr"]')) {
+        var box = ov.querySelector('#kma-inv-qr'); box.hidden = false; box.innerHTML = '';
+        try { new QRCode(box, { text: QR_PRE + norm(x.code), width: 220, height: 220, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch (q) { box.textContent = 'De QR-code kan niet worden gemaakt. Geef de code mondeling door.'; }
+        return;
+      }
       if (e.target.closest('[data-i="file"]')) kmaShareFile('KMA_Uitnodiging_' + who.replace(/[^A-Za-z0-9]+/g, '_') + '.json', x.env);
       else if (e.target.closest('[data-i="done"]')) { ov.remove(); window.kmaPelotonDialog(); }
     });
@@ -633,18 +832,39 @@
     });
   }
   window.kmaUseInvite = function () { useInviteDialog(); };
+  var QR_PRE = 'KMA-UITNODIGING:', invScanner = null;
+  function stopInvScan() { var sc = invScanner; invScanner = null; if (sc) { try { sc.stop().then(function () { try { sc.clear(); } catch (e) {} }, function () {}); } catch (e) { /* al gestopt */ } } }
+  /** Leest de code uit de tekst van een gescande QR-code; '' als het geen uitnodiging is. */
+  function codeUitQr(t) { t = String(t || '').trim(); if (t.indexOf(QR_PRE) !== 0) return ''; var c = norm(t.slice(QR_PRE.length)); return c.length === 12 ? c.slice(0, 4) + '-' + c.slice(4, 8) + '-' + c.slice(8) : ''; }
+  window.kmaInvCodeUitQr = codeUitQr;
   function useInviteDialog() {
     var on = !!S2().on && F.ok();
     var body = '<ol class="kma-invite-steps"><li' + (on ? ' class="ok"' : '') + '><b>Kies de gedeelde map</b> van je teamleider (dezelfde map in SharePoint of OneDrive).</li><li><b>Vul de code in</b> die je teamleider je gaf.</li><li>Klaar: je DTF-notities gaan daarna vanzelf naar je teamleider.</li></ol>' +
       row('Map', on ? esc(F.name()) : 'niet gekoppeld', on ? '' : 'warn') +
       '<label class="kma-code-lab">Uitnodigingscode<input type="text" id="kma-inv-code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX"/></label>' +
+      (window.Html5Qrcode ? '<div class="kma-row-btns kma-deel-btns"><button type="button" class="kma-chip-btn" data-u="scan">Scan de QR-code van je teamleider</button></div><div id="kma-inv-reader" class="kma-inv-reader"></div>' : '') +
       '<p class="kma-code-err" id="kma-inv-err" role="alert"></p>' +
       '<div class="kma-row-btns kma-deel-btns">' + (on ? '' : '<button type="button" class="kma-icon-btn" data-u="pick">Map kiezen</button>') + '<button type="button" class="kma-icon-btn is-primary" data-u="go">Uitnodiging gebruiken</button></div>' +
       '<div class="kma-row-btns kma-deel-btns"><button type="button" class="kma-chip-btn" data-u="file">Ik heb een uitnodigingsbestand</button>' + (window.kmaOnderbouwing ? kmaOnderbouwing.link('deelmap') : '') + '</div>';
     var file = null;
-    sheet('Uitnodiging gebruiken', body, function (e, ov) {
+    var ovU = sheet('Uitnodiging gebruiken', body, function (e, ov) {
       var err = function (t) { ov.querySelector('#kma-inv-err').textContent = t; };
-      if (e.target.closest('[data-u="pick"]')) { ov.remove(); pick(function (ok) { if (ok) { var s = S2(); s.on = true; save2(s); } useInviteDialog(); }); return; }
+      if (e.target.closest('[data-u="scan"]')) {
+        try { if (window.Android && window.Android.requestCameraPermission) window.Android.requestCameraPermission(); } catch (x) { /* geen camera */ }
+        stopInvScan();
+        var rd = ov.querySelector('#kma-inv-reader'); rd.classList.add('on');
+        var sc = new Html5Qrcode('kma-inv-reader'); invScanner = sc;
+        var cfg = { fps: 10, qrbox: { width: 220, height: 220 } }, klaar = false;
+        var ok = function (t) {
+          if (klaar) return; var c = codeUitQr(t);
+          if (!c) { err('Dit is geen uitnodigingscode. Scan de QR-code die je teamleider bij Instructeur toegevoegd laat zien.'); return; }
+          klaar = true; stopInvScan(); rd.classList.remove('on'); ov.querySelector('#kma-inv-code').value = c; err(''); toast('Code gescand');
+        };
+        sc.start({ facingMode: 'environment' }, cfg, ok, function () {}).catch(function () { return sc.start({ facingMode: 'user' }, cfg, ok, function () {}); })
+          .catch(function () { rd.classList.remove('on'); err('De camera kan niet starten. Typ de code over.'); });
+        return;
+      }
+      if (e.target.closest('[data-u="pick"]')) { stopInvScan(); ov.remove(); pick(function (ok) { if (ok) { var s = S2(); s.on = true; save2(s); } useInviteDialog(); }); return; }
       if (e.target.closest('[data-u="file"]')) {
         var inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,.kma,.txt'; inp.style.display = 'none';
         inp.addEventListener('change', function () { var f = inp.files && inp.files[0]; inp.remove(); if (!f) return; f.text().then(function (t) { try { file = kmaLees(t); } catch (x) { file = null; } err(file && KMAX.isEnc(file) ? '' : 'Dit is geen uitnodigingsbestand.'); if (file) ov.querySelector('#kma-inv-code').focus(); }); });
@@ -664,6 +884,7 @@
         err(x && x.message === 'geen' ? 'In de map "' + F.name() + '" staat geen uitnodiging. Kies dezelfde map als je teamleider (de map waarin "pelotons" staat). Net gemaakt? Wacht een minuut tot OneDrive of SharePoint hem heeft gesynchroniseerd en probeer opnieuw. Of vraag om het uitnodigingsbestand.' : 'Deze code past bij geen uitnodiging in "' + F.name() + '". Controleer de code (12 tekens, zonder O, I, 0 en 1) of vraag je teamleider om een nieuwe.');
       });
     });
+    ovU.addEventListener('click', function (e) { if (e.target === ovU || e.target.closest('[data-x="close"]') || e.target.closest('[data-u="go"]')) stopInvScan(); });
   }
   /** ⋮ → Peloton en team */
   window.kmaPelotonDialog = function () {
@@ -681,9 +902,9 @@
         '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-x="close">Sluiten</button><button type="button" class="kma-icon-btn is-primary" data-p="add"' + (t && peloton() ? '' : ' disabled') + '>Instructeur toevoegen</button></div>';
     } else {
       var m = getJ(MK, null);
-      body = t ? row('Peloton', esc(peloton() || '-')) + row('Functie', esc(LABEL[role()] || role())) + (m && m.from ? row('Teamleider', esc(m.from)) : '') + row('Deelmap', on ? esc(F.name()) : 'niet gekoppeld', on ? '' : 'warn') +
+      body = t ? row('Peloton', esc(peloton() || '-')) + row('Functie', esc(LABEL[role()] || role())) + (m && m.from ? row('Teamleider', esc(m.from)) : '') + row('Deelmap', on ? esc(F.name()) + ' · ' + esc(bijgewerkt(S2().lastSync)) : 'niet gekoppeld', on ? '' : 'warn') + (stafOntvangstTekst() ? row('Je notities', esc(stafOntvangstTekst()), /Gelezen|Ontvangen/.test(stafOntvangstTekst()) ? 'ok' : '') : '') +
         '<p class="muted">Je DTF-notities' + (role() === 'senior' ? ' en feedback' : '') + ' gaan automatisch en versleuteld naar je teamleider en de andere instructeurs van je peloton. Cadetten kunnen ze niet lezen.</p>' +
-        '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-p="use">Andere uitnodiging</button><button type="button" class="kma-icon-btn is-primary" data-p="sync">Nu bijwerken</button></div>'
+        '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-p="use">Andere uitnodiging</button><button type="button" class="kma-icon-btn is-primary" data-p="check">Deelmap controleren</button></div><div class="kma-row-btns kma-deel-btns"><button type="button" class="kma-chip-btn" data-p="sync">Nu bijwerken</button></div>'
         : '<p class="muted">Je bent nog niet aan een peloton gekoppeld. Vraag je teamleider om je toe te voegen; je krijgt dan een uitnodigingscode.</p><div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-x="close">Sluiten</button><button type="button" class="kma-icon-btn is-primary" data-p="use">Uitnodiging gebruiken</button></div>';
     }
     sheet('Peloton en team', body, function (e, ov) {
@@ -698,6 +919,7 @@
       if (a === 'add') { ov.remove(); addStaffDialog(null); return; }
       if (a === 'use') { ov.remove(); useInviteDialog(); return; }
       if (a === 'sync') { ov.remove(); window.kmaDeelSync(true); return; }
+      if (a === 'check') { ov.remove(); window.kmaDeelControle(); return; }
       var rowEl = e.target.closest('[data-sid]'); if (!rowEl) return;
       var id = rowEl.getAttribute('data-sid'), x = staffList().find(function (y) { return y.id === id; }); if (!x) return;
       if (b.getAttribute('data-s') === 'again') { ov.remove(); addStaffDialog(x); return; }
@@ -743,9 +965,11 @@
       row('Peloton', peloton() ? esc(peloton()) : (tl ? 'nog niet ingevuld' : '-'), peloton() || !tl ? '' : 'warn') +
       row('Map', on ? esc(F.name()) : 'niet gekoppeld') + row('Teamsleutel', t ? 'aanwezig' + (t.by ? ' (' + esc(t.by) + ')' : '') : (tl ? 'nog niet gemaakt' : 'nog niet ingelezen'), t ? '' : 'warn') +
       (tl ? row('Groepscodes', codes.length ? esc(codes.join(', ')) : 'geen. Maak ze via ⋮ → Groepscodes', codes.length ? '' : 'warn') : '') +
-      (on ? row('Laatst bijgewerkt', esc(ago(s.lastSync))) : '') + (on && s.err ? '<p class="kma-code-err" role="alert">' + esc(s.err) + '</p>' : '') +
+      (on ? row('Bijgewerkt', esc(ago(s.lastSync)) + ' · automatisch') : '') + (on && stafOntvangstTekst() ? row('Je notities', esc(stafOntvangstTekst()), /Gelezen|Ontvangen/.test(stafOntvangstTekst()) ? 'ok' : '') : '') + (on && s.err ? '<p class="kma-code-err" role="alert">' + esc(s.err) + '</p>' : '') +
+      (!on ? '<p class="muted small kma-deel-tip">' + TIP_BESCHIKBAAR + '</p>' : '') +
       '<div class="kma-row-btns kma-deel-btns">' +
-      (on ? '<button type="button" class="kma-icon-btn" data-d="off">Ontkoppelen</button><button type="button" class="kma-icon-btn is-primary" data-d="sync">Nu bijwerken</button>' : '<button type="button" class="kma-icon-btn is-primary" data-d="pick">Map kiezen</button>') + '</div>' +
+      (on ? '<button type="button" class="kma-icon-btn" data-d="off">Ontkoppelen</button><button type="button" class="kma-icon-btn is-primary" data-d="check">Deelmap controleren</button>' : '<button type="button" class="kma-icon-btn is-primary" data-d="pick">Map kiezen</button><button type="button" class="kma-icon-btn" data-d="check">Deelmap controleren</button>') + '</div>' +
+      (on ? '<div class="kma-row-btns kma-deel-btns"><button type="button" class="kma-chip-btn" data-d="sync">Nu bijwerken</button></div>' : '') +
       '<div class="kma-row-btns kma-deel-btns">' + (tl ? '<button type="button" class="kma-chip-btn" data-d="team">Peloton en instructeurs</button>' + (t ? '<button type="button" class="kma-chip-btn" data-d="sharekey">Teamsleutel als bestand</button>' : '') :
         (t ? '' : '<button type="button" class="kma-chip-btn" data-d="invite">Uitnodiging gebruiken</button>') + '<button type="button" class="kma-chip-btn" data-d="readkey">Teamsleutel inlezen</button>') + '</div>';
     sheet('Deelmap', body, function (e, ov) {
@@ -754,7 +978,7 @@
         ov.remove();
         pick(function (ok) {
           if (!ok) return;
-          var go = function () { var s2 = S2(); s2.on = true; s2.written = {}; s2.staffHash = ''; save2(s2); toast('Deelmap gekoppeld: ' + F.name()); window.kmaDeelSync(true); };
+          var go = function () { var s2 = S2(); s2.on = true; s2.written = {}; s2.staffHash = ''; save2(s2); toast('Deelmap gekoppeld: ' + F.name() + '. Tip: zet de map in OneDrive op "Altijd behouden op dit apparaat".'); window.kmaDeelSync(true); };
           var exists = F.read(base() + 'teamsleutel.json');
           if (tl && !team()) {
             var kmaGo = function () {
@@ -769,6 +993,7 @@
           } else go();
         });
       } else if (e.target.closest('[data-d="sync"]')) { ov.remove(); window.kmaDeelSync(true); }
+      else if (e.target.closest('[data-d="check"]')) { ov.remove(); window.kmaDeelControle(); }
       else if (e.target.closest('[data-d="off"]')) {
         kmaConfirm('Deelmap ontkoppelen? Dossiers en feedback gaan dan niet meer automatisch.', { ok: 'Ontkoppelen', danger: true }).then(function (ok) { if (!ok) return;
         var s3 = S2(); s3.on = false; save2(s3); try { A.sharedClear(); } catch (x) {} ov.remove();
@@ -780,9 +1005,38 @@
     });
   };
   window.kmaStaffList = staffList;
+  /* 4.33 (punt 6): wat in een beveiligde back-up van het CVS meegaat, en het terugzetten daarvan */
+  window.kmaDeelBackup = function () {
+    var t = team(); if (!t) return null;
+    var g = null; try { g = JSON.parse(st().getItem('kma-cvs-groupcodes') || 'null'); } catch (e) { g = null; }
+    return { team: t, staff: staffList(), me: getJ(MK, null), peloton: getJ(PK, null), groepscodes: g, rol: role() };
+  };
+  window.kmaDeelHerstel = function (d) {
+    if (!d || !d.team || !d.team.pub || !d.team.priv) return false;
+    var t = team(), zet = function () {
+      setJ(TK, d.team);
+      if (d.me && d.me.id) setJ(MK, d.me);
+      if (d.peloton && d.peloton.name) setJ(PK, d.peloton);
+      // instructeurs: samenvoegen, niets weggooien
+      var l = staffList(); (d.staff || []).forEach(function (x) { if (x && x.id && !l.some(function (y) { return y.id === x.id; })) l.push(x); }); saveStaff(l);
+      if (d.groepscodes && typeof d.groepscodes === 'object') {
+        var cur = {}; try { cur = JSON.parse(st().getItem('kma-cvs-groupcodes') || '{}') || {}; } catch (e) { cur = {}; }
+        Object.keys(d.groepscodes).forEach(function (k) { if (!cur[k] || !cur[k].code) cur[k] = d.groepscodes[k]; });
+        try { st().setItem('kma-cvs-groupcodes', JSON.stringify(cur)); } catch (e) { /* opslag vol */ }
+      }
+      var s = S2(); s.staffHash = ''; s.staffSeen = {}; s.written = {}; save2(s);
+      toast('Teamsleutel en ' + (d.staff || []).length + ' instructeur(s) teruggezet');
+      setTimeout(function () { window.kmaDeelSync(false); }, 300);
+    };
+    if (t && t.pub !== d.team.pub) {
+      kmaConfirm('In de back-up staat een andere teamsleutel dan op dit toestel. De teamsleutel uit de back-up gebruiken? Doe dit alleen als dit je eigen back-up is.', { ok: 'Teamsleutel terugzetten', cancel: 'Huidige houden', danger: false }).then(function (ok) { if (ok) zet(); });
+      return true;
+    }
+    zet(); return true;
+  };
   setTimeout(function () { window.kmaDeelSync(false); }, 3000);
   setInterval(function () { if (!document.hidden) window.kmaDeelSync(false); }, 90000);
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) window.kmaDeelSync(false); });
+  autoBij();
   /* 4.31 (punt 2): na elke wijziging (bijv. een nieuwe DTF-notitie) meteen synchroniseren, niet pas na een minuut */
   var sTimer = null;
   if (typeof window.saveCVS === 'function' || typeof saveCVS === 'function') {
@@ -802,7 +1056,7 @@
   };
   // 4.31: in Dashboard staat de kaart op Peloton en in het Postvak (de cadettenlijst is daar niet in beeld)
   function dashBij() { try { if (window.kmaCvsDash && /^(peloton|postvak)$/.test(kmaCvsDash.huidig()) && !(document.getElementById('detail-view') || { classList: { contains: function () { return false; } } }).classList.contains('active')) kmaCvsDash.teken(); } catch (e) { /* geen dashboard */ } }
-  window.kmaStafGezien = function () { var s = S2(); s.nieuw = {}; save2(s); document.querySelectorAll('.kma-staf-nieuw').forEach(function (el) { el.remove(); }); dashBij(); };
+  window.kmaStafGezien = function () { var s = S2(); s.nieuw = {}; s.gezienAt = new Date().toISOString(); s.ontvAt = Object.assign({}, s.ontv || {}); save2(s); setTimeout(function () { window.kmaDeelSync(false); }, 300); document.querySelectorAll('.kma-staf-nieuw').forEach(function (el) { el.remove(); }); dashBij(); };
   function stafNieuwPaneel() {
     var grid = document.getElementById('cadets-grid'); if (!grid || !grid.parentElement) return;
     var old = document.getElementById('kma-staf-nieuw'); if (old) old.remove();
@@ -811,6 +1065,18 @@
     grid.parentElement.insertBefore(d.firstChild, grid);
   }
   document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-staf-gezien]')) window.kmaStafGezien(); });
+  /* 4.33 (punt 5): opent de teamleider een dossier, dan krijgt de cadet "Gelezen door je teamleider" */
+  if (typeof openDetailView === 'function') {
+    var origOpen = openDetailView;
+    window.openDetailView = openDetailView = function (id) {
+      var r = origOpen.apply(this, arguments);
+      try {
+        var c = cadets.find(function (x) { return x.id === id; });
+        if (c && role() === 'teamleider' && c.deelKey && c.data && c.data.sharedAt && c.deelGelezenVoor !== String(c.data.sharedAt)) { c.deelGelezen = new Date().toISOString(); c.deelGelezenVoor = String(c.data.sharedAt); saveCVS(); }
+      } catch (e) { /* geen dossier */ }
+      return r;
+    };
+  }
   if (typeof renderCadets === 'function') {
     var origRender = renderCadets;
     window.renderCadets = renderCadets = function () { var r = origRender.apply(this, arguments); try { stafNieuwPaneel(); dashBij(); } catch (e) { /* geen lijst */ } return r; };

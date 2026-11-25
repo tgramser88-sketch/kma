@@ -163,7 +163,8 @@
   }
   /** Knop voor de 144 extra stellingen als de korte klaar is en de lange gekozen of nog niet gemaakt. */
   function langHtml() {
-    var X = window.kmaHex240; if (!X || X.klaar()) return '';
+    var X = window.kmaHex240; if (!X) return '';
+    if (X.klaar()) return X.facetHtml ? X.facetHtml() : '';   // 4.33: na de 240 het facetprofiel
     var n = X.aantal();
     return '<div class="kma-card-block"><h4>' + icon('list') + 'Lange test: 144 extra stellingen</h4><p class="muted small">' + (n ? n + ' van 144 gedaan. ' : '') + 'Maakt de meetfout kleiner en je groeilijn betrouwbaarder. Je kunt pauzeren.</p>' +
       '<button type="button" class="kma-icon-btn' + (keuze() === 'lang' ? ' is-primary' : '') + '" data-meting="lang">' + (n ? 'Ga verder' : 'Start de 144 extra stellingen') + '</button></div>';

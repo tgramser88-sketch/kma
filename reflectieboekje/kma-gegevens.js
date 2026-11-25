@@ -44,7 +44,9 @@
     { sinds: '4.30', wat: 'CVS: stress en welzijn uit oude dossiers blijven bewaard maar worden niet getoond', waar: 'bij lezen', code: 'kma-volg-visuals.js, kma-volg-aandacht.js · test_welzijn_cvs' },
     { sinds: '4.31', wat: 'Deelmap CVS: niveau van de gekozen map (hoofdmap, pelotons of peloton) en "nieuw van je instructeurs"; oude koppelingen zonder niveau werken als hoofdmap', waar: 'bij koppelen en synchroniseren', code: 'kma-deelmap.js: niveau, pelBase, kmaStafNieuw · test_peloton' },
     { sinds: '4.31', wat: 'Keuze korte/lange test als JSON bewaard, zodat hij meegaat in de back-up; de oude vorm (lang) blijft gelden', waar: 'bij lezen en bij de volgende keuze', code: 'kma-boek-meting.js: keuze · test_controle431' },
-    { sinds: '4.31', wat: 'Deelmap CVS: kiest een instructeur later een andere laag van de map, dan zoekt de app het niveau opnieuw (niets gaat verloren)', waar: 'bij synchroniseren', code: 'kma-deelmap.js: findMyPeloton, eigenSleutel · test_controle431' }
+    { sinds: '4.31', wat: 'Deelmap CVS: kiest een instructeur later een andere laag van de map, dan zoekt de app het niveau opnieuw (niets gaat verloren)', waar: 'bij synchroniseren', code: 'kma-deelmap.js: findMyPeloton, eigenSleutel · test_controle431' },
+    { sinds: '4.33', wat: 'CVS-back-up: de beveiligde vorm is een object (cadetten + teamsleutel, instructeurs, peloton, groepscodes); de oude vorm (lijst cadetten) wordt nog gelezen, instructeurs worden samengevoegd', waar: 'bij terugzetten', code: 'kma-transfer.js: cvsTekst; kma-ui-volg.js: importInstructorData; kma-deelmap.js: kmaDeelHerstel · test_deelmap433' },
+    { sinds: '4.33', wat: 'Deelmap: nieuwe bestanden ontvangst.json (cadet) en ontvangst/<id>.json (instructeur); oudere versies negeren ze, conflictkopieën van eigen bestanden worden opgeruimd', waar: 'bij synchroniseren', code: 'kma-deelmap.js: ontvangstNaarCadetten, ontvangstNaarStaf, opruimen · test_deelmap433' }
   ];
 
   var IMG = /^data:image\/(png|jpe?g|webp|gif|bmp|heic|heif);base64,[A-Za-z0-9+/=\s]+$/i;

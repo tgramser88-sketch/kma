@@ -1952,7 +1952,8 @@
     var per = window.KMALijst ? '<div class="kma-chips kma-filter">' + KMALijst.chips('data-learyp', [['alles', 'Alles'], ['30d', 'Laatste 30 dagen'], ['gesprek', g.since ? 'Sinds laatste gesprek (' + fmtDate(g.since) + ')' : 'Sinds laatste gesprek']], learyPer) + '</div>' : '';
     var beeld = (dz.ok || da.ok)
       ? L.rose(dz, da, { label: 'Roos van Leary: jij en anderen' }) + '<div class="kma-leary-legend"><span><i class="a"></i>Zelf (' + dz.n + ')</span><span><i class="b"></i>Anderen (' + da.n + ')</span></div>' +
-        L.axisBars(dz, 'Zelf: gemiddelde plek') + L.axisBars(da, 'Anderen: gemiddelde plek')
+        L.axisBars(dz, 'Zelf: gemiddelde plek') + L.axisBars(da, 'Anderen: gemiddelde plek')+
+        (L.vectorHtml ? L.vectorHtml(g.zelf, g.mede.concat(g.staf), 'Zelf', 'Anderen') : '')
       : kmaEmpty({ icon: 'target', title: 'Nog te weinig om een beeld te geven', text: 'Kies bij een DTF-feit (knop Roos) of bij feedback aan een medecadet welk gedrag je zag. Vanaf ' + L.MIN + ' keer zie je hier hoe je gedrag over de roos verdeeld is.', btn: 'Naar het DTF-logboek', attrs: 'data-leary-go="dtf"' });
     var bron = '<ul class="plain small"><li>Je eigen DTF-feiten: ' + dz.n + nodig(dz) + '</li><li>Medecadetten: ' + g.mede.length + '</li><li>Teamleider en instructeurs: ' + g.staf.length + '</li></ul>' +
       (da.n && !da.ok ? '<p class="muted small">Feedback van anderen: nog ' + (L.MIN - da.n) + ' nodig voor een verdeling.</p>' : '');

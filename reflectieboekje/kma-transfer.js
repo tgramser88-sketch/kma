@@ -166,21 +166,23 @@ window.kmaRenameAnswers = function (a) {
   /* ---------------- Beveiligde back-up ----------------
      Een back-up bevat alles (ook privé-hoofdstukken, of in het CadetVolgSysteem alle cadetten). Daarom wordt bij
      elke back-up gevraagd om een wachtwoord. Terugzetten gaat zoals altijd: de app vraagt dan om het wachtwoord. */
+  /* 4.33 (punt 6): text mag ook een functie zijn die per keuze (beveiligd of niet) de tekst geeft. */
   window.kmaProtectBackup = function (filename, text, save) {
-    if (!subtle()) return save(filename, text, false);
+    var tekst = function (prot) { return typeof text === 'function' ? text(prot) : text; };
+    if (!subtle()) return save(filename, tekst(false), false);
     var ov = sheet('Back-up beveiligen', '<div class="kma-code-body"><p>Een back-up bevat al je gegevens. Met een wachtwoord kan niemand anders het bestand lezen, ook niet als het in verkeerde handen komt.</p>' +
       '<label class="kma-code-lab">Wachtwoord (minstens 10 letters of cijfers)<input type="password" id="kma-bk-pw" autocomplete="new-password"/></label>' +
       '<label class="kma-code-lab">Herhaal het wachtwoord<input type="password" id="kma-bk-pw2" autocomplete="new-password"/></label>' +
       '<p class="muted small">Onthoud dit wachtwoord goed. Zonder wachtwoord kun je de back-up niet terugzetten.</p>' +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-x="plain">Zonder wachtwoord</button><button type="button" class="kma-icon-btn is-primary" data-x="prot">Beveiligd opslaan</button></div></div>', function (e) {
       var b = e.target.closest('[data-x]'); if (!b) return;
-      if (b.getAttribute('data-x') === 'plain') { ov.remove(); save(filename, text, false); return; }
+      if (b.getAttribute('data-x') === 'plain') { ov.remove(); save(filename, tekst(false), false); return; }
       if (b.getAttribute('data-x') !== 'prot') return;
       var pw = ov.querySelector('#kma-bk-pw').value, pw2 = ov.querySelector('#kma-bk-pw2').value;
       if (norm(pw).length < 10) { alert('Kies een wachtwoord van minstens 10 letters of cijfers.'); return; }
       if (pw !== pw2) { alert('De twee wachtwoorden zijn niet gelijk.'); return; }
       b.disabled = true;
-      encrypt(text, pw, { kind: 'backup' }).then(function (t) { ov.remove(); save(filename, t, true); if (window.kmaToast) kmaToast('Back-up beveiligd opgeslagen'); },
+      encrypt(tekst(true), pw, { kind: 'backup' }).then(function (t) { ov.remove(); save(filename, t, true); if (window.kmaToast) kmaToast('Back-up beveiligd opgeslagen'); },
         function () { b.disabled = false; alert('Beveiligen lukt niet op dit toestel.'); });
     });
   };
@@ -193,7 +195,14 @@ window.kmaRenameAnswers = function (a) {
       document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
     };
     var cvsName = function () { return 'KMA_CVS_Database_Backup_' + new Date().toISOString().split('T')[0] + '.json'; };
-    window.exportInstructorData = function () { window.kmaProtectBackup(cvsName(), JSON.stringify(cadets, null, 2), cvsSave); };
+    /* 4.33 (punt 6): een beveiligde back-up bevat ook de teamsleutel, de lijst met instructeurs, het peloton en de groepscodes,
+       zodat de teamleider na een nieuwe telefoon of herinstallatie zijn team niet opnieuw hoeft op te zetten.
+       Zonder wachtwoord blijft het de oude vorm (alleen de lijst cadetten): sleutels nooit onbeveiligd in een bestand. */
+    var cvsTekst = function (prot) {
+      var extra = prot && window.kmaDeelBackup ? window.kmaDeelBackup() : null;
+      return extra ? JSON.stringify({ type: 'kma-cvs-backup', v: 2, at: new Date().toISOString(), cadets: cadets, deel: extra }, null, 2) : JSON.stringify(cadets, null, 2);
+    };
+    window.exportInstructorData = function () { window.kmaProtectBackup(cvsName(), cvsTekst, cvsSave); };
     window.exportInstructorData.kmaProtected = true;
     window.exportInstructorDataBluetooth = function () {
       window.kmaProtectBackup(cvsName(), JSON.stringify(cadets, null, 2), function (name, t) {

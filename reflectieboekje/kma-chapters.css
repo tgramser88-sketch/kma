@@ -857,6 +857,30 @@ html.role-senior [onclick*="import-kma-form-file-input"], html.role-junior [oncl
 .kma-deel-row { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 13.5px; }
 .kma-deel-row span { color: var(--text-muted); }
 .kma-deel-row.warn strong { color: var(--accent-red, #c8463a); }
+.kma-deel-row.ok strong { color: var(--accent-green, #2f7d4f); }
+.kma-controle { list-style: none; padding: 0; margin: 6px 0 10px; }
+.kma-controle li { padding: 8px 10px; margin: 6px 0; border-radius: 8px; border-left: 4px solid var(--accent-red, #c8463a); background: var(--bg-secondary, rgba(0,0,0,.03)); font-size: 13.5px; }
+.kma-controle li.kma-controle-let { border-left-color: var(--accent-gold, #b8860b); }
+.kma-controle li b { display: block; color: var(--text-primary); }
+.kma-controle li span { color: var(--text-secondary, var(--text-primary)); }
+.kma-controle-ok { padding: 10px; border-radius: 8px; border-left: 4px solid var(--accent-green, #2f7d4f); background: var(--bg-secondary, rgba(0,0,0,.03)); }
+.kma-controle-rap pre { white-space: pre-wrap; font-size: 12px; max-height: 180px; overflow: auto; }
+.kma-invite-qr { display: flex; justify-content: center; padding: 10px; background: #fff; border-radius: 8px; margin: 8px 0; }
+.kma-inv-reader { display: none; margin: 8px 0; }
+.kma-inv-reader.on { display: block; }
+.kma-vector { margin: 10px 0; }
+.kma-vector svg { width: 100%; max-width: 300px; display: block; margin: 0 auto; }
+.kma-vector .vz { stroke: var(--accent-gold, #b8860b); fill: var(--accent-gold, #b8860b); }
+.kma-vector .va { stroke: #3d6fb5; fill: #3d6fb5; }
+.kma-vector .vas { stroke: var(--border-color, #ccc); }
+.kma-vector text { font-size: 11px; fill: var(--text-muted, #777); }
+.kma-vector table { width: 100%; font-size: 13px; border-collapse: collapse; margin-top: 6px; }
+.kma-vector td, .kma-vector th { padding: 4px 6px; border-bottom: 1px solid var(--border-color); text-align: left; }
+.kma-facet h5 { margin: 10px 0 4px; font-size: 13.5px; }
+.kma-facet-row { display: grid; grid-template-columns: 9.5em 1fr 2.4em; gap: 8px; align-items: center; font-size: 13px; margin: 3px 0; }
+.kma-facet-row i { display: block; height: 8px; border-radius: 4px; background: var(--border-color, #ddd); position: relative; }
+.kma-facet-row i b { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--accent-gold, #b8860b); }
+.kma-facet-row small { grid-column: 1 / -1; color: var(--text-muted); margin: -2px 0 4px; }
 .kma-deel-btns { margin-top: 12px; flex-wrap: wrap; }
 /* DTF's kiezen om te delen */
 .kma-dtfpick { display: grid; gap: 6px; max-height: 50vh; overflow-y: auto; margin: 8px 0 12px; }

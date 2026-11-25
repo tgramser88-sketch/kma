@@ -186,6 +186,41 @@
     return '<div class="kma-clx" role="group" aria-label="Kwadranten van het communicatie- en leiderschapscircumplex">' + ['bt', 'bs', 'ot', 'os'].map(function (k) { return cel(KW.filter(function (q) { return q.k === k; })[0]); }).join('') + '</div>';
   }
 
-  window.KMALeary = { edit: edit, MIN: MIN, SECT: SECT, clean: clean, fromSector: fromSector, sector: sector, intensity: intensity, label: label,
+  /* 4.33: persoonsvector en stijlflexibiliteit, alleen op de twee assen (besluit 25-11: geen stijlnamen of kleuren van het CLX).
+     Methode: de vectorhoek en vectorlengte van het interpersoonlijk circumplex (Wiggins, 2003; Redeker et al., 2014), hier berekend
+     uit de plekken op de roos die de cadet en anderen kozen. Het is een denkhulp, geen gevalideerde vragenlijstscore. */
+  var RICHTING = ['samen', 'sturen en samen', 'sturen', 'sturen en tegen', 'tegen', 'volgen en tegen', 'volgen', 'volgen en samen'];
+  function vector(list) {
+    var pts = (list || []).map(function (it) { return clean(it && it.leary !== undefined ? it.leary : it); }).filter(function (v) { return !!v; });
+    var n = pts.length; if (!n) return { n: 0, ok: false };
+    var b = pts.reduce(function (a, p) { return a + p.b; }, 0) / n, sv = pts.reduce(function (a, p) { return a + p.s; }, 0) / n;
+    var hoek = (Math.atan2(b, sv) / R + 360) % 360, lengte = Math.min(1, Math.sqrt(b * b + sv * sv) / 2);
+    var sp = pts.reduce(function (a, p) { return a + Math.sqrt((p.b - b) * (p.b - b) + (p.s - sv) * (p.s - sv)); }, 0) / n, sec = {};
+    pts.forEach(function (p) { sec[sector(p).k] = 1; });
+    var breedte = Object.keys(sec).length, spreiding = Math.min(100, Math.round(sp / 2 * 100));
+    return { n: n, ok: n >= MIN, b: Math.round(b * 100) / 100, s: Math.round(sv * 100) / 100, hoek: Math.round(hoek), lengte: Math.round(lengte * 100) / 100,
+      richting: lengte < 0.1 ? 'geen duidelijke richting' : RICHTING[Math.round(hoek / 45) % 8], breedte: breedte, spreiding: spreiding,
+      flex: breedte >= 5 && spreiding >= 40 ? 'breed' : breedte <= 2 || spreiding < 20 ? 'smal' : 'gemiddeld' };
+  }
+  /** Verschil in graden tussen twee richtingen (0-180). */
+  function hoekVerschil(a, b) { var d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; }
+  function vectorHtml(zelfList, anderList, la, lb) {
+    var z = vector(zelfList), a = vector(anderList); la = la || 'Zelf'; lb = lb || 'Anderen';
+    if (!z.ok && !a.ok) return '';
+    var pijl = function (v, cls) { if (!v.ok) return ''; var x = (v.s * 50).toFixed(1), y = (-v.b * 50).toFixed(1); return '<line class="' + cls + '" x1="0" y1="0" x2="' + x + '" y2="' + y + '" stroke-width="3"/><circle class="' + cls + '" cx="' + x + '" cy="' + y + '" r="4"/>'; };
+    var svg = '<svg viewBox="-130 -125 260 250" role="img" aria-label="Persoonsvector op de assen sturen-volgen en samen-tegen">' +
+      '<circle class="vas" r="100" fill="none"/><circle class="vas" r="50" fill="none" stroke-dasharray="3 3"/><line class="vas" x1="-100" y1="0" x2="100" y2="0"/><line class="vas" x1="0" y1="-100" x2="0" y2="100"/>' +
+      '<text x="0" y="-108" text-anchor="middle">Sturen</text><text x="0" y="118" text-anchor="middle">Volgen</text><text x="104" y="4">Samen</text><text x="-104" y="4" text-anchor="end">Tegen</text>' +
+      pijl(z, 'vz') + pijl(a, 'va') + '</svg>';
+    var rij = function (v) { return v.ok ? '<td>' + esc(v.richting) + ' (' + v.hoek + '°)</td><td>' + v.lengte.toFixed(2).replace('.', ',') + '</td><td>' + esc(v.flex) + ' (' + v.breedte + ' van 8, spreiding ' + v.spreiding + ')</td>' : '<td colspan="3" class="muted">nog ' + (MIN - v.n) + ' nodig</td>'; };
+    var verschil = z.ok && a.ok ? '<p class="small">Verschil in richting tussen ' + esc(la.toLowerCase()) + ' en ' + esc(lb.toLowerCase()) + ': <b>' + hoekVerschil(z.hoek, a.hoek) + '°</b>' + (hoekVerschil(z.hoek, a.hoek) > 45 ? '. Dat is een duidelijk verschil: een goed gespreksonderwerp.' : '. Zelfbeeld en beeld van anderen wijzen ongeveer dezelfde kant op.') + '</p>' : '';
+    return '<div class="kma-vector"><p class="small"><b>Persoonsvector en stijlflexibiliteit</b></p>' + svg +
+      '<div class="kma-leary-legend"><span><i class="a"></i>' + esc(la) + '</span><span><i class="b"></i>' + esc(lb) + '</span></div>' +
+      '<table><tr><th>Wie</th><th>Richting</th><th>Lengte</th><th>Flexibiliteit</th></tr><tr><th>' + esc(la) + '</th>' + rij(z) + '</tr><tr><th>' + esc(lb) + '</th>' + rij(a) + '</tr></table>' + verschil +
+      '<p class="muted small">De pijl wijst naar het gemiddelde van alle plekken op de roos. Richting: welke kant het gedrag meestal op gaat. Lengte (0 tot 1): hoe uitgesproken die richting is. Flexibiliteit: in hoeveel van de acht delen gedrag is waargenomen en hoe ver het uiteenligt; breed betekent dat er geschakeld wordt. Dit is een denkhulp uit eigen waarnemingen, geen vragenlijstscore. Methode: vectorhoek en vectorlengte uit het interpersoonlijk circumplex (Wiggins, 2003; Redeker et al., 2014).</p>' +
+      (window.kmaOnderbouwing ? kmaOnderbouwing.link('circumplex') : '') + '</div>';
+  }
+
+  window.KMALeary = { vector: vector, vectorHtml: vectorHtml, hoekVerschil: hoekVerschil, edit: edit, MIN: MIN, SECT: SECT, clean: clean, fromSector: fromSector, sector: sector, intensity: intensity, label: label,
     dist: dist, picker: picker, value: value, set: setPick, rose: rose, axisBars: axisBars, dot: dot, paar: paar, PLAN: PLAN, dotPaar: dotPaar, KW: KW, kwadrant: kwadrant, clx: clx, clxAan: CLX_AAN };
 })();

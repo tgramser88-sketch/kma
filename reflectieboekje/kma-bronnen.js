@@ -70,6 +70,15 @@
     "winstone2017": { "apa": "Winstone, N. E., Nash, R. A., Parker, M., & Rowntree, J. (2017). Supporting learners' agentic engagement with feedback: A systematic review and a taxonomy of recipience processes. *Educational Psychologist, 52*(1), 17-37.", "doi": "10.1080/00461520.2016.1207538" },
     "carless2018": { "apa": "Carless, D., & Boud, D. (2018). The development of student feedback literacy: Enabling uptake of feedback. *Assessment & Evaluation in Higher Education, 43*(8), 1315-1325.", "doi": "10.1080/02602938.2018.1463354" },
     "landy1980": { "apa": "Landy, F. J., & Farr, J. L. (1980). Performance rating. *Psychological Bulletin, 87*(1), 72-107.", "doi": "10.1037/0033-2909.87.1.72" },
+    "ashton2004": { "apa": "Ashton, M. C., Lee, K., Perugini, M., Szarota, P., de Vries, R. E., Di Blas, L., Boies, K., & De Raad, B. (2004). A six-factor structure of personality-descriptive adjectives: Solutions from psycholexical studies in seven languages. *Journal of Personality and Social Psychology, 86*(2), 356-366.", "doi": "10.1037/0022-3514.86.2.356" },
+    "ashton2009types": { "apa": "Ashton, M. C., & Lee, K. (2009). An investigation of personality types within the HEXACO personality framework. *Journal of Individual Differences, 30*(4), 181-187.", "doi": "10.1027/1614-0001.30.4.181" },
+    "devries2009": { "apa": "De Vries, R. E., Ashton, M. C., & Lee, K. (2009). De zes belangrijkste persoonlijkheidsdimensies en de HEXACO Persoonlijkheidsvragenlijst. *Gedrag & Organisatie, 22*(3), 232-274." },
+    "haslam2012": { "apa": "Haslam, N., Holland, E., & Kuppens, P. (2012). Categories versus dimensions in personality and psychopathology: A quantitative review of taxometric research. *Psychological Medicine, 42*(5), 903-920.", "doi": "10.1017/S0033291711001966" },
+    "wiggins2003": { "apa": "Wiggins, J. S. (2003). *Paradigms of personality assessment*. Guilford Press." },
+    "redeker2014": { "apa": "Redeker, M., de Vries, R. E., Rouckhout, D., Vermeren, P., & de Fruyt, F. (2014). Integrating leadership: The leadership circumplex. *European Journal of Work and Organizational Psychology, 23*(3), 435-455.", "doi": "10.1080/1359432X.2012.738671" },
+    "devries2017": { "apa": "De Vries, R. E. (2017). Leadership circumplex. In S. G. Rogelberg (Red.), *The SAGE encyclopedia of industrial and organizational psychology* (2e ed., pp. 874-875). SAGE." },
+    "fabrigar1997": { "apa": "Fabrigar, L. R., Visser, P. S., & Browne, M. W. (1997). Conceptual and methodological issues in testing the circumplex structure of data in personality and social psychology. *Personality and Social Psychology Review, 1*(3), 184-203.", "doi": "10.1207/s15327957pspr0103_1" },
+    "locke2019": { "apa": "Locke, K. D. (2019). Development and validation of a circumplex measure of the interpersonal culture in work teams and organizations. *Frontiers in Psychology, 10*, Artikel 850.", "doi": "10.3389/fpsyg.2019.00850" },
     "hoge2004": { "apa": "Hoge, C. W., Castro, C. A., Messer, S. C., McGurk, D., Cotting, D. I., & Koffman, R. L. (2004). Combat duty in Iraq and Afghanistan, mental health problems, and barriers to care. *New England Journal of Medicine, 351*(1), 13-22.", "doi": "10.1056/NEJMoa040603" }
   },
   "onderdelen": [
@@ -279,6 +288,33 @@
       "effect": "Trainingen in zelfregulerend leren in het hoger onderwijs: g = 0,38 op studieprestaties (49 studies).",
       "grenzen": "Een app is geen training; het effect hangt af van begeleiding en van hoe trouw de cyclus wordt doorlopen.",
       "bronnen": ["zimmerman2002", "theobald2021", "day2014"]
+    },
+    {
+      "id": "dimensies", "apps": ["boek","cvs"], "titel": "Dimensies in plaats van typen", "waar": "Boekje: Persoonlijkheidstest (IPIP), uitslag per eigenschap. CVS: profiel van de cadet.",
+      "hoofdstukken": ["Persoonlijkheidstest (IPIP)"],
+      "wat": "De test geeft op elke eigenschap een plek op een glijdende schaal (een percentiel), geen hokje of type zoals 'introvert' of 'ENTJ'.",
+      "waarom": "Bij onderzoek naar persoonlijkheid blijken mensen bijna altijd op een doorlopende schaal te verschillen, niet in losse groepen. Als je naar groepen zoekt in HEXACO-scores, vind je niet meer structuur dan in willekeurige gegevens met dezelfde verdeling. Een type gooit informatie weg: twee mensen net boven en net onder een grens krijgen een ander label, terwijl ze bijna gelijk scoren. Daarom toont de app scores, banden en een meetfout.",
+      "effect": "",
+      "grenzen": "Een band (laag, gemiddeld, hoog) is ook een grens op een schaal; ligt je score dicht bij een bandgrens, dan meldt de app dat. Typemodellen kunnen een gesprek op gang brengen, maar zijn geen meting.",
+      "bronnen": ["haslam2012", "ashton2009types", "ashton2007"]
+    },
+    {
+      "id": "hexbig5", "apps": ["boek","cvs"], "titel": "HEXACO en de Big Five", "waar": "Boekje: Persoonlijkheidstest (IPIP), facetprofiel na de lange test. CVS: profiel van de cadet.",
+      "hoofdstukken": ["Persoonlijkheidstest (IPIP)"],
+      "wat": "HEXACO beschrijft persoonlijkheid met zes eigenschappen, de Big Five met vijf. Elke HEXACO-eigenschap bestaat uit vier facetten; de lange test (240 stellingen) laat alle 24 facetten zien.",
+      "waarom": "Taalonderzoek in onder meer het Nederlands, Frans, Duits, Italiaans, Pools en Koreaans vond telkens zes in plaats van vijf dimensies. Het verschil met de Big Five: Integriteit (oprechtheid, eerlijkheid, hebzuchtvermijding, bescheidenheid) is een eigen eigenschap, boosheid en ergernis horen bij lage Verdraagzaamheid in plaats van bij emotionele instabiliteit, en meeleven hoort bij Emotionaliteit. Dezelfde naam kan dus net iets anders betekenen. Facetten maken zichtbaar waar een score vandaan komt.",
+      "effect": "",
+      "grenzen": "Een facet rust op tien stellingen en is daardoor minder nauwkeurig dan de eigenschap zelf; lees het als richting. De Nederlandse vertaling van de IPIP-stellingen is niet apart onderzocht. De facetnamen in de app volgen de IPIP-HEXACO en kunnen iets afwijken van die in de HEXACO-PI-R.",
+      "bronnen": ["ashton2004", "ashton2007", "lee2004", "devries2009", "ashton2007ipip"]
+    },
+    {
+      "id": "circumplex", "apps": ["boek","cvs"], "titel": "Persoonsvector en stijlflexibiliteit (circumplex, alleen de assen)", "waar": "Boekje: Roos van Leary, onder de roos. CVS: roos per cadet, onder de roos.",
+      "hoofdstukken": ["Roos van Leary"],
+      "wat": "Alle plekken op de roos samen geven een pijl vanuit het midden: de persoonsvector. De richting zegt welke kant het gedrag meestal op gaat op de twee assen sturen-volgen en samen-tegen; de lengte hoe uitgesproken. Stijlflexibiliteit laat zien in hoeveel van de acht delen gedrag is gezien en hoe ver het uiteenligt. Zelf en anderen staan naast elkaar.",
+      "waarom": "In een circumplex liggen gedragingen rond twee assen; elke gedraging of vraag krijgt een hoek en een lengte (de vectormethode). Onderzoek naar het leiderschapscircumplex laat zien dat leidinggevenden en medewerkers dezelfde cirkel gebruiken, maar dat zelfbeeld en beeld van anderen maar matig overeenkomen. Daarom is het verschil tussen de pijl van jezelf en die van anderen een goed gespreksonderwerp. Geen enkele stijl is altijd effectief: wie kan schakelen, past zich aan de situatie aan.",
+      "effect": "",
+      "grenzen": "De app gebruikt alleen de twee assen, geen stijlnamen of kleuren van het communicatie- en leiderschapscircumplex (CLX) van Perco (besluit 23-11, tot er toestemming is). De pijl komt uit eigen waarnemingen op de roos, niet uit een gevalideerde vragenlijst; het is dus geen CLS-score. Pas vanaf vijf waarnemingen per bron. De grenzen voor breed en smal zijn een keuze van de app, geen norm.",
+      "bronnen": ["leary1957", "wiggins2003", "redeker2014", "devries2017", "fabrigar1997", "locke2019"]
     }
   ],
   "voorstel": ["ashton2007", "barford2015", "defensie2019", "jackson2012", "kiesler1983", "leary1957", "lee2004", "lee2018", "roberts2006", "vazire2010", "wiggins1979"]

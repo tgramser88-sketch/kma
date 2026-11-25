@@ -178,6 +178,52 @@
     return KMAHex.plain(KMAHex.score(all, b.qs.concat(ITEMS)));
   }
   function wis() { st().removeItem(K); }
+  /* 4.33: facetprofiel van de lange test (24 facetten, elk 10 stellingen over de 96 en de 144 samen). Omschrijvingen in eigen
+     woorden, naar de facetbeschrijvingen van Lee en Ashton (2004) en De Vries, Ashton en Lee (2009). Pas als alle 240 klaar zijn. */
+  var DOMEIN = { H: 'Integriteit', E: 'Emotionaliteit', X: 'Extraversie', A: 'Verdraagzaamheid', C: 'Consciëntieusheid', O: 'Openheid' };
+  var OMSCHR = {
+    'Oprechtheid': 'Speelt geen rol en vleit niet om iets gedaan te krijgen.', 'Eerlijkheid': 'Houdt zich aan regels en neemt geen voordeel dat niet toekomt.',
+    'Hebzuchtvermijding': 'Hecht weinig aan luxe, bezit en status.', 'Bescheidenheid': 'Ziet zichzelf als gewoon en eist geen voorrechten op.',
+    'Angstigheid': 'Is voorzichtig bij fysiek gevaar; laag: durft risico aan.', 'Bezorgdheid': 'Maakt zich snel zorgen, ook over kleine dingen.',
+    'Afhankelijkheid': 'Zoekt steun en troost bij anderen als het moeilijk is.', 'Sentimentaliteit': 'Leeft sterk mee met anderen en voelt zich met hen verbonden.',
+    'Expressiviteit': 'Laat zich zien en horen in een groep.', 'Sociale durf': 'Voelt zich zeker bij spreken voor een groep en het nemen van de leiding.',
+    'Sociabiliteit': 'Zoekt graag gezelschap en gesprekken op.', 'Levendigheid': 'Heeft veel energie en is meestal optimistisch.',
+    'Vergevingsgezindheid': 'Geeft anderen na een fout weer snel vertrouwen.', 'Mildheid': 'Oordeelt mild over anderen als er iets misgaat.',
+    'Flexibiliteit': 'Past zich aan, sluit compromissen en vermijdt onnodig conflict.', 'Geduld': 'Blijft kalm en wordt niet snel boos.',
+    'Ordelijkheid': 'Houdt orde en structuur in spullen en werk.', 'IJver': 'Werkt hard en zet door om een doel te halen.',
+    'Perfectionisme': 'Let op details en wil dat iets precies klopt.', 'Bedachtzaamheid': 'Denkt eerst na en weegt gevolgen af voor hij handelt.',
+    'Esthetische waardering': 'Geniet van kunst, muziek en natuur.', 'Nieuwsgierigheid': 'Wil weten hoe dingen werken en zoekt kennis op.',
+    'Creativiteit': 'Bedenkt graag nieuwe ideeën en oplossingen.', 'Onconventionaliteit': 'Staat open voor het ongewone en volgt niet vanzelf de gewoonte.'
+  };
+  /** [{trait, facet, score 0-100, n}] in de volgorde H E X A C O; null als de 240 niet klaar zijn. */
+  function facetten() {
+    if (!klaar() || !basisKlaar()) return null;
+    var b = basis(), a = antwoorden(), all = {}, k, per = {}, volg = [];
+    for (k in b.ans) if (Object.prototype.hasOwnProperty.call(b.ans, k)) all[k] = b.ans[k];
+    for (k in a) if (Object.prototype.hasOwnProperty.call(a, k)) all[k] = a[k];
+    b.qs.concat(ITEMS).forEach(function (q) {
+      var v = Number(all[q.id]); if (!q.facet || !(v >= 1 && v <= 5)) return;
+      var key = q.trait + '|' + q.facet; if (!per[key]) { per[key] = { trait: q.trait, facet: q.facet, som: 0, n: 0 }; volg.push(key); }
+      per[key].som += q.reversed ? 6 - v : v; per[key].n++;
+    });
+    return ['H', 'E', 'X', 'A', 'C', 'O'].reduce(function (out, t) {
+      volg.filter(function (x) { return per[x].trait === t; }).forEach(function (x) { var f = per[x]; out.push({ trait: t, facet: f.facet, n: f.n, score: Math.round((f.som / f.n - 1) / 4 * 100) }); });
+      return out;
+    }, []);
+  }
+  function facetHtml() {
+    var f = facetten(); if (!f) return '';
+    var e2 = function (t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+    return '<div class="kma-card-block kma-facet" id="kma-facet"><h4>' + icon('list') + 'Je facetprofiel (lange test)</h4>' +
+      '<p class="muted small">Elke eigenschap bestaat uit vier facetten. Zo zie je waar een score vandaan komt: twee cadetten met dezelfde score op Consciëntieusheid kunnen heel verschillend zijn in Ordelijkheid of IJver. Elk facet rust op 10 stellingen, dus lees het als een richting, niet als een exact cijfer (0 = laag, 100 = hoog).</p>' +
+      ['H', 'E', 'X', 'A', 'C', 'O'].map(function (t) {
+        return '<h5>' + e2(DOMEIN[t]) + '</h5>' + f.filter(function (x) { return x.trait === t; }).map(function (x) {
+          return '<div class="kma-facet-row"><span>' + e2(x.facet) + '</span><i aria-hidden="true"><b style="width:' + x.score + '%"></b></i><strong>' + x.score + '</strong><small>' + e2(OMSCHR[x.facet] || '') + '</small></div>';
+        }).join('');
+      }).join('') +
+      '<p class="muted small">Bron: facetten van het HEXACO-model (Lee & Ashton, 2004; Nederlandse beschrijving: De Vries, Ashton & Lee, 2009), gemeten met de IPIP-HEXACO (Ashton, Lee & Goldberg, 2007, publiek domein). Omschrijvingen in eigen woorden.</p>' +
+      (window.kmaOnderbouwing ? kmaOnderbouwing.link('hexbig5') : '') + '</div>';
+  }
 
   var ov = null;
   function sluit() { if (ov) { ov.remove(); ov = null; document.body.classList.remove('kma-test-open'); } }
@@ -225,5 +271,5 @@
     }
     teken();
   }
-  window.kmaHex240 = { ITEMS: ITEMS, antwoorden: antwoorden, aantal: aantal, klaar: klaar, basisKlaar: basisKlaar, aangeboden: aangeboden, extra: extra, domein240: domein240, open: open, sluit: sluit, wis: wis };
+  window.kmaHex240 = { facetten: facetten, facetHtml: facetHtml, ITEMS: ITEMS, antwoorden: antwoorden, aantal: aantal, klaar: klaar, basisKlaar: basisKlaar, aangeboden: aangeboden, extra: extra, domein240: domein240, open: open, sluit: sluit, wis: wis };
 })();
