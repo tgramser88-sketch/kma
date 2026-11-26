@@ -2103,3 +2103,40 @@ body.dark-theme .kma-bw-ok { color: #7fd1a0; }
 .kma-oefening .kma-field { display: block; margin: 6px 0; }
 .kma-oefening .kma-field span { display: block; font-size: 13px; margin-bottom: 2px; }
 .kma-oefening input { width: 100%; box-sizing: border-box; }
+
+/* 4.38: alleen de DTF's als PDF (CadetVolgSysteem) */
+.kma-dtfp { position: fixed; inset: 0; z-index: 16500; overflow-y: auto; background: #d9d6cc; color: #172019; -webkit-overflow-scrolling: touch; }
+.kma-dtfp-bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 10px 12px; padding-top: max(10px, env(safe-area-inset-top)); background: #18251d; color: #fff; }
+.kma-dtfp-bar strong { font-family: 'KMA Tekst', sans-serif; font-size: 15px; }
+.kma-dtfp-keuze { max-width: 794px; margin: 12px auto; display: flex; flex-wrap: wrap; gap: 12px; padding: 0 12px; font-size: 14px; }
+.kma-dtfp-keuze fieldset { border: 1px solid #b8b3a4; border-radius: 8px; padding: 6px 10px 10px; background: #fff; }
+.kma-dtfp-keuze legend { font-weight: 700; font-size: 13px; padding: 0 4px; }
+.kma-dtfp-keuze label { display: inline-flex; align-items: center; gap: 4px; margin-right: 10px; min-height: 32px; }
+.kma-dtfp-doc { max-width: 794px; margin: 0 auto 40px; padding: 24px 28px; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.15); font-family: 'KMA Tekst', system-ui, sans-serif; font-size: 12.5px; line-height: 1.45; color: #172019; }
+.kma-dtfp-hoofd { border-bottom: 2px solid #b8a25a; padding-bottom: 8px; margin-bottom: 12px; }
+.kma-dtfp-merk { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #6f5f22; font-weight: 700; }
+.kma-dtfp-hoofd h1 { font-size: 20px; margin: 4px 0; }
+.kma-dtfp-hoofd p { margin: 2px 0; color: #3d463f; }
+.kma-dtfp-vtr { font-style: italic; color: #a91f2b !important; }
+.kma-dtfp-cadet h2 { font-size: 16px; margin: 16px 0 2px; border-bottom: 1px solid #d8d8cf; padding-bottom: 2px; }
+.kma-dtfp-cadet h2 small { font-weight: 400; color: #5c645c; font-size: 12px; }
+.kma-dtfp-n, .kma-dtfp-leeg { color: #5c645c; margin: 2px 0 6px; }
+.kma-dtfp-item { border-left: 4px solid #b8a25a; padding: 4px 10px; margin: 6px 0; break-inside: avoid; page-break-inside: avoid; }
+.kma-dtfp-item.pos { border-left-color: #2f9e5b; }
+.kma-dtfp-item.neg { border-left-color: #a91f2b; }
+.kma-dtfp-item p { margin: 2px 0; }
+.kma-dtfp-feit { white-space: pre-wrap; }
+.kma-dtfp-kop span { color: #5c645c; }
+.kma-dtfp-t { font-size: 11px; font-weight: 700; padding: 0 6px; border-radius: 8px; border: 1px solid; }
+.kma-dtfp-t.pos { color: #1f6e3f; } .kma-dtfp-t.neg { color: #a91f2b; }
+.kma-dtfp-v { display: inline-block; font-size: 11px; border: 1px solid; border-left-width: 6px; border-radius: 4px; padding: 0 5px; }
+body.kma-dtfp-open { overflow: hidden; }
+@media print {
+  body.kma-print-dtf { background: #fff !important; }
+  body.kma-print-dtf > *:not(.kma-dtfp) { display: none !important; }
+  body.kma-print-dtf .kma-dtfp { position: static; overflow: visible; background: #fff; }
+  body.kma-print-dtf .kma-dtfp-bar, body.kma-print-dtf .kma-dtfp-keuze { display: none !important; }
+  body.kma-print-dtf .kma-dtfp-doc { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+  body.kma-print-dtf .kma-dtfp-cadet + .kma-dtfp-cadet { break-before: page; page-break-before: always; }
+  body.kma-print-dtf * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
