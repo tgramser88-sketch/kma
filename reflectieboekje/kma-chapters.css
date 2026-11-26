@@ -2140,3 +2140,82 @@ body.kma-dtfp-open { overflow: hidden; }
   body.kma-print-dtf .kma-dtfp-cadet + .kma-dtfp-cadet { break-before: page; page-break-before: always; }
   body.kma-print-dtf * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* 4.39: DTF-logboek in het CVS in één stijl (was opmaak per element in 03-dossier.js) */
+.kma-dtf-sec { background: var(--bg-widget); padding: 20px; border: 1px solid var(--border-color); border-radius: 6px; }
+.kma-dtf-kop { color: var(--accent-gold); margin-top: 0; }
+.kma-dtf-pdf-knop { padding: 8px 14px; font-size: 13px; margin: 0 0 12px; }
+.kma-dtf-intro { font-size: 13px; color: var(--text-muted); margin: 0 0 14px; }
+.kma-dtf-lijst { margin-bottom: 16px; }
+.kma-dtf-leeg { font-size: 13px; color: var(--text-muted); font-style: italic; margin: 0 0 16px; }
+.kma-dtf-entry { background: var(--bg-card-deep); border-left: 4px solid var(--accent-gold); padding: 14px; border-radius: 4px; position: relative; }
+.kma-dtf-entry-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+.kma-dtf-wanneer { color: var(--accent-gold); font-size: 14px; }
+.kma-dtf-wis { border-color: var(--kma-warn); color: var(--kma-warn-text); padding: 3px 10px; font-size: 13px; flex: none; }
+.kma-dtf-feit { margin: 0 0 10px; font-size: 14px; color: var(--text-primary); white-space: pre-wrap; line-height: 1.5; }
+.kma-dtf-stap { margin-bottom: 10px; }
+.kma-dtf-vs { display: flex; flex-wrap: wrap; gap: 4px; }
+.kma-dtf-v { --v: #777; display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 12px; color: var(--text-primary); background: color-mix(in srgb, var(--v) 22%, transparent); border: 1px solid var(--v); }
+.kma-dtf-geenv { font-size: 13px; color: var(--text-muted); }
+.kma-dtf-filter { display: grid; gap: 6px; margin: 0 0 12px; }
+.kma-dtf-filter .kma-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.kma-dtf-filter .kma-vdot, .kma-zk .kma-vdot { width: 16px; height: 16px; font-size: 10px; margin-right: 4px; }
+.kma-dtf-filter-n { margin: 2px 0 0; font-size: 13px; color: var(--text-muted); }
+.kma-dtf-nieuw { margin-top: 4px; }
+.kma-dtf-nieuw > summary { list-style: none; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 12px 18px; font-size: 15px; border-radius: 8px; }
+.kma-dtf-nieuw > summary::-webkit-details-marker { display: none; }
+.kma-dtf-nieuw[open] > summary { margin-bottom: 12px; }
+.kma-dtf-form { background: var(--bg-main); padding: 18px; border: 1px solid var(--accent-gold); border-radius: 8px; }
+.kma-dtf-rij2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.kma-dtf-veld { margin-bottom: 14px; }
+.kma-dtf-lab { font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 4px; }
+.kma-dtf-lab-v { font-weight: 700; color: var(--accent-gold); margin-bottom: 10px; }
+.kma-dtf-in { width: 100%; box-sizing: border-box; padding: 12px; background: var(--bg-widget); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; }
+.kma-dtf-v4 { margin-bottom: 18px; }
+.kma-dtf-v4-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.kma-dtf-v4-k { display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; background: var(--bg-widget); padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 6px; }
+.kma-dtf-v4-k input { width: 20px; height: 20px; accent-color: var(--accent-red); }
+.kma-dtf-opslaan { width: 100%; padding: 16px; font-size: 15px; border-radius: 8px; }
+
+/* 4.39: Zoeken in DTF's (CVS) */
+.kma-zk-lab { display: block; font-size: 13px; color: var(--text-muted); margin: 0 0 4px; }
+.kma-zk-keuze { display: grid; gap: 6px; margin: 10px 0; }
+.kma-zk-keuze .kma-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.kma-zk-res { display: grid; gap: 6px; max-height: 50vh; overflow-y: auto; }
+.kma-zk-n { margin: 4px 0; font-size: 13px; color: var(--text-muted); }
+.kma-zk-item { display: grid; gap: 3px; text-align: left; width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border-color); border-left: 4px solid var(--accent-gold); background: var(--bg-card-deep, transparent); color: var(--text-primary); font: inherit; cursor: pointer; }
+.kma-zk-item.pos { border-left-color: #2f9e5b; }
+.kma-zk-item.neg { border-left-color: #a91f2b; }
+.kma-zk-top { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 13px; }
+.kma-zk-top span { color: var(--text-muted); }
+.kma-zk-feit { font-size: 14px; line-height: 1.4; }
+.kma-zk-vs { display: flex; gap: 2px; }
+
+/* 4.39: Vandaag in het CVS: hooguit drie dingen, de rest onder "Nog …" */
+.kma-aandacht .kma-staf-nieuw { margin: 6px 0 4px; }
+
+/* 4.39: uitleg per hoofdstuk (boekje) ingeklapt na het eerste bezoek */
+.kma-opbouw .kma-ob-uitleg > summary { cursor: pointer; font-weight: 700; min-height: 32px; display: flex; align-items: center; gap: 6px; color: var(--text-primary); }
+.kma-opbouw .kma-ob-uitleg[open] > summary { margin-bottom: 4px; }
+.kma-opbouw .kma-ob-uitleg .kma-ob-rij { margin: 2px 0 6px; }
+
+/* 4.39: laadindicatie bij het bijwerken van de deelmap (B: pil onderaan, C: laag met embleem na 1,5 s) */
+@keyframes kma-lader-draai { to { transform: rotate(360deg); } }
+@keyframes kma-lader-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes kma-lader-puls { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+.kma-lader { position: fixed; inset: 0; z-index: 17000; pointer-events: none; }
+.kma-lader-pil { position: absolute; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: #0c140f; border: 1px solid #8a7a3a; color: #d8cb92; font: 600 13px/1.2 'KMA Tekst', system-ui, sans-serif; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,.35); }
+.kma-lader-ring { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #3a4d40; border-top-color: #d8cb92; animation: kma-lader-draai .9s linear infinite; will-change: transform; flex: none; }
+.kma-lader-laag { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: rgba(12, 20, 15, .86); color: #f1efe8; text-align: center; padding: 24px; opacity: 0; animation: kma-lader-in .3s ease 1.5s forwards; will-change: opacity; font-family: 'KMA Tekst', system-ui, sans-serif; }
+.kma-lader-laag b { font-size: 16px; }
+.kma-lader-laag small { font-size: 13px; color: #b4b2a9; opacity: 0; animation: kma-lader-in .4s ease 8s forwards; }
+.kma-lader-embleem { position: relative; width: 84px; height: 84px; display: flex; align-items: center; justify-content: center; }
+.kma-lader-embleem img { width: 46px; height: auto; animation: kma-lader-puls 1.6s ease-in-out infinite; }
+.kma-lader-ring.groot { position: absolute; inset: 0; width: auto; height: auto; border-width: 3px; border-color: #2c3d31; border-top-color: #d8cb92; animation-duration: 1.1s; }
+@media (prefers-reduced-motion: reduce) { .kma-lader-ring, .kma-lader-embleem img { animation: none; } .kma-lader-laag { animation-duration: .01s; } }
+@media print { .kma-lader { display: none !important; } }
+.kma-dtf-filter-box { margin: 0 0 10px; }
+.kma-dtf-filter-box > summary { cursor: pointer; min-height: 40px; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: var(--accent-gold); }
+.kma-dtf-filter-box > summary em { font-style: normal; background: var(--accent-gold); color: #18251d; border-radius: 999px; padding: 0 7px; font-size: 12px; }
+.kma-dtf-filter-box[open] > summary { margin-bottom: 6px; }
+.kma-dtf-vstip { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }

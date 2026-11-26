@@ -46,6 +46,8 @@
     "korthagen2005": { "apa": "Korthagen, F., & Vasalos, A. (2005). Levels in reflection: Core reflection as a means to enhance professional growth. *Teachers and Teaching, 11*(1), 47-71.", "doi": "10.1080/1354060042000337093" },
     "locke2002": { "apa": "Locke, E. A., & Latham, G. P. (2002). Building a practically useful theory of goal setting and task motivation: A 35-year odyssey. *American Psychologist, 57*(9), 705-717.", "doi": "10.1037/0003-066X.57.9.705" },
     "doran1981": { "apa": "Doran, G. T. (1981). There's a S.M.A.R.T. way to write management's goals and objectives. *Management Review, 70*(11), 35-36." },
+    "harkin2016": { "apa": "Harkin, B., Webb, T. L., Chang, B. P. I., Prestwich, A., Conner, M., Kellar, I., Benn, Y., & Sheeran, P. (2016). Does monitoring goal progress promote goal attainment? A meta-analysis of the experimental evidence. *Psychological Bulletin, 142*(2), 198-229.", "doi": "10.1037/bul0000025" },
+    "panadero2019": { "apa": "Panadero, E., & Alqassab, M. (2019). An empirical review of anonymity effects in peer assessment, peer feedback, peer review, peer evaluation and peer grading. *Assessment & Evaluation in Higher Education, 44*(8), 1253-1278.", "doi": "10.1080/02602938.2019.1600186" },
     "gollwitzer2006": { "apa": "Gollwitzer, P. M., & Sheeran, P. (2006). Implementation intentions and goal achievement: A meta-analysis of effects and processes. *Advances in Experimental Social Psychology, 38*, 69-119.", "doi": "10.1016/S0065-2601(06)38002-1" },
     "kiresuk1968": { "apa": "Kiresuk, T. J., & Sherman, R. E. (1968). Goal attainment scaling: A general method for evaluating comprehensive community mental health programs. *Community Mental Health Journal, 4*(6), 443-453.", "doi": "10.1007/BF01530764" },
     "oettingen2012": { "apa": "Oettingen, G. (2012). Future thought and behaviour change. *European Review of Social Psychology, 23*(1), 1-63.", "doi": "10.1080/10463283.2011.643698" },
@@ -110,13 +112,13 @@
       "bronnen": ["korthagen2005", "mann2009"]
     },
     {
-      "id": "smart", "apps": ["boek"], "titel": "SMART-leervraag en als-dan-plannen", "waar": "Boekje: SMART Leervraag (leervraag, als-dan-plannen, wekelijkse check-in).",
+      "id": "smart", "apps": ["boek"], "titel": "SMART-leervraag en als-dan-plannen", "waar": "Boekje: SMART Leervraag (leervraag, als-dan-plannen, komende oefening, wekelijkse check-in, bewijs bij gelukt), Vandaag.",
       "hoofdstukken": ["SMART Leervraag"],
-      "wat": "Je maakt van je leerdoel een specifieke, meetbare leervraag met een datum. De app laat dezelfde leervraag ook zien als HKI-vraag ('Hoe kan ik ...?'), de vorm die de KMA gebruikt. Daarbij maak je tot drie als-dan-plannen: 'Als situatie X, dan doe ik Y'. Elke week check je in: is het gelukt?",
-      "waarom": "Specifieke, uitdagende doelen leiden tot betere prestaties dan 'doe je best'. Een als-dan-plan koppelt het doel aan een herkenbaar moment, zodat je in die situatie bijna vanzelf handelt. De check-in houdt bij of het werkt.",
-      "effect": "Als-dan-plannen: middelgroot tot groot effect op het bereiken van doelen, d = 0,65 (94 toetsen).",
+      "wat": "Je maakt van je leerdoel een specifieke, meetbare leervraag met een datum. De app laat dezelfde leervraag ook zien als HKI-vraag ('Hoe kan ik ...?'), de vorm die de KMA gebruikt. Daarbij maak je tot drie als-dan-plannen: 'Als situatie X, dan doe ik Y'. Elke week check je in: is het gelukt? Eens per maand vraagt de app om een DTF-feit als bewijs bij een plan dat gelukt is. Zet je een komende oefening bij je leervraag, dan vraagt Vandaag daarna in één zin hoe het ging.",
+      "waarom": "Specifieke, uitdagende doelen leiden tot betere prestaties dan 'doe je best'. Een als-dan-plan koppelt het doel aan een herkenbaar moment, zodat je in die situatie bijna vanzelf handelt. De check-in houdt bij of het werkt: wie zijn voortgang regelmatig bijhoudt, haalt vaker zijn doel, vooral als hij het opschrijft. Een DTF-feit als bewijs en de vraag hoe een oefening ging, maken dat bijhouden concreet.",
+      "effect": "Als-dan-plannen: middelgroot tot groot effect op het bereiken van doelen, d = 0,65 (94 toetsen). Voortgang bijhouden: d = 0,40 op het halen van doelen (138 studies).",
       "grenzen": "Werkt vooral als het doel je echt iets zegt. Een SMART-formulering alleen is geen bewezen methode (het acroniem komt uit de managementpraktijk); de kracht zit in specifiek en uitdagend.",
-      "bronnen": ["locke2002", "doran1981", "gollwitzer2006"]
+      "bronnen": ["locke2002", "doran1981", "gollwitzer2006", "harkin2016"]
     },
     {
       "id": "gas", "apps": ["boek"], "titel": "Doel in vijf niveaus (GAS)", "waar": "Boekje: SMART Leervraag, onderdeel Doel in vijf niveaus.",
@@ -209,13 +211,13 @@
       "bronnen": ["hattie2007", "wisniewski2020", "kluger1996"]
     },
     {
-      "id": "medecadet", "apps": ["boek"], "titel": "Feedback van medecadetten", "waar": "Boekje: + Nieuw → Feedback geven, inbox.",
+      "id": "medecadet", "apps": ["boek"], "titel": "Feedback van medecadetten", "waar": "Boekje: + Nieuw → Feedback geven, Feedback vragen, Postvak medecadetten.",
       "hoofdstukken": [],
-      "wat": "Cadetten geven elkaar korte feedbackkaarten (situatie, feit, effect, V, volgende stap). De ontvanger kiest wat hij ermee doet. De kaart volgt het OFGA-gespreksmodel dat de KMA leert (Opening, Feitelijk, Gewenst, Afsluiting): de letters staan bij de velden; de ontvanger sluit af met wat hij ermee gaat doen.",
+      "wat": "Cadetten geven elkaar korte feedbackkaarten (situatie, feit, effect, V, volgende stap). De ontvanger kiest wat hij ermee doet. De kaart volgt het OFGA-gespreksmodel dat de KMA leert (Opening, Feitelijk, Gewenst, Afsluiting): de letters staan bij de velden; de ontvanger sluit af met wat hij ermee gaat doen. Een kaart met naam is digitaal ondertekend, zodat de ontvanger kan zien dat hij echt van die medecadet komt. Een kaart kan ook anoniem: dan staat er alleen bij dat hij uit je eigen groep komt, en je ziet anonieme kaarten pas als je er minstens drie hebt.",
       "waarom": "Feedback van medestudenten verhoogt prestaties, ook omdat je leert door zelf goed te kijken en te formuleren. Feedback van meerdere kanten (360 graden) helpt alleen als de ontvanger er doelen en acties aan verbindt; daarom de vraag 'Wat ga je ermee doen?'.",
       "effect": "Feedback van medestudenten: g = 0,31 (54 studies). 360-gradenfeedback: gemiddeld klein, groter met doelen en opvolging.",
-      "grenzen": "Eén kaart van één medecadet is één perspectief. Zonder oefening is feedback van medestudenten minder nauwkeurig; vriendschap en groepsdruk kunnen meespelen. De labels 'blinde vlek' en 'verborgen kracht' verschijnen pas vanaf drie observatoren; daarvoor is het verschil zelf de boodschap. Kaarten van medecadetten tellen niet mee in de beoordeling door de teamleider.",
-      "bronnen": ["double2020", "smither2005", "hattie2007"]
+      "grenzen": "Eén kaart van één medecadet is één perspectief. Zonder oefening is feedback van medestudenten minder nauwkeurig; vriendschap en groepsdruk kunnen meespelen. Anonimiteit kan helpen om eerlijker en kritischer feedback te geven, maar de onderzoeken spreken elkaar deels tegen; daarom is anoniem een keuze en niet de standaard, en zie je anonieme kaarten pas vanaf drie (dan is niet te raden wie schreef). De labels 'blinde vlek' en 'verborgen kracht' verschijnen pas vanaf drie observatoren; daarvoor is het verschil zelf de boodschap. Kaarten van medecadetten tellen niet mee in de beoordeling door de teamleider.",
+      "bronnen": ["double2020", "smither2005", "hattie2007", "panadero2019"]
     },
     {
       "id": "ontvangen", "apps": ["boek","cvs"], "titel": "Oefenen met feedback ontvangen en geven", "waar": "Boekje: Meer → Oefenen met feedback ontvangen. CVS: Meer → Oefenen met een gesprek.",
@@ -236,9 +238,9 @@
       "bronnen": ["tannenbaum2013", "keiser2021"]
     },
     {
-      "id": "datapunten", "apps": ["boek","cvs"], "titel": "Datapunten en programmatisch toetsen", "waar": "Boekje: Voorbereiding Cadetbeoordeling (mijn datapunten). CVS: datapunten per V, beoordelingsformulier, onderbouwing delen.",
+      "id": "datapunten", "apps": ["boek","cvs"], "titel": "Datapunten en programmatisch toetsen", "waar": "Boekje: Voorbereiding Cadetbeoordeling (mijn datapunten). CVS: datapunten per V, DTF-logboek (filter, Zoeken in DTF's, DTF's als PDF), beoordelingsformulier, onderbouwing delen.",
       "hoofdstukken": ["Voorbereiding Cadetbeoordeling", "Zelfbeoordelingsformulier KMA"],
-      "wat": "Elke observatie (DTF, feedback, nabespreking) is een datapunt met lage inzet: bedoeld om van te leren. Een beoordeling rust op veel datapunten uit meerdere bronnen. De app waarschuwt bij minder dan 5 datapunten of minder dan 2 bronnen per V.",
+      "wat": "Elke observatie (DTF, feedback, nabespreking) is een datapunt met lage inzet: bedoeld om van te leren. Een beoordeling rust op veel datapunten uit meerdere bronnen. De app waarschuwt bij minder dan 5 datapunten of minder dan 2 bronnen per V. In het CVS filter en zoek je de DTF-notities per bron, V en periode, en maak je er een PDF van. De teamleider kan een notitie wissen die niet klopt; die komt bij het delen niet terug.",
       "waarom": "Eén meting is nooit betrouwbaar genoeg voor een zware beslissing. Door veel kleine observaties uit verschillende bronnen te combineren wordt het oordeel betrouwbaarder en kan de cadet er tussendoor van leren. Dit sluit aan op de OER (relevante observaties).",
       "effect": "",
       "grenzen": "Programmatisch toetsen is een samenhangend kader met onderbouwing uit de medische opleidingen, geen enkele interventie met één effectgrootte. De drempels (5 en 2) zijn een keuze, geen norm.",
@@ -263,31 +265,31 @@
       "bronnen": ["landy1980", "woehr1994", "vleuten2012"]
     },
     {
-      "id": "deelmap", "apps": ["cvs"], "titel": "Samenwerken in het team (deelmap)", "waar": "CVS: Peloton en team, Deelmap, 'Nieuw van je instructeurs'.",
+      "id": "deelmap", "apps": ["cvs"], "titel": "Samenwerken in het team (deelmap)", "waar": "CVS: Peloton en team, Deelmap, Deelmap controleren, 'Nieuw van je instructeurs' (op de kaart Vandaag).",
       "hoofdstukken": [],
-      "wat": "Instructeurs koppelen in één stap met een uitnodiging van de teamleider. Hun DTF-notities gaan meteen versleuteld naar de teamleider, die ziet wat er nieuw is en van wie.",
+      "wat": "Instructeurs koppelen in één stap met een uitnodiging van de teamleider. Hun DTF-notities gaan meteen versleuteld naar de teamleider, die ziet wat er nieuw is en van wie. Elk toestel schrijft eigen, nieuwe bestanden, zodat niets wordt overschreven; staat een map dubbel (dat kan in Google Drive), dan voegt de app die samen zonder iets weg te gooien.",
       "waarom": "Een beoordeling is betrouwbaarder als ze rust op veel waarnemingen van meerdere beoordelaars, verspreid over de tijd. Hoe minder stappen het delen kost, hoe meer waarnemingen er bij de teamleider aankomen.",
       "effect": "",
       "grenzen": "Alleen DTF-notities en (van senior-instructeurs) feedback worden gedeeld; stress en welzijn nooit. Een notitie is één waarneming van één persoon.",
       "bronnen": ["vleuten2012", "schuwirth2011"]
     },
     {
-      "id": "coaching", "apps": ["boek","cvs"], "titel": "Coaching en gesprekken met teamleider en senior-instructeur", "waar": "Boekje: Bereid je gesprek voor, afspraken op Vandaag. CVS: gespreksverslagen (teamleider), meelezen en feedback (senior-instructeur).",
+      "id": "coaching", "apps": ["boek","cvs"], "titel": "Coaching en gesprekken met teamleider en senior-instructeur", "waar": "Boekje: Bereid je gesprek voor, afspraken op Vandaag. CVS: Vandaag (wie heeft aandacht nodig), gespreksverslagen en gespreksmodus (teamleider), meelezen en feedback (senior-instructeur).",
       "hoofdstukken": [],
-      "wat": "Regelmatige gesprekken waarin de teamleider vragen stelt, de cadet zelf een doel en een afspraak kiest, en die afspraak in het volgende gesprek terugkomt. Daarnaast is er de senior-instructeur: die coacht en begeleidt alleen en beoordeelt niet.",
+      "wat": "Regelmatige gesprekken waarin de teamleider vragen stelt, de cadet zelf een doel en een afspraak kiest, en die afspraak in het volgende gesprek terugkomt. De kaart Vandaag in het CVS herinnert de teamleider eraan: een vervolggesprek dat eraan komt, een cadet die al vier weken niets deelde, of zes weken zonder gesprek. In de gespreksmodus staan de datapunten per V, open afspraken en de roos bij elkaar. Daarnaast is er de senior-instructeur: die coacht en begeleidt alleen en beoordeelt niet.",
       "waarom": "Coaching in organisaties heeft positieve effecten op prestaties, welbevinden, omgaan met druk en vooral op doelgerichte zelfsturing. Leiderschap ontwikkelt zich over jaren via ervaring, feedback en zelfbeeld; gesprekken verbinden die.",
       "effect": "Coaching: van g = 0,43 (omgaan met druk) tot g = 0,74 (doelgerichte zelfsturing).",
       "grenzen": "De studies gaan vooral over professionele coaches, niet over een teamleider die ook beoordeelt. Wie beoordeeld wordt, deelt minder snel twijfels en fouten; programmatisch toetsen raadt daarom aan coachen en beslissen te scheiden. De senior-instructeur maakt dat deels mogelijk: bij hem kan de cadet vrijer praten, omdat hij niet beoordeelt. Bij de teamleider blijft de dubbele rol bestaan en zijn duidelijke afspraken nodig over wat wel en niet meetelt.",
       "bronnen": ["theeboom2014", "day2014", "vleuten2012", "watling2019"]
     },
     {
-      "id": "zelfregulatie", "apps": ["boek"], "titel": "Zelfregulerend leren (de cyclus in het boekje)", "waar": "Boekje: Vandaag, leervraag, check-in, DTF en terugblik.",
+      "id": "zelfregulatie", "apps": ["boek"], "titel": "Zelfregulerend leren (de cyclus in het boekje)", "waar": "Boekje: Vandaag, weekdoel en weekevaluatie (Dashboard), leervraag, check-in, DTF, terugblik en Mijn leerlijn.",
       "hoofdstukken": ["Mijn groei & ontwikkeling", "Introductie & Drijfveren"],
-      "wat": "Vooruitdenken (doel kiezen), uitvoeren en bijhouden (DTF, check-in) en terugkijken (reflectie). Het boekje is rond die cyclus gebouwd.",
-      "waarom": "Wie leert zijn eigen leren te plannen, te volgen en te evalueren, presteert beter. De grootste effecten komen van metacognitieve strategieën: weten wat je doet en waarom.",
+      "wat": "Vooruitdenken (doel kiezen, ook als weekdoel), uitvoeren en bijhouden (DTF, check-in) en terugkijken (reflectie, weekevaluatie). Het boekje is rond die cyclus gebouwd. Mijn leerlijn zet per opleidingsjaar naast elkaar wat je wilde, wat je deed en wat anderen zagen.",
+      "waarom": "Wie leert zijn eigen leren te plannen, te volgen en te evalueren, presteert beter. De grootste effecten komen van metacognitieve strategieën: weten wat je doet en waarom. Voortgang zichtbaar maken (de weekcyclus en de leerlijn) helpt doelen te halen.",
       "effect": "Trainingen in zelfregulerend leren in het hoger onderwijs: g = 0,38 op studieprestaties (49 studies).",
       "grenzen": "Een app is geen training; het effect hangt af van begeleiding en van hoe trouw de cyclus wordt doorlopen.",
-      "bronnen": ["zimmerman2002", "theobald2021", "day2014"]
+      "bronnen": ["zimmerman2002", "theobald2021", "day2014", "harkin2016"]
     },
     {
       "id": "dimensies", "apps": ["boek","cvs"], "titel": "Dimensies in plaats van typen", "waar": "Boekje: Persoonlijkheidstest (IPIP), uitslag per eigenschap. CVS: profiel van de cadet.",

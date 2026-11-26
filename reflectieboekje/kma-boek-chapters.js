@@ -1171,7 +1171,7 @@
         (window.KMALeary && dtfItems.some(function (d) { return KMALeary.clean(d.leary); }) ? '<div class="kma-filter-lab">Roos van Leary</div><div class="kma-chips">' + KMALijst.chips('data-dtfl', [['alle', 'Alle']].concat(KMALeary.SECT.map(function (x) { return [x.k, x.n]; })), dtfLeary) + '</div>' : '') +
         '<div class="kma-filter-lab">Periode</div><div class="kma-chips">' + KMALijst.chips('data-dtfp', [['alles', 'Alles'], ['30d', 'Laatste 30 dagen'], ['gesprek', since ? 'Sinds laatste gesprek (' + fmtDate(since) + ')' : 'Sinds laatste gesprek']], dtfPeriode) + '</div></details>' : '') +
       (list.length ? (window.KMALijst ? KMALijst.render('dtf', list, { key: dtfFilter + dtfTeken + dtfBron + dtfPeriode + dtfLeary, date: function (d) { return d.datum; }, row: dtfRow }) : list.map(function (d) { return dtfRow(d).body; }).join(''))
-        : (dtfItems.length ? '<p class="muted">Geen feiten met deze filters.</p>' : kmaEmpty({ icon: 'calendar', title: 'Nog geen DTF-feiten', text: 'Leg vast wat er gebeurde: datum, tijd en het feit, zonder oordeel. Zo heb je later voorbeelden voor je gesprek en je beoordeling.', btn: 'Eerste feit vastleggen', attrs: 'data-act="dtf-open"' }))) +
+        : (dtfItems.length ? '<p class="muted kma-dtf-geen">Geen feiten met deze filters. <button type="button" class="kma-link-btn" data-dtf-reset>Filters wissen</button></p>' : kmaEmpty({ icon: 'calendar', title: 'Nog geen DTF-feiten', text: 'Leg vast wat er gebeurde: datum, tijd en het feit, zonder oordeel. Zo heb je later voorbeelden voor je gesprek en je beoordeling.', btn: 'Eerste feit vastleggen', attrs: 'data-act="dtf-open"' }))) +
       '<button type="button" class="kma-fab kma-dtf-fab" data-act="dtf-open">' + icon('plus') + '<span>Nieuw feit</span></button></div>';
   };
   var dtfLeary = 'alle', dtfSign = '', dtfTeken = 'alle', dtfBron = 'alle', dtfPeriode = 'alles';
@@ -1267,6 +1267,7 @@
   document.addEventListener('click', function (e) {
     var f = e.target.closest('[data-dtff]');
     if (f) { dtfFilter = f.getAttribute('data-dtff'); renderWidgets(); return; }
+    if (e.target.closest('[data-dtf-reset]')) { dtfFilter = 'Alle'; dtfTeken = 'alle'; dtfBron = 'alle'; dtfPeriode = 'alles'; dtfLeary = 'alle'; renderWidgets(); return; }   // 4.39
     if (e.target.closest('[data-act="dtf-open"]')) {
       dtfFormOpen = true;
       var form = document.querySelector('.kma-dtf-form');
@@ -1861,7 +1862,7 @@
   function pct(a, b) { return b ? Math.round(a / b * 100) + '%' : '-'; }
   function feedbackKwaliteitHtml() {
     var k = feedbackKwaliteit();
-    if (!k.n && !k.ok && !k.rt) return '<p class="muted small">Nog geen feedback ontvangen. Vraag een medecadet om feedback (menu ⋮ → Feedback van medecadetten).</p>';
+    if (!k.n && !k.ok && !k.rt) return kmaEmpty({ small: true, icon: 'message', title: 'Nog geen feedback ontvangen', text: 'Vraag je groep of een paar medecadetten om feedback; hier zie je daarna wat je ermee doet.', btn: 'Feedback vragen', btnIcon: 'send', attrs: 'data-kam-ask' });
     var bar = function (label, a, b, uitleg) { var p = b ? Math.round(a / b * 100) : 0; return '<div class="kma-fbq"><div class="kma-fbq-top"><span>' + label + '</span><b>' + a + ' van ' + b + ' (' + pct(a, b) + ')</b></div><i><b style="width:' + p + '%"></b></i>' + (uitleg ? '<small class="muted">' + uitleg + '</small>' : '') + '</div>'; };
     return (k.n ? bar('Kaarten met een volgende stap', k.tip, k.n, 'Feedback met een concrete volgende stap helpt het meest.') +
         bar('Kaarten waar jij een actie bij schreef', k.actie, k.n, k.actie < k.n ? 'Schrijf bij elke kaart wat je ermee gaat doen; zonder die stap verandert er weinig.' : 'Bij elke kaart weet je wat je ermee doet.') : '') +
@@ -1923,7 +1924,7 @@
   R['groei'] = function (c) {
     var g = groeiData();
     c.innerHTML = groeiTiles(g) +
-      cardHtml('Beoordelingen over tijd', groeiV(g) || '<p class="muted">Nog geen beoordelingen. Na je zelfbeoordeling (hoofdstuk Zelfbeoordelingsformulier) en de beoordeling van je teamleider zie je hier per V hoe je groeit.</p>', 'chart') +
+      cardHtml('Beoordelingen over tijd', groeiV(g) || kmaEmpty({ small: true, icon: 'form', title: 'Nog geen beoordelingen', text: 'Na je zelfbeoordeling en de beoordeling van je teamleider zie je hier per V hoe je groeit.', btn: 'Naar je zelfbeoordeling', btnIcon: 'right', attrs: 'data-empty-step="Zelfbeoordeling"' }), 'chart') +
       (g.v4.length > 1 ? cardHtml('Eigen score per V (1-10)', V.lineChart(g.v4.map(function (h) { return fmtDate(h.date).replace(/ \d{4}$/, ''); }), VS.map(function (v, i) { return { label: v, color: VCOL[v], values: g.v4.map(function (h) { return h.s[i]; }) }; }), { yMin: 0, yMax: 10, ticks: [0, 5, 10], label: 'Eigen score per V', connect: true }) + V.legend(VS.map(function (v) { return { label: v, color: VCOL[v] }; })), 'activity') : '') +
       (Object.keys(g.months).length ? cardHtml('DTF-feiten per maand', groeiDtf(g), 'calendar') : '') +
       cardHtml('Mijn leerlijn', '<div id="kma-leerlijn">' + leerlijnHtml() + '</div>', 'trend') +

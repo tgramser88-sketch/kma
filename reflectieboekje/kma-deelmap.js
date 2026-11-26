@@ -258,11 +258,54 @@
     setJ(DUBBEL_K, s);
     return u;
   }
+  /* 4.39: laadindicatie bij het bijwerken van de deelmap. Op Android leest de app de map in Google Drive of OneDrive
+     zo dat het scherm wacht tot het lezen klaar is. Daarom staat de indicatie er al vóór het lezen begint (één
+     beeldje wachten) en beweegt hij alleen met opmaak (CSS-animatie), die de telefoon zelf blijft afspelen:
+     - B: altijd een kleine pil "Deelmap bijwerken…" onderaan;
+     - C: duurt het langer dan 1,5 seconde, dan een donkere laag met het embleem en een draaiende gouden ring;
+       na 8 seconden ook "Duurt het lang? Controleer je verbinding." De laag houdt geen tikken tegen.
+     De duur van de laatste ronde staat in kma-deel-duur (komt mee in het foutrapport van Deelmap controleren). */
+  var LADER_K = 'kma-deel-duur', laderWacht = false;
+  function lader(aan) {
+    var el = document.getElementById('kma-lader');
+    if (!aan) { if (el) el.remove(); return; }
+    if (el || !document.body) return;
+    el = document.createElement('div');
+    el.id = 'kma-lader'; el.className = 'kma-lader'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+    el.innerHTML = '<div class="kma-lader-pil"><span class="kma-lader-ring" aria-hidden="true"></span><span>Deelmap bijwerken…</span></div>' +
+      '<div class="kma-lader-laag" aria-hidden="true"><div class="kma-lader-embleem"><span class="kma-lader-ring groot"></span><img src="kma-embleem.svg" alt=""></div>' +
+      '<b>Deelmap wordt bijgewerkt</b><small>Duurt het lang? Controleer je verbinding.</small></div>';
+    document.body.appendChild(el);
+  }
+  function laderDuur(ms) {
+    var d = getJ(LADER_K, {}); d.laatst = ms; d.max = Math.max(d.max || 0, ms); d.at = new Date().toISOString(); d.n = (d.n || 0) + 1;
+    d.gem = Math.round(((d.gem || 0) * (d.n - 1) + ms) / d.n); setJ(LADER_K, d);
+  }
+  function metLader(fn, aan) {
+    return function () {
+      var args = arguments, self = this;
+      if (laderWacht) return Promise.resolve(null);
+      if (busy || !F.ok() || !aan()) return fn.apply(self, args);
+      laderWacht = true; lader(true);
+      return new Promise(function (res) {
+        var klaar = false, go = function () { if (!klaar) { klaar = true; setTimeout(res, 16); } };
+        if (window.requestAnimationFrame) requestAnimationFrame(go);
+        setTimeout(go, 120);   // ook als de app op de achtergrond staat
+      }).then(function () {
+        laderWacht = false;
+        var t0 = Date.now(), r;
+        try { r = fn.apply(self, args); } catch (e) { lader(false); throw e; }
+        return Promise.resolve(r).then(function (x) { laderDuur(Date.now() - t0); lader(false); return x; }, function (e) { lader(false); throw e; });
+      });
+    };
+  }
+  window.kmaDeelLader = { duur: function () { return getJ(LADER_K, {}); } };
   window.kmaDeelDubbel = { basis: dubbelBasis, opruimen: dubbelOpruimen, bij: dubbelBij };
   /** Regels voor "Deelmap controleren" (beide apps). */
   function dubbelControle(add, info, pre) {
     var u = dubbelBij(true) || { samen: [], conflict: [], fout: [] };
     info.dubbeleMappen = u.samen.length + u.conflict.length + u.fout.length;
+    var du = getJ(LADER_K, {}); if (du.n) { info.bijwerkenMs = du.laatst; info.bijwerkenMaxMs = du.max; info.bijwerkenGemMs = du.gem; }
     if (u.samen.length) add(pre + '-dubbel-samengevoegd', 'Dubbele map samengevoegd', 'In de deelmap stond ' + u.samen.map(function (p) { return '"' + p + '"'; }).join(', ') + ' twee keer (dat kan in Google Drive). De inhoud staat nu in één map; er is niets weggegooid.', 'let');
     if (u.conflict.length) add(pre + '-dubbel-teamsleutel', 'Dubbele pelotonmap met een andere teamsleutel', 'De map ' + u.conflict.map(function (p) { return '"' + p + '"'; }).join(', ') + ' bestaat twee keer, elk met een eigen teamsleutel. De app voegt die niet samen. Vraag de teamleider welke de juiste is; de andere kan hij zelf in Google Drive verwijderen.');
     if (u.fout.length) add(pre + '-dubbel-fout', 'Dubbele map niet samengevoegd', 'De map ' + u.fout.map(function (p) { return '"' + p + '"'; }).join(', ') + ' staat twee keer, maar niet alles kon worden overgezet. Er is niets weggehaald. Probeer het later opnieuw (Nu bijwerken).');
@@ -501,6 +544,7 @@
 }
       });
     };
+    window.kmaDeelSync = metLader(window.kmaDeelSync, function () { return !!S().on; });   // 4.39: laadindicatie
     setTimeout(function () { window.kmaDeelSync(false); }, 2500);
     setInterval(function () { if (!document.hidden) window.kmaDeelSync(false); }, 60000);
     autoBij();
@@ -830,6 +874,7 @@
     }).catch(function () { var s = S2(); s.err = 'De deelmap kon niet worden bijgewerkt.'; save2(s); if (manual) toast(s.err, 'error'); return null; })
       .then(function (x) { busy = false; return x; }, function () { busy = false; });
   };
+  window.kmaDeelSync = metLader(window.kmaDeelSync, function () { return !!S2().on; });   // 4.39: laadindicatie
   /** 4.33 (punt 7): conflictkopieën van de eigen bestanden weghalen (teamleider: teamsleutel, feedback, ontvangst; iedereen: eigen stafbestand). */
   function cvsOpruimen() {
     var n = opruimen(base() + 'staf', [myId() + '.json']);
@@ -1241,7 +1286,9 @@
     var old = document.getElementById('kma-staf-nieuw'); if (old) old.remove();
     var h = window.kmaStafNieuwHtml('kma-staf-nieuw'); if (!h) return;
     var d = document.createElement('div'); d.innerHTML = h;
-    grid.parentElement.insertBefore(d.firstChild, grid);
+    // 4.39: in de kaart Vandaag (onder de datum), anders boven de lijst
+    var vd = document.getElementById('kma-aandacht'), sub = vd && vd.querySelector('.kma-vd-sub');
+    if (sub) sub.parentNode.insertBefore(d.firstChild, sub.nextSibling); else grid.parentElement.insertBefore(d.firstChild, grid);
   }
   document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-staf-gezien]')) window.kmaStafGezien(); });
   /* 4.33 (punt 5): opent de teamleider een dossier, dan krijgt de cadet "Gelezen door je teamleider" */

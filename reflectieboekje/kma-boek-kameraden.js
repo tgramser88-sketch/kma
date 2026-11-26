@@ -514,7 +514,7 @@
   function listInbox() {
     var alle = S().inbox, l = zichtbaar(alle), wacht = alle.length - l.length;
     var body = l.length ? '<div class="kma-kam-list">' + l.map(function (c) { return '<button type="button" class="kma-kam-item" data-card="' + esc(c.id) + '">' + cardHtml(c, false) + '</button>'; }).join('') + '</div>'
-      : (window.kmaEmpty ? kmaEmpty({ icon: 'message', title: 'Nog geen feedback van medecadetten', text: 'Vraag je groep om feedback, of scan de QR-code van een medecadet.', small: true }) : '<p class="muted">Nog geen feedback van medecadetten.</p>');
+      : (window.kmaEmpty ? kmaEmpty({ icon: 'message', title: 'Nog geen feedback van medecadetten', text: 'Vraag je groep om feedback, of scan de QR-code van een medecadet.', small: true, btn: 'Feedback vragen', btnIcon: 'send', attrs: 'data-kam-ask' }) : '<p class="muted">Nog geen feedback van medecadetten.</p>');
     if (wacht) body = '<p class="muted small kma-kam-wacht">' + icon('lock') + ' ' + (wacht === 1 ? 'Er wacht 1 anonieme kaart' : 'Er wachten ' + wacht + ' anonieme kaarten') + '. Anonieme kaarten zie je pas als je er minstens ' + ANON_MIN + ' hebt, zodat niet te raden is van wie ze komen.</p>' + body;
     body += '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-x="close">Sluiten</button></div>';
     sheet('Ontvangen feedback', body, function (e) { var b = e.target.closest('[data-card]'); if (b) showCard(b.getAttribute('data-card')); });
@@ -601,7 +601,7 @@
       var n = s.inbox.filter(function (c) { return c.req === r.id; }).length;
       return '<button type="button" class="kma-kam-item" data-mine="' + esc(r.id) + '"><div class="kma-kam-card"><div class="kma-kam-head"><strong>' + esc(r.situatie) + '</strong><span>' + (r.tot ? 'tot ' + esc(fmtDate(r.tot)) : '') + '</span></div>' +
         '<div class="kma-kam-tags"><span class="kma-kam-tag">' + (r.aan === 'groep' ? 'Hele groep' : (Array.isArray(r.aan) ? r.aan.length + ' medecadetten' : 'QR-code of bestand')) + '</span><span class="kma-kam-tag ' + (n ? 'is-keep' : '') + '">' + n + (n === 1 ? ' antwoord' : ' antwoorden') + '</span></div></div></button>';
-    }).join('') + '</div>' : '<p class="muted">Je hebt nog geen feedback gevraagd.</p>';
+    }).join('') + '</div>' : (window.kmaEmpty ? kmaEmpty({ small: true, icon: 'send', title: 'Je hebt nog geen feedback gevraagd', text: 'Vraag je hele groep of een paar medecadetten, met een einddatum.', btn: 'Feedback vragen', btnIcon: 'send', attrs: 'data-kam-ask' }) : '<p class="muted">Je hebt nog geen feedback gevraagd.</p>');
     body += '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-x="close">Sluiten</button></div>';
     sheet('Mijn vragen', body, function (e) { var b = e.target.closest('[data-mine]'); if (b) summary(b.getAttribute('data-mine')); });
   }
@@ -701,6 +701,8 @@
   }
 
   /* ---------------- Start ---------------- */
+  // 4.39: knop "Feedback vragen" in lege schermen (postvak, mijn vragen, Mijn groei)
+  document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-kam-ask]')) { e.preventDefault(); askForm(); } });
   window.kmaKameraad = { kalibratie: kalibratie, bruikbaar: bruikbaar, mijnScores: mijnScores, open: open, give: giveForm, ask: askForm, inbox: listInbox, scan: scanSheet, accept: accept, sync: sync, left: leftThisWeek, newCount: newCount, requests: openRequests, people: people, _S: S };
   badge();
   setTimeout(function () { sync().then(badge); }, 4000);

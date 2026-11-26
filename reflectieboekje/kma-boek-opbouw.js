@@ -46,18 +46,29 @@
     'Roos van Leary': ['LeO 05', 'LeO 06', 'LeO 07', 'LeO 08', 'LeO 09']
   };
   function voor(idx) { var s = steps[idx]; return s ? OPBOUW[s.title] || null : null; }
+  /* 4.39: de uitleg (Wat doe je hier? Waarom?) staat open bij het eerste bezoek aan een hoofdstuk; daarna ingeklapt.
+     "Waarom zo?" en de leertaken blijven altijd zichtbaar. Een hoofdstuk telt als bezocht zodra je naar een ander gaat. */
+  var GK = 'kma-boek-opbouw-gezien', vorige = '';
+  function gezien() { try { var v = JSON.parse(kmaStore.getItem(GK) || '{}'); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; } }
+  function markeer(t) { if (!t) return; var g = gezien(); if (g[t]) return; g[t] = 1; try { kmaStore.setItem(GK, JSON.stringify(g)); } catch (e) { /* vol */ } }
   function render() {
-    var old = document.getElementById('kma-opbouw'); if (old) old.remove();
+    var old = document.getElementById('kma-opbouw'), oudOpen = old && old.querySelector('.kma-ob-uitleg') ? old.querySelector('.kma-ob-uitleg').open : null, oudTitel = old ? old.getAttribute('data-titel') : '';
+    if (old) old.remove();
     var head = document.querySelector('.content-panel .section-heading');
     var o = typeof currentStepIndex !== 'undefined' ? voor(currentStepIndex) : null;
+    var titel = typeof currentStepIndex !== 'undefined' && steps[currentStepIndex] ? steps[currentStepIndex].title : '';
+    if (vorige && vorige !== titel) markeer(vorige);
+    vorige = titel;
     document.body.classList.toggle('kma-met-opbouw', !!(head && o));
     if (!head || !o) return;
+    var open = oudTitel === titel && oudOpen != null ? oudOpen : !gezien()[titel];
     var link = window.kmaOnderbouwing ? '<button type="button" class="kma-waarom" data-waarom="' + esc(o[2]) + '">' + (window.kmaIcon ? kmaIcon('idea') : '') + 'Waarom zo?</button>' : '';
     var card = document.createElement('div');
-    card.id = 'kma-opbouw'; card.className = 'kma-opbouw';
-    card.innerHTML = '<div class="kma-ob-rij"><b>Wat doe je hier?</b><span>' + esc(o[0]) + '</span></div>' +
-      '<div class="kma-ob-rij"><b>Waarom?</b><span>' + esc(o[1]) + '</span></div>' + (link ? '<div class="kma-ob-knop">' + link + '</div>' : '') +
-      (window.kmaLeertaak && LEERTAKEN[steps[currentStepIndex].title] ? '<div class="kma-ob-lt">' + kmaLeertaak.labels(LEERTAKEN[steps[currentStepIndex].title]) + '</div>' : '');
+    card.id = 'kma-opbouw'; card.className = 'kma-opbouw'; card.setAttribute('data-titel', titel);
+    card.innerHTML = '<details class="kma-ob-uitleg"' + (open ? ' open' : '') + '><summary>Wat doe je hier en waarom?</summary>' +
+      '<div class="kma-ob-rij"><b>Wat doe je hier?</b><span>' + esc(o[0]) + '</span></div>' +
+      '<div class="kma-ob-rij"><b>Waarom?</b><span>' + esc(o[1]) + '</span></div></details>' + (link ? '<div class="kma-ob-knop">' + link + '</div>' : '') +
+      (window.kmaLeertaak && LEERTAKEN[titel] ? '<div class="kma-ob-lt">' + kmaLeertaak.labels(LEERTAKEN[titel]) + '</div>' : '');
     head.parentNode.insertBefore(card, head.nextSibling);
   }
   kmaAfter('renderStep', render);
