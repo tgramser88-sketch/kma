@@ -105,7 +105,7 @@
          reservekopie, de privésleutel en de kaartenbak van Kameraden en niet-opgeslagen concepten mee naar het CVS. Ze
          maakten het dossier bovendien "veranderd" zodra ze voor het eerst werden aangemaakt, waardoor het opnieuw werd gedeeld. */
       ['kameraden', 'reserve-sleutel', 'reserve-kopie', 'reserve-toestel', 'reserve-laatste', 'concepten', 'laatste-keuze', 'lijst-uitgebreid',
-        'startwizard', 'snelstart-gezien', 'demo', 'hex-keuze'].forEach(function (k) { delete out[k]; });
+        'startwizard', 'snelstart-gezien', 'demo', 'hex-keuze', 'bewijs-maand'].forEach(function (k) { delete out[k]; });
       // vangnet: nooit iets met een sleutel in JWK-vorm (zoals een privésleutel) delen
       Object.keys(out).forEach(function (k) { try { if (/"kty"\s*:/.test(JSON.stringify(out[k]))) delete out[k]; } catch (e) { delete out[k]; } });
     }

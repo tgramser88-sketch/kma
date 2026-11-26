@@ -248,6 +248,95 @@
     return [{ ic: 'repeat', t: 'Maak een als-dan-plan bij je leervraag', s: 'Spreek af wát je doet in een concrete situatie. Dat verdubbelt ongeveer de kans dat het lukt.', b: 'Plan maken', go: function () { openAdd(); return ''; } }];
   });
 
+  /* ---------------- 4.36 (U31): eens per maand bewijs bij "gelukt" ----------------
+     Was een plan de afgelopen maand (deels) gelukt, maar hangt er in die maand nog geen DTF-feit aan, dan vraagt Vandaag één
+     keer per maand: welk feit laat zien dat het lukte? De cadet koppelt een recent DTF-feit (kma-x-plan-dtf) of legt een nieuw
+     feit vast. "Niet nu" telt als gedaan voor deze maand (kma-x-bewijs-maand: {m: 'YYYY-MM'}). */
+  function maand() { return today().slice(0, 7); }
+  function dagenTerug(n) { var d = new Date(Date.now() - n * 864e5); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function dtfLijst() { return (typeof dtfItems !== 'undefined' && Array.isArray(dtfItems)) ? dtfItems.filter(function (d) { return d && d.id != null; }) : []; }
+  /** Plannen die deze maand bewijs missen. */
+  function zonderBewijs() {
+    var grens = dagenTerug(31), L = links(), dtf = dtfLijst();
+    return list().filter(function (p) {
+      var gelukt = checkins().some(function (c) { return c.id === p.id && c.r === 2 && String(c.week || '') >= dagenTerug(37); }) ||
+        momenten().some(function (m) { return m.id === p.id && m.r === 2 && String(m.at || '').slice(0, 10) >= grens; });
+      if (!gelukt) return false;
+      return !dtf.some(function (d) { return L[String(d.id)] === p.id && String(d.datum || '') >= grens; });
+    });
+  }
+  function bewijsKiezen(p) {
+    var grens = dagenTerug(31), L = links(), recent = dtfLijst().filter(function (d) { return String(d.datum || '') >= grens && !L[String(d.id)]; })
+      .sort(function (a, b) { return String(b.datum || '').localeCompare(String(a.datum || '')); }).slice(0, 8);
+    var dtfIdx = steps.findIndex(function (x) { return x.widget === 'dtf-logbook'; });
+    kmaSheet({ title: 'Bewijs bij "gelukt"', items: [{ section: 'Als ' + p.als + ', dan ' + p.dan }]
+      .concat(recent.map(function (d) { return { icon: 'calendar', label: String(d.feit || 'DTF-feit').slice(0, 70), hint: d.datum || '', onClick: function () { var l2 = links(); l2[String(d.id)] = p.id; setX('plan-dtf', l2); setX('bewijs-maand', { m: maand() }); toast('Gekoppeld als bewijs bij je plan'); if (isSmart()) rerender(); } }; }))
+      .concat([{ icon: 'plus', label: 'Nieuw DTF-feit vastleggen', hint: 'Schrijf op wat je deed en koppel het daarna aan dit plan', onClick: function () { if (dtfIdx >= 0) goToStep(dtfIdx); } },
+        { icon: 'x', label: 'Niet nu', hint: 'Volgende maand vraagt de app het opnieuw', onClick: function () { setX('bewijs-maand', { m: maand() }); } }]) });
+  }
+  window.kmaPlanBewijs = { nodig: zonderBewijs, kies: bewijsKiezen };
+
+  /* ---------------- 4.36 (U43): komende oefening in de leervraag, en "hoe ging het?" erna ----------------
+     De cadet koppelt zijn leervraag aan een oefening die eraan komt (naam, datum, voornemen). Vandaag herinnert hem er de
+     dag ervoor aan en vraagt na afloop (tot 14 dagen) hoe het ging: gelukt, deels of niet, met één zin wat hij meeneemt.
+     Opslag: kma-x-oefeningen = [{id, naam, datum, voornemen, at, eva: {r, tekst, at}}], de laatste 20. */
+  function oefeningen() { return getX('oefeningen', []).filter(function (o) { return o && o.id && o.naam; }); }
+  function oefHuidig() { var l = oefeningen(); for (var i = l.length - 1; i >= 0; i--) if (!l[i].eva) return l[i]; return null; }
+  function oefBewaar(o) { var l = oefeningen().filter(function (x) { return x.id !== o.id; }); l.push(o); setX('oefeningen', l.slice(-20)); }
+  function dagenTot(d) { if (!d) return null; var a = new Date(today() + 'T00:00:00'), b = new Date(String(d).slice(0, 10) + 'T00:00:00'); return Math.round((b - a) / 864e5); }
+  function oefCard() {
+    var o = oefHuidig(), l = oefeningen(), laatste = l.filter(function (x) { return x.eva; }).slice(-1)[0], n = o ? dagenTot(o.datum) : null;
+    var R = ['Niet gelukt', 'Deels gelukt', 'Gelukt'];
+    return '<div class="kma-card-block kma-oefening" id="kma-oefening"><h4>' + icon('calendar') + 'Komende oefening</h4>' +
+      (o ? '<p><b>' + esc(o.naam) + '</b> · ' + esc(o.datum || '') + (n != null ? ' <span class="muted">(' + (n > 1 ? 'over ' + n + ' dagen' : n === 1 ? 'morgen' : n === 0 ? 'vandaag' : 'was ' + (-n) + (n === -1 ? ' dag' : ' dagen') + ' geleden') + ')</span>' : '') + '</p>' +
+        (o.voornemen ? '<p class="kma-plan-zin"><strong>Mijn voornemen:</strong> ' + esc(o.voornemen) + '</p>' : '') +
+        '<div class="kma-row-btns">' + (n != null && n <= 0 ? '<button type="button" class="kma-icon-btn sm is-primary" data-oef-act="eva">' + icon('check') + 'Hoe ging het?</button>' : '') +
+        '<button type="button" class="kma-icon-btn sm" data-oef-act="del">' + icon('trash') + 'Verwijderen</button></div>'
+        : '<p class="muted">Koppel je leervraag aan een oefening die eraan komt. Je kiest vooraf wat je daar wilt doen; na afloop vraagt de app hoe het ging.</p>' +
+          '<div class="kma-plan-new"><label class="kma-field"><span>Oefening</span><input type="text" data-oef-f="naam" maxlength="80" placeholder="Bijv. veldoefening week 49"></label>' +
+          '<label class="kma-field"><span>Datum</span><input type="date" data-oef-f="datum"></label>' +
+          '<label class="kma-field"><span>Wat wil je daar doen? (uit je leervraag)</span><input type="text" data-oef-f="voornemen" maxlength="160" placeholder="Bijv. bij elke bespreking als eerste een voorstel doen"></label>' +
+          '<button type="button" class="kma-icon-btn is-primary" data-oef-act="save">' + icon('plus') + 'Oefening opslaan</button></div>') +
+      (laatste ? '<p class="muted small">Vorige: ' + esc(laatste.naam) + ' · ' + esc(R[laatste.eva.r] || '') + (laatste.eva.tekst ? ': ' + esc(laatste.eva.tekst) : '') + '</p>' : '') + '</div>';
+  }
+  function oefEva(o) {
+    var kies = function (r) {
+      var t = '';
+      try { t = window.prompt(r === 2 ? 'Gelukt! Wat hielp het meest? (één zin)' : r === 1 ? 'Deels gelukt. Wat lukte wel, en wat neem je mee? (één zin)' : 'Wat hield je tegen, en wat probeer je de volgende keer? (één zin)', '') || ''; } catch (e) { t = ''; }
+      o.eva = { r: r, tekst: String(t).trim().slice(0, 300), at: new Date().toISOString() }; oefBewaar(o);
+      toast('Opgeslagen. Leg wat er gebeurde ook vast als DTF-feit.');
+      if (isSmart()) rerender();
+    };
+    kmaSheet({ title: 'Hoe ging ' + esc(o.naam) + '?', items: [{ section: o.voornemen ? 'Je voornemen: ' + o.voornemen : 'Je oefening van ' + (o.datum || '') },
+      { icon: 'check', label: 'Gelukt', hint: 'Ik deed wat ik me had voorgenomen', onClick: function () { kies(2); } },
+      { icon: 'activity', label: 'Deels', hint: 'Een deel lukte', onClick: function () { kies(1); } },
+      { icon: 'x', label: 'Niet', hint: 'Het lukte deze keer niet', onClick: function () { kies(0); } }] });
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-oef-act]'); if (!b) return;
+    var a = b.getAttribute('data-oef-act'), box = b.closest('#kma-oefening'), o = oefHuidig();
+    if (a === 'save') {
+      var v = function (f) { var el = box.querySelector('[data-oef-f="' + f + '"]'); return el ? String(el.value || '').trim() : ''; };
+      if (!v('naam') || !v('datum')) { toast('Vul de naam en de datum van de oefening in', 'error'); return; }
+      oefBewaar({ id: 'o' + Date.now().toString(36), naam: v('naam'), datum: v('datum'), voornemen: v('voornemen'), at: new Date().toISOString() });
+      toast('Oefening opgeslagen. De app vraagt na afloop hoe het ging.'); rerender();
+    } else if (a === 'eva' && o) oefEva(o);
+    else if (a === 'del' && o) { setX('oefeningen', oefeningen().filter(function (x) { return x.id !== o.id; })); rerender(); }
+  });
+  window.kmaOefening = { huidig: oefHuidig, alle: oefeningen, bewaar: oefBewaar, eva: oefEva, card: oefCard };
+  (window.kmaVandaagExtra = window.kmaVandaagExtra || []).push(function () {
+    var o = oefHuidig(); if (!o) return [];
+    var n = dagenTot(o.datum); if (n == null) return [];
+    if (n <= 0 && n >= -14) return [{ ic: 'check', t: 'Hoe ging ' + o.naam + '?', s: o.voornemen ? 'Je voornemen: ' + String(o.voornemen).slice(0, 80) : 'Kijk kort terug op je oefening', b: 'Terugkijken', go: function () { oefEva(o); return ''; } }];
+    if (n === 1) return [{ ic: 'calendar', t: 'Morgen: ' + o.naam, s: o.voornemen ? 'Je voornemen: ' + String(o.voornemen).slice(0, 80) : 'Wat wil je daar doen voor je leervraag?', b: 'Bekijk', go: function () { goToStep(smartIdx()); return ''; } }];
+    return [];
+  });
+  (window.kmaVandaagExtra = window.kmaVandaagExtra || []).push(function () {
+    if (getX('bewijs-maand', {}).m === maand()) return [];
+    var l = zonderBewijs(); if (!l.length) return [];
+    return [{ ic: 'check', t: 'Bewijs bij "gelukt"', s: 'Je plan "' + String(l[0].dan).slice(0, 60) + '" lukte deze maand. Welk DTF-feit laat dat zien?', b: 'Kiezen', go: function () { bewijsKiezen(l[0]); return ''; } }];
+  });
+
   /* ---------------- Meerdere leervragen (4.5.1) ----------------
      De leervraag waar je nu aan werkt staat op de gewone plek (antwoorden, smart-date, check-ins, plannen),
      zodat Vandaag, het gesprek, Mijn groei, de PDF en het CadetVolgSysteem gewoon blijven werken.
@@ -348,6 +437,7 @@
     // 4.30 (punt 18): WOOP en doel in vijf niveaus komen uit de gereedschapskist; de gegevens blijven ook als ze uit staan
     var GS = window.kmaGereedschap;
     planEl.insertAdjacentHTML('beforebegin', (!GS || GS.aan('gas') ? gasCard() : '') + (!GS || GS.aan('woop') ? woopCard() : ''));
+    if (!done) planEl.insertAdjacentHTML('afterend', oefCard());   // 4.36 (U43)
     // Check-in: per plan in plaats van één keuze.
     var pick = c.querySelector('.kma-ci-pick');
     if (pick && list().length) {

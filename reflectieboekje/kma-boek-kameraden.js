@@ -8,7 +8,7 @@
  *    een samenvatting (vasthouden / verbeteren, de 4V's) en elke kaart apart.
  *  - De ontvanger heeft de regie: kaarten komen in een eigen postvak en gaan nergens vanzelf heen. Met één tik
  *    zet de cadet een kaart in het eigen DTF-logboek; pas dan kan de teamleider hem zien (als de cadet het
- *    DTF-logboek deelt). Niet anoniem: de ontvanger ziet altijd van wie een kaart komt.
+ *    DTF-logboek deelt). Standaard niet anoniem en ondertekend (4.36, U13); optioneel anoniem, zichtbaar vanaf 3 (U47).
  *
  * Versturen gaat op drie manieren:
  *  1. Deelmap (als de cadet die heeft gekoppeld): <deelmap>/kameraden/
@@ -55,7 +55,11 @@
   function myPs() { var a = typeof answers !== 'undefined' ? answers : {}; return String(a['Peoplesoft Nummer:'] || a['Peoplesoft ID:'] || '').replace(/[^0-9A-Za-z]/g, '').slice(0, 20); }
   function sentThisWeek() { var w = week(); return S().sent.filter(function (x) { return x.week === w && !x.req; }).length; }
   function leftThisWeek() { return Math.max(0, MAX_WEEK - sentThisWeek()); }
-  function newCount() { return S().inbox.filter(function (c) { return c.nieuw; }).length; }
+  /* 4.36 (U47): anonieme kaarten worden pas zichtbaar als er minstens 3 zijn, zodat niet te raden is wie wat schreef. */
+  var ANON_MIN = 3;
+  function anonZichtbaar(inbox) { return (inbox || S().inbox).filter(function (c) { return c.anoniem; }).length >= ANON_MIN; }
+  function zichtbaar(inbox) { inbox = inbox || S().inbox; var a = anonZichtbaar(inbox); return inbox.filter(function (c) { return !c.anoniem || a; }); }
+  function newCount() { return zichtbaar().filter(function (c) { return c.nieuw; }).length; }
   function openRequests() { var t = today(); return S().open.filter(function (r) { return !r.done && (!r.tot || r.tot >= t); }); }
 
   /** Een kaart van buiten: alleen bekende velden, ingekort. Geeft null bij iets anders. */
@@ -66,6 +70,9 @@
       situatie: clip(o.situatie, 140), feit: clip(o.feit, 500), effect: clip(o.effect, 400), v4: V4.indexOf(o.v4) >= 0 ? o.v4 : '',
       soort: o.soort === 'verbeteren' ? 'verbeteren' : 'vasthouden', tip: clip(o.tip, 400), at: clip(o.at, 40) };
     var lr = window.KMALeary ? KMALeary.clean(o.leary) : null; if (lr) c.leary = lr;
+    // 4.36 (U13): handtekening van de gever; (U47): anonieme kaart met een groepsbewijs
+    if (typeof o.sig === 'string' && /^[A-Za-z0-9+/=]{40,200}$/.test(o.sig) && typeof o.sigPub === 'string' && /^[A-Za-z0-9+/=]{60,300}$/.test(o.sigPub)) { c.sig = o.sig; c.sigPub = o.sigPub; }
+    if (o.anoniem === true) { c.anoniem = true; c.van = 'Anoniem'; c.vanPs = ''; delete c.oc; delete c.sig; delete c.sigPub; if (typeof o.gproof === 'string' && /^[A-Za-z0-9+/=]{20,100}$/.test(o.gproof)) c.gproof = o.gproof; }
     if (typeof o.oc === 'string' && /^OC-[0-9A-HJ-NP-Z]{4}-[0-9A-HJ-NP-Z]{4}$/.test(o.oc)) c.oc = o.oc;   // 4.26.0: onderzoekscode van de gever (alleen als die meedoet)
     return c.feit ? c : null;
   }
@@ -131,6 +138,46 @@
       .then(function (k) { return subtle.decrypt({ name: 'AES-GCM', iv: unb64(o.iv) }, k, unb64(o.data)); })
       .then(function (pt) { return dec.decode(pt); });
   }
+  /* ---------------- 4.36 (U13): ondertekenen ----------------
+     Elke cadet heeft naast zijn sleutel om te versleutelen ook een ondertekensleutel (ECDSA P-256). De openbare helft staat met
+     een bewijs (groepscode) in sleutels/<ps>.json. Een kaart krijgt een handtekening over alle inhoud. De ontvanger ziet:
+     "echt van <naam>" (handtekening klopt en de sleutel hoort bij die cadet in de deelmap), "ondertekend" (klopt, maar de sleutel
+     kon niet worden nagekeken, bijv. via QR zonder deelmap) of een waarschuwing als de handtekening niet klopt. */
+  var ECDSA = { name: 'ECDSA', namedCurve: 'P-256' }, SIGN = { name: 'ECDSA', hash: 'SHA-256' };
+  function sigKeys() {
+    var s = S();
+    if (s.sigPub && s.sigPriv) return Promise.resolve({ pub: s.sigPub, priv: s.sigPriv });
+    return subtle.generateKey(ECDSA, true, ['sign', 'verify']).then(function (kp) { return Promise.all([subtle.exportKey('spki', kp.publicKey), subtle.exportKey('jwk', kp.privateKey)]); })
+      .then(function (r) { var s2 = S(); s2.sigPub = b64(r[0]); s2.sigPriv = r[1]; save(s2); return { pub: s2.sigPub, priv: s2.sigPriv }; });
+  }
+  function canon(c) { return ['kma-kaart-1', c.id, c.van, c.vanPs, c.aan, c.aanPs, c.req, c.datum, c.tijd, c.situatie, c.feit, c.effect, c.v4, c.soort, c.tip, c.at].map(function (x) { return String(x == null ? '' : x); }).join('\u241f'); }
+  function teken(card) {
+    if (!subtle) return Promise.resolve(card);
+    return sigKeys().then(function (k) { return subtle.importKey('jwk', k.priv, ECDSA, false, ['sign']).then(function (pk) { return subtle.sign(SIGN, pk, enc.encode(canon(card))); }).then(function (sg) { card.sig = b64(sg); card.sigPub = k.pub; return card; }); })
+      .catch(function () { return card; });
+  }
+  function handtekeningKlopt(c) {
+    if (!c.sig || !c.sigPub || !subtle) return Promise.resolve(false);
+    return subtle.importKey('spki', unb64(c.sigPub), ECDSA, false, ['verify']).then(function (k) { return subtle.verify(SIGN, k, unb64(c.sig), enc.encode(canon(c))); }).catch(function () { return false; });
+  }
+  /** 'ja' | 'sleutel' | 'nee' | 'groep' | '' (geen handtekening, bijv. van een oudere app). */
+  function controleer(c) {
+    if (c.anoniem) return c.gproof && window.KMAX && KMAX.myCode() ? proof('anoniem', c.id).then(function (p) { return p === c.gproof ? 'groep' : 'nee'; }, function () { return 'nee'; }) : Promise.resolve('');
+    if (!c.sig) return Promise.resolve('');
+    return handtekeningKlopt(c).then(function (ok) {
+      if (!ok) return 'nee';
+      var d = deel(); if (!d || !c.vanPs) return 'sleutel';
+      var t = F.read(d.base + 'sleutels/' + c.vanPs + '.json'); var o; try { o = t && lees(t); } catch (e) { o = null; }
+      if (!o || !o.sig) return 'sleutel';
+      if (o.sig !== c.sigPub) return 'nee';
+      return proof(o.ps, 'sig:' + o.sig).then(function (p) { return p === o.sigProof ? 'ja' : 'sleutel'; }, function () { return 'sleutel'; });
+    });
+  }
+  function naControle(id) {
+    var c = S().inbox.find(function (x) { return x.id === id; }); if (!c) return Promise.resolve('');
+    return controleer(c).then(function (r) { var s = S(); s.inbox.forEach(function (x) { if (x.id === id) x.echt = r; }); save(s); if (r === 'nee') toast('Let op: een kaart in je postvak heeft een handtekening die niet klopt.', 'error'); return r; });
+  }
+  window.kmaKameraadControle = naControle;
   var peopleCache = null;
   /** Medecadetten in de deelmap met dezelfde groepscode (zonder jezelf). */
   function people() {
@@ -150,8 +197,9 @@
     busy = true;
     var got = 0, ps = myPs();
     return keys().then(function (k) {
-      return proof(ps, k.pub).then(function (pr) {
-        var body = JSON.stringify({ type: 'kma-kameraad-sleutel', v: 1, naam: me(), ps: ps, groep: d.groep, pub: k.pub, proof: pr });
+      return Promise.all([proof(ps, k.pub), sigKeys().then(function (sk) { return proof(ps, 'sig:' + sk.pub).then(function (sp) { return { sig: sk.pub, sigProof: sp }; }); }, function () { return {}; })]).then(function (rr) {
+        var pr = rr[0], sg = rr[1] || {};
+        var body = JSON.stringify({ type: 'kma-kameraad-sleutel', v: 1, naam: me(), ps: ps, groep: d.groep, pub: k.pub, proof: pr, sig: sg.sig || undefined, sigProof: sg.sigProof || undefined });
         var s = S(); if (s.pubSent !== body) { if (F.write(d.base + 'sleutels/' + ps + '.json', body)) { s.pubSent = body; save(s); } }
         // post
         var files = F.list(d.base + 'post/' + ps).filter(function (f) { return !f.dir && /\.json$/i.test(f.name); });
@@ -199,8 +247,9 @@
     c.got = new Date().toISOString(); c.nieuw = true;
     s.inbox.unshift(c);
     if (c.req) s.mine.forEach(function (r) { if (r.id === c.req && r.answers.indexOf(c.id) < 0) r.answers.push(c.id); });
-    save(s);
-    if (!quiet) toast('Feedback van ' + c.van + ' staat in je postvak');
+    delete c.echt; save(s);
+    naControle(c.id);   // 4.36 (U13/U47)
+    if (!quiet) toast(c.anoniem ? 'Een anonieme kaart staat in je postvak' : 'Feedback van ' + c.van + ' staat in je postvak');
     return true;
   }
   function addRequest(o, quiet) {
@@ -330,7 +379,8 @@
           '<label class="kma-kam-chip is-keep"><input type="radio" name="kk-soort" value="vasthouden"' + (p.soort !== 'verbeteren' ? ' checked' : '') + '><span>Vasthouden</span></label>' +
           '<label class="kma-kam-chip is-grow"><input type="radio" name="kk-soort" value="verbeteren"' + (p.soort === 'verbeteren' ? ' checked' : '') + '><span>Verbeteren</span></label></div></div>' +
         '<label class="kma-code-lab"><span class="kma-ofga" title="Gewenst">G</span>Volgende stap <small>Verplicht: wat kan je medecadet de volgende keer doen?</small><textarea id="kk-tip" maxlength="400" rows="2" placeholder="bijv. Noem eerst het doel en de tijd, dan pas wie wat doet.">' + esc(p.tip || '') + '</textarea></label>' +
-        (req ? '' : '<p class="muted small">' + icon('idea') + ' Ongevraagd: nog ' + leftThisWeek() + ' van ' + MAX_WEEK + ' deze week. Je medecadet ziet dat de kaart van jou komt.</p>') +
+        '<label class="kma-check"><input type="checkbox" id="kk-anon"> Anoniem versturen <small class="muted">(je medecadet ziet niet van wie; hij ziet anonieme kaarten pas als hij er minstens ' + ANON_MIN + ' heeft)</small></label>' +
+        (req ? '' : '<p class="muted small">' + icon('idea') + ' Ongevraagd: nog ' + leftThisWeek() + ' van ' + MAX_WEEK + ' deze week. Zonder "anoniem" ziet je medecadet dat de kaart van jou komt (ondertekend).</p>') +
         // 4.30 (punt 12): kaarten van medecadetten zijn om van te leren en tellen nooit mee voor de beoordeling
         '<p class="kma-kam-nietbeoordeling">' + icon('shield') + '<span>Je kaart is om van te leren. Hij telt <b>niet</b> mee voor de beoordeling van je medecadet.</span></p>' +
         '<p class="kma-code-err" id="kk-err" role="alert"></p>' + (window.kmaLeertaak ? kmaLeertaak.labels(['IIV 01', 'IIV 03', 'IIV 04', 'GV 06']) : '') +
@@ -353,11 +403,17 @@
       // 4.17.0 (M2, feed-forward): feedback werkt pas als er een volgende stap in staat (Hattie & Timperley 2007)
       if (v('#kk-tip').length < 10) { err.textContent = 'Geef één concrete volgende stap: wat kan je medecadet de volgende keer doen of vasthouden?'; return; }
       if (!req && leftThisWeek() <= 0) { err.textContent = 'Je hebt deze week al ' + MAX_WEEK + ' keer ongevraagd feedback gegeven.'; return; }
-      if (!me()) { err.textContent = 'Vul eerst je naam in bij je profiel (hoofdstuk 0): je medecadet ziet van wie de feedback komt.'; return; }
+      var anon = !!(ov.querySelector('#kk-anon') || {}).checked;
+      if (!me() && !anon) { err.textContent = 'Vul eerst je naam in bij je profiel (hoofdstuk 0): je medecadet ziet van wie de feedback komt.'; return; }
       var soortEl = ov.querySelector('input[name="kk-soort"]:checked'), v4El = ov.querySelector('input[name="kk-v4"]:checked');
       var card = cleanCard({ type: 'kma-kameraad', id: uid(), van: me(), vanPs: myPs(), aan: naam, aanPs: req ? req.vanPs : viaPs, req: req ? req.id : '', oc: window.kmaOnderzoek ? kmaOnderzoek.code() : '',
         datum: v('#kk-d'), tijd: v('#kk-t'), situatie: v('#kk-sit'), feit: feit, effect: v('#kk-eff'), v4: v4El ? v4El.value : '', soort: soortEl ? soortEl.value : 'vasthouden', tip: v('#kk-tip'), at: new Date().toISOString(), leary: window.KMALeary ? KMALeary.value(ov.querySelector('#kk-leary')) : null });
+      if (anon) { card.anoniem = true; card.van = 'Anoniem'; card.vanPs = ''; delete card.oc; }
       var go = function () {
+        // 4.36: ondertekenen (U13) of, anoniem, een groepsbewijs (U47)
+        (anon ? (window.KMAX && KMAX.myCode() && subtle ? proof('anoniem', card.id).then(function (gp) { card.gproof = gp; return card; }, function () { return card; }) : Promise.resolve(card)) : teken(card)).then(verder);
+      };
+      var verder = function () {
         var s = S(); s.sent.push({ id: card.id, week: week(), aan: card.aan, req: card.req, at: card.at }); if (s.sent.length > 200) s.sent = s.sent.slice(-200);
         if (req) s.open.forEach(function (r) { if (r.id === req.id) r.done = true; });
         save(s);
@@ -441,9 +497,13 @@
   }
 
   /* ---------------- Lijsten ---------------- */
+  function echtTag(c) {
+    var t = { ja: ['ok', 'echt van ' + c.van], sleutel: ['', 'ondertekend'], nee: ['fout', 'handtekening klopt niet'], groep: ['', 'iemand uit je groep'] }[c.echt || ''];
+    return t ? ' <span class="kma-kam-echt ' + t[0] + '" title="' + esc(c.echt === 'sleutel' ? 'De handtekening klopt, maar de sleutel kon niet in de deelmap worden nagekeken.' : '') + '">' + (c.echt === 'nee' ? '⚠ ' : '✓ ') + esc(t[1]) + '</span>' : '';
+  }
   function cardHtml(c, full) {
     return '<div class="kma-kam-card ' + (c.soort === 'verbeteren' ? 'is-grow' : 'is-keep') + '">' +
-      '<div class="kma-kam-head"><strong>' + esc(c.van) + '</strong><span>' + esc(fmtDate(c.datum)) + (c.tijd ? ' · ' + esc(c.tijd) : '') + '</span></div>' +
+      '<div class="kma-kam-head"><strong>' + esc(c.anoniem ? 'Anoniem' : c.van) + echtTag(c) + '</strong><span>' + esc(fmtDate(c.datum)) + (c.tijd ? ' · ' + esc(c.tijd) : '') + '</span></div>' +
       (c.situatie ? '<div class="kma-kam-sit">' + esc(c.situatie) + '</div>' : '') +
       '<p class="kma-kam-feit">' + esc(full ? c.feit : (c.feit.length > 110 ? c.feit.slice(0, 110) + '…' : c.feit)) + '</p>' +
       (full && c.effect ? '<p><b>Effect</b> ' + esc(c.effect) + '</p>' : '') +
@@ -452,21 +512,22 @@
       (c.v4 ? '<span class="kma-kam-tag">' + esc(c.v4) + '</span>' : '') + (c.leary && window.KMALeary ? '<span class="kma-kam-tag">Roos: ' + esc(KMALeary.label(c.leary)) + '</span>' : '') + (c.req ? '<span class="kma-kam-tag">Op jouw vraag</span>' : '') + (c.nieuw ? '<span class="kma-kam-tag is-new">nieuw</span>' : '') + (c.inDtf ? '<span class="kma-kam-tag">In je DTF-logboek</span>' : '') + '</div></div>';
   }
   function listInbox() {
-    var l = S().inbox;
+    var alle = S().inbox, l = zichtbaar(alle), wacht = alle.length - l.length;
     var body = l.length ? '<div class="kma-kam-list">' + l.map(function (c) { return '<button type="button" class="kma-kam-item" data-card="' + esc(c.id) + '">' + cardHtml(c, false) + '</button>'; }).join('') + '</div>'
       : (window.kmaEmpty ? kmaEmpty({ icon: 'message', title: 'Nog geen feedback van medecadetten', text: 'Vraag je groep om feedback, of scan de QR-code van een medecadet.', small: true }) : '<p class="muted">Nog geen feedback van medecadetten.</p>');
+    if (wacht) body = '<p class="muted small kma-kam-wacht">' + icon('lock') + ' ' + (wacht === 1 ? 'Er wacht 1 anonieme kaart' : 'Er wachten ' + wacht + ' anonieme kaarten') + '. Anonieme kaarten zie je pas als je er minstens ' + ANON_MIN + ' hebt, zodat niet te raden is van wie ze komen.</p>' + body;
     body += '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-x="close">Sluiten</button></div>';
     sheet('Ontvangen feedback', body, function (e) { var b = e.target.closest('[data-card]'); if (b) showCard(b.getAttribute('data-card')); });
   }
   function showCard(id) {
-    var s = S(), c = s.inbox.find(function (x) { return x.id === id; }); if (!c) return;
-    if (c.nieuw) { c.nieuw = false; save(s); }
+    var s = S(), c = zichtbaar(s.inbox).find(function (x) { return x.id === id; }); if (!c) return;
+    if (c.nieuw) { s.inbox.forEach(function (x) { if (x.id === id) x.nieuw = false; }); save(s); }
     var body = cardHtml(c, true) +
       '<div class="kma-kam-actie"><label class="kma-code-lab"><span class="kma-ofga" title="Afsluiting">A</span>Wat ga je ermee doen? <small>Eén zin; zonder deze stap verandert er weinig</small><textarea id="kk-actie" maxlength="300" rows="2" placeholder="bijv. Bij de volgende opdracht noem ik eerst het doel.">' + esc(c.actie || '') + '</textarea></label>' +
         (window.kmaPlannen ? '<label class="kma-check"><input type="checkbox" id="kk-actie-plan"> Maak er een als-dan-plan van</label><div class="kma-kam-plan" hidden><label class="kma-code-lab">Als …<input type="text" id="kk-actie-als" maxlength="160" value="' + esc(c.situatie || '') + '"></label></div>' : '') +
         '<div class="kma-row-btns"><button type="button" class="kma-icon-btn is-primary" data-k="actie">' + icon('check') + 'Opslaan</button></div></div>' +
       // 4.27.0 (M4): feedback op feedback, anoniem terug naar de gever (via de deelmap)
-      '<div class="kma-kam-bruik"><span>Hoe bruikbaar was deze feedback? <small class="muted">(anoniem voor ' + esc(c.van) + ')</small></span><div class="kma-chips">' + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" class="kma-chip-btn' + (c.bruik === n ? ' on' : '') + '" data-k-bruik="' + n + '" aria-pressed="' + (c.bruik === n) + '">' + n + '</button>'; }).join('') + '</div></div>' +
+      (c.anoniem ? '' : '<div class="kma-kam-bruik"><span>Hoe bruikbaar was deze feedback? <small class="muted">(anoniem voor ' + esc(c.van) + ')</small></span><div class="kma-chips">' + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" class="kma-chip-btn' + (c.bruik === n ? ' on' : '') + '" data-k-bruik="' + n + '" aria-pressed="' + (c.bruik === n) + '">' + n + '</button>'; }).join('') + '</div></div>') +
       '<p class="muted small">' + icon('lock') + ' Deze kaart is alleen van jou. Je teamleider ziet hem pas als je hem in je DTF-logboek zet en dat hoofdstuk deelt.</p>' +
       '<div class="kma-row-btns"><button type="button" class="kma-icon-btn" data-k="del">' + icon('trash') + 'Verwijderen</button>' +
       (c.inDtf ? '' : '<button type="button" class="kma-icon-btn is-primary" data-k="dtf">' + icon('calendar') + 'In mijn DTF-logboek</button>') + '</div>' +
@@ -512,7 +573,7 @@
   }
   function toDtf(id) {
     var s = S(), c = s.inbox.find(function (x) { return x.id === id; }); if (!c || typeof dtfItems === 'undefined') return;
-    var feit = 'Feedback van ' + c.van + ' (' + (c.soort === 'verbeteren' ? 'verbeteren' : 'vasthouden') + ')' + (c.situatie ? ', ' + c.situatie : '') + ': ' + c.feit +
+    var feit = 'Feedback van ' + (c.anoniem ? 'een medecadet (anoniem)' : c.van) + ' (' + (c.soort === 'verbeteren' ? 'verbeteren' : 'vasthouden') + ')' + (c.situatie ? ', ' + c.situatie : '') + ': ' + c.feit +
       (c.effect ? ' Effect: ' + c.effect : '') + (c.tip ? ' Tip: ' + c.tip : '');
     dtfItems.unshift({ id: Date.now(), datum: c.datum || today(), tijd: c.tijd || '', feit: feit, vValues: c.v4 ? [c.v4] : [], aspect: 'Feedback van een medecadet', bron: 'medecadet', leary: c.leary || undefined });
     try { kmaStore.setItem(DTF_KEY, JSON.stringify(dtfItems)); } catch (e) {}

@@ -2094,3 +2094,12 @@ body.dark-theme .kma-bw-ok { color: #7fd1a0; }
 /* 4.30 (punt 79): stappen van de rode draad in het portfolio */
 .pf-sec-head h2[data-fase]::before { content: attr(data-fase); display: block; margin: 0 0 2px; font-size: 9pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #8a6d1f; }
 .pf-bronnen { font-size: 9.5pt; line-height: 1.45; padding-left: 18px; }
+
+/* 4.36 (U13/U47): echtheid van een kaart van een medecadet, wachtende anonieme kaarten, komende oefening */
+.kma-kam-echt { font-weight: 600; font-size: 12px; margin-left: 6px; color: var(--text-secondary, var(--text-primary)); }
+.kma-kam-echt.ok { color: var(--accent-green, #2f7d4f); }
+.kma-kam-echt.fout { color: var(--accent-red, #b3362b); }
+.kma-kam-wacht { padding: 8px 10px; border-radius: 8px; background: var(--bg-secondary, rgba(0,0,0,.04)); }
+.kma-oefening .kma-field { display: block; margin: 6px 0; }
+.kma-oefening .kma-field span { display: block; font-size: 13px; margin-bottom: 2px; }
+.kma-oefening input { width: 100%; box-sizing: border-box; }
