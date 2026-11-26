@@ -150,6 +150,49 @@
     return n;
   }
   window.kmaDeelConflict = conflictVan;
+  /* 4.35 (U16): "brievenbus" in plaats van overschrijven. Elke schrijfactie wordt een nieuw bestand met een eigen naam in
+     de submap bus/ (naam.<tijd>-<toestel>.json); lezers nemen het nieuwste. Zo maken OneDrive en SharePoint geen
+     conflictkopieën meer en kan een oudere versie nooit een nieuwere overschrijven. Een schrijver ruimt alleen zijn eigen
+     oude busbestanden op (de nieuwste 2 blijven). Voor oudere app-versies wordt het vaste bestand (naam.json) nog
+     bijgewerkt; nieuwe lezers gebruiken dat alleen als er nog geen busbestand is. Submap: oudere versies slaan mappen over. */
+  function apparaat() {
+    var k = 'kma-deel-toestel', v = ''; try { v = window.kmaStore.getItem(k) || ''; } catch (e) { v = ''; }
+    if (!v) { v = b64(crypto.getRandomValues(new Uint8Array(9))).replace(/[^A-Za-z0-9]/g, '').slice(0, 10); try { window.kmaStore.setItem(k, v); } catch (e) { /* opslag vol */ } }
+    return v;
+  }
+  var BUS_RE = /^(.+)\.(\d{8}T\d{9}Z)-([A-Za-z0-9]{1,16})\.json$/;
+  function busStempel() { return new Date().toISOString().replace(/[-:.]/g, ''); }
+  /** Alle busbestanden in dir/bus, als [{naam, stempel, toestel, file}], nieuwste eerst. */
+  function busLijst(dir) {
+    dir = String(dir || '').replace(/\/$/, '');
+    return F.list(dir + '/bus').filter(function (f) { return !f.dir && BUS_RE.test(f.name); })
+      .map(function (f) { var m = BUS_RE.exec(f.name); return { naam: m[1], stempel: m[2], toestel: m[3], file: f.name }; })
+      .sort(function (a, b) { return a.stempel < b.stempel ? 1 : a.stempel > b.stempel ? -1 : (a.file < b.file ? 1 : -1); });
+  }
+  /** Schrijft txt als nieuw busbestand en (voor oudere versies) als dir/naam.json. true als het busbestand is geschreven. */
+  function busSchrijf(dir, naam, txt) {
+    dir = String(dir || '').replace(/\/$/, '');
+    var t = apparaat(), ok = F.write(dir + '/bus/' + naam + '.' + busStempel() + '-' + t + '.json', txt);
+    if (!ok) return F.write(dir + '/' + naam + '.json', txt);   // map niet te schrijven: dan in elk geval het vaste bestand
+    F.write(dir + '/' + naam + '.json', txt);
+    busLijst(dir).filter(function (x) { return x.naam === naam && x.toestel === t; }).slice(2).forEach(function (x) { F.remove(dir + '/bus/' + x.file); });
+    return true;
+  }
+  /** Leest de nieuwste versie: het jongste busbestand, anders dir/naam.json. */
+  function busLees(dir, naam) {
+    dir = String(dir || '').replace(/\/$/, '');
+    var l = busLijst(dir).filter(function (x) { return x.naam === naam; });
+    for (var i = 0; i < l.length; i++) { var t = F.read(dir + '/bus/' + l[i].file); if (t) return t; }
+    return F.read(dir + '/' + naam + '.json');
+  }
+  /** Namen (zonder .json) waarvoor in dir een vast bestand of een busbestand staat. */
+  function busNamen(dir) {
+    dir = String(dir || '').replace(/\/$/, ''); var n = {};
+    F.list(dir).forEach(function (f) { if (!f.dir && /\.json$/.test(f.name) && !/ \(\d+\)\.json$/.test(f.name)) n[f.name.replace(/\.json$/, '')] = 1; });
+    busLijst(dir).forEach(function (x) { n[x.naam] = 1; });
+    return Object.keys(n);
+  }
+  window.kmaDeelBus = { lijst: busLijst, lees: busLees, schrijf: function (d, n, t) { return busSchrijf(d, n, t); }, RE: BUS_RE };
   var TIP_BESCHIKBAAR = 'Tip: zet de gedeelde map in OneDrive op <b>Altijd behouden op dit apparaat</b> (in de OneDrive-app: ⋮ bij de map → Offline beschikbaar maken). Dan kan de app de bestanden ook lezen als je even geen bereik hebt.';
   /* 4.33 (punt 4): automatisch bijwerken; "Bijgewerkt: x min geleden" in het menu en de dialoog */
   function bijgewerkt(iso) { return iso ? 'bijgewerkt ' + ago(iso) : 'nog niet bijgewerkt'; }
@@ -261,13 +304,13 @@
       var s = S(), p = payload(); delete p.sharedAt;
       var body = JSON.stringify(p);
       // 4.30: staat het dossier nog niet in de nieuwe map (overstap), dan nu schrijven; staat het er al, dan de oude kopie weg
-      var nieuwPad = cbase() + psDir(ps()) + '/dossier.json', oudPad = cbase() + psDirOud(ps()) + '/dossier.json', heeftNieuw = F.read(nieuwPad) != null;
+      var dirN = cbase() + psDir(ps()), oudPad = cbase() + psDirOud(ps()) + '/dossier.json', heeftNieuw = busLees(dirN, 'dossier') != null;
       if (heeftNieuw && F.read(oudPad) != null) F.remove(oudPad);
       return sha(body).then(function (h) {
         if (h === s.lastUp && heeftNieuw) return false;
         p.sharedAt = new Date().toISOString(); p.deelKey = myKey(); p.groep = s.group || ''; p.peoplesoft = ps(); p.via = 'deelmap';
         return sealTo(JSON.stringify(p), s.pub).then(function (sealed) {
-          if (!F.write(cbase() + psDir(ps()) + '/dossier.json', sealed)) throw new Error('schrijven');
+          if (!busSchrijf(dirN, 'dossier', sealed)) throw new Error('schrijven');   // 4.35 (U16): busbestand
           // 4.30: na de overstap het eigen oude dossier (map met nummer) weghalen; feedback daar blijft leesbaar
           if (F.read(oudPad) != null) F.remove(oudPad);
           // 4.34.1: een conflictkopie kan juist de nieuwste versie zijn geweest; na opruimen staat de zojuist geschreven versie er
@@ -280,7 +323,7 @@
     };
     /* 4.33 (punt 5): ontvangstbevestiging van de teamleider (alleen door deze cadet te openen) */
     var ontvangst = function () {
-      var t = F.read(cbase() + psDir(ps()) + '/ontvangst.json'); if (!t) return Promise.resolve(false);
+      var t = busLees(cbase() + psDir(ps()), 'ontvangst'); if (!t) return Promise.resolve(false);
       var o; try { o = JSON.parse(t); } catch (e) { return Promise.resolve(false); }
       return decK(o, myKey()).then(function (txt) {
         var d = kmaLees(txt); if (!d || d.type !== 'kma-ontvangst') return false;
@@ -301,7 +344,7 @@
     };
     window.kmaDeelOntvangst = ontvangstTekst;
     var down = function () {
-      var t = F.read(cbase() + psDir(ps()) + '/feedback.json') || F.read(cbase() + psDirOud(ps()) + '/feedback.json'); if (!t) return Promise.resolve(false);
+      var t = busLees(cbase() + psDir(ps()), 'feedback') || F.read(cbase() + psDirOud(ps()) + '/feedback.json'); if (!t) return Promise.resolve(false);
       var o; try { o = kmaLees(t); } catch (e) { return Promise.resolve(false); }
       return decK(o, myKey()).then(function (txt) {
         var d = kmaLees(txt), s = S();
@@ -342,7 +385,7 @@
         var n = ps() ? opruimen(cbase() + psDir(ps()), ['dossier.json']) : 0;
         info.conflictkopieen = n;
         if (n) { var s9 = S(); s9.lastUp = ''; save(s9); setTimeout(function () { window.kmaDeelSync(false); }, 200); }   // 4.34.1: eigen versie opnieuw schrijven
-        if (ps() && F.read(cbase() + psDir(ps()) + '/dossier.json') == null) add('B-geen-dossier', 'Je dossier staat nog niet in de map', 'Wacht een minuut of open de app opnieuw. Blijft dit staan, kies dan in Deelmap opnieuw de map van je teamleider.');
+        if (ps() && busLees(cbase() + psDir(ps()), 'dossier') == null) add('B-geen-dossier', 'Je dossier staat nog niet in de map', 'Wacht een minuut of open de app opnieuw. Blijft dit staan, kies dan in Deelmap opnieuw de map van je teamleider.');
         if (s.err) add('B-fout', 'Laatste keer bijwerken mislukt', s.err);
         if (oud(s.lastSync, 24)) add('B-oud', 'Lang niet bijgewerkt', 'De app werkt bij als je hem opent. Is de map bereikbaar? Zet de map in OneDrive op "Altijd behouden op dit apparaat".', 'let');
         var o = s.ontv || {}; info.ontvangen = o.dossier && o.dossier === s.lastUpAt ? 'ja' : 'nee';
@@ -462,7 +505,7 @@
   }
 
   /** 4.34.1: vaste willekeurige id van dit toestel (niet herleidbaar), om twee teamleider-telefoons te herkennen. */
-  function toestelId() { var s = S2(); if (!s.toestel) { s.toestel = b64(crypto.getRandomValues(new Uint8Array(9))).replace(/[^A-Za-z0-9]/g, '').slice(0, 10); save2(s); } return s.toestel; }
+  function toestelId() { var s = S2(); if (!s.toestel) { s.toestel = apparaat(); save2(s); } return s.toestel; }
   /** Teamleider: write teamsleutel.json with a proof per group code. */
   function publish() {
     var t = team(); if (!t || role() !== 'teamleider' || !window.KMAX) return Promise.resolve(false);
@@ -488,7 +531,7 @@
     var dirs = F.list(base() + 'cadetten').filter(function (d) { return d.dir; }), res = { n: 0, added: 0, warn: 0 };
     return dirs.reduce(function (pr, d) {
       return pr.then(function () {
-        var txt = F.read(base() + 'cadetten/' + d.name + '/dossier.json'); if (!txt) return;
+        var txt = busLees(base() + 'cadetten/' + d.name, 'dossier'); if (!txt) return;   // 4.35 (U16)
         var o; try { o = JSON.parse(txt); } catch (e) { return; }
         if (!o || o.type !== 'kma-sealed') return;
         return unseal(o, t.priv).then(function (plain) {
@@ -520,7 +563,7 @@
           if ((s.written || {})[cps(c)] === h) return;
           p.date = new Date().toISOString();
           return encK(JSON.stringify(p), c.deelKey).then(function (txt) {
-            if (F.write(base() + psDir(cps(c)) + '/feedback.json', txt)) {
+            if (busSchrijf(base() + psDir(cps(c)), 'feedback', txt)) {
               // 4.30: cadet nog op een oudere versie (map met nummer)? Dan daar ook, zodat hij zijn feedback krijgt
               if (F.list(base() + 'cadetten').some(function (x) { return x.dir && x.name === psClean(cps(c)); })) F.write(base() + psDirOud(cps(c)) + '/feedback.json', txt);
               s.written = s.written || {}; s.written[cps(c)] = h; c.feedbackSentAt = p.date; n++;
@@ -540,7 +583,7 @@
         var o = { type: 'kma-ontvangst', v: 1, dossier: String(c.data.sharedAt), gelezen: c.deelGelezenVoor === String(c.data.sharedAt) ? c.deelGelezen || '' : '' };
         var key = o.dossier + '|' + o.gelezen; if (s.ontvC[cps(c)] === key) return;
         o.at = new Date().toISOString();
-        return encK(JSON.stringify(o), c.deelKey).then(function (txt) { if (F.write(base() + psDir(cps(c)) + '/ontvangst.json', txt)) { s.ontvC[cps(c)] = key; n++; } });
+        return encK(JSON.stringify(o), c.deelKey).then(function (txt) { if (busSchrijf(base() + psDir(cps(c)), 'ontvangst', txt)) { s.ontvC[cps(c)] = key; n++; } });
       });
     }, Promise.resolve()).then(function () { var s2 = S2(); s2.ontvC = s.ontvC; save2(s2); return n; });
   }
@@ -558,7 +601,7 @@
     return sha(JSON.stringify(cmp)).then(function (h) {
       if (S2().staffHash === h) return false;
       return encK(JSON.stringify(p), sk).then(function (txt) {
-        if (!F.write(base() + 'staf/' + myId() + '.json', txt)) { if (role() !== 'teamleider') toast('Je notities konden niet in de deelmap worden gezet. Controleer de deelmap (⋮ → Deelmap).', 'error'); return false; }
+        if (!busSchrijf(base() + 'staf', myId(), txt)) { if (role() !== 'teamleider') toast('Je notities konden niet in de deelmap worden gezet. Controleer de deelmap (⋮ → Deelmap).', 'error'); return false; }
         opruimen(base() + 'staf', [myId() + '.json']);
         var s = S2(); s.staffHash = h; s.staffAt = p.at || new Date().toISOString(); save2(s); return true;
       });
@@ -578,15 +621,15 @@
   /** Reads the files of colleagues. The teamleider only accepts instructors he added himself. */
   function pullStaff() {
     var sk = staffKey(); if (!sk || !window.kmaImportColleague) return Promise.resolve(0);
-    var files = F.list(base() + 'staf').filter(function (f) { return !f.dir && /\.json$/.test(f.name); });
+    var files = busNamen(base() + 'staf').map(function (id) { return { id: id }; });   // 4.35 (U16): vaste bestanden en busbestanden
     var seen = S2().staffSeen || {}, fout = S2().staffFout || {}, n = 0, tl = role() === 'teamleider', staff = staffList();
     return files.reduce(function (pr, f) {
       return pr.then(function () {
-        var id = f.name.replace(/\.json$/, '');
+        var id = f.id;
         if (id === myId()) return;
         var who = staff.find(function (x) { return x.id === id; });
         if (tl && !who) return;   // not (or no longer) in the team
-        var txt = F.read(base() + 'staf/' + f.name); if (!txt) return;
+        var txt = busLees(base() + 'staf', id); if (!txt) return;
         return sha(txt).then(function (h) {
           if (seen[id] === h) return;
           var o; try { o = JSON.parse(txt); } catch (e) { return; }
@@ -632,14 +675,14 @@
         if (!ontv[x.id]) return;
         var o = { type: 'kma-ontvangst', v: 1, ontvangen: ontv[x.id], gezien: s.gezienAt && (s.ontvAt || {})[x.id] === ontv[x.id] ? s.gezienAt : '' };
         var key = o.ontvangen + '|' + o.gezien; if (h[x.id] === key) return;
-        return encK(JSON.stringify(o), sk).then(function (txt) { if (F.write(base() + 'ontvangst/' + x.id + '.json', txt)) { h[x.id] = key; n++; } });
+        return encK(JSON.stringify(o), sk).then(function (txt) { if (busSchrijf(base() + 'ontvangst', x.id, txt)) { h[x.id] = key; n++; } });
       });
     }, Promise.resolve()).then(function () { var s2 = S2(); s2.ontvH = h; save2(s2); return n; });
   }
   /** Instructeur: leest zijn eigen ontvangstbevestiging. */
   function ontvangstLezen() {
     if (role() === 'teamleider') return Promise.resolve(false);
-    var sk = staffKey(), t = sk && F.read(base() + 'ontvangst/' + myId() + '.json'); if (!t) return Promise.resolve(false);
+    var sk = staffKey(), t = sk && busLees(base() + 'ontvangst', myId()); if (!t) return Promise.resolve(false);
     var o; try { o = JSON.parse(t); } catch (e) { return Promise.resolve(false); }
     return decK(o, sk).then(function (txt) {
       var d = kmaLees(txt); if (!d || d.type !== 'kma-ontvangst') return false;
@@ -938,7 +981,7 @@
       if (b.getAttribute('data-s') === 'del') {
         kmaConfirm((x.rank ? x.rank + ' ' : '') + x.name + ' verwijderen uit je peloton?\n\nNieuwe notities en feedback van deze instructeur komen dan niet meer binnen. Wat al binnen is, blijft staan.\n\nDe instructeur heeft de teamsleutel nog. Wil je dat hij of zij ook nieuwe dossiers niet meer kan lezen, ontkoppel dan de deelmap en maak een nieuwe teamsleutel; cadetten en instructeurs moeten dan opnieuw koppelen.', { ok: 'Verwijderen', danger: true }).then(function (ok) { if (!ok) return;
         saveStaff(staffList().filter(function (y) { return y.id !== id; }));
-        if (F.ok()) { F.remove(base() + 'uitnodigingen/' + id + '.json'); F.remove(base() + 'staf/' + id + '.json'); }
+        if (F.ok()) { F.remove(base() + 'uitnodigingen/' + id + '.json'); F.remove(base() + 'staf/' + id + '.json'); busLijst(base() + 'staf').filter(function (x) { return x.naam === id; }).forEach(function (x) { F.remove(base() + 'staf/bus/' + x.file); }); }
         ov.remove(); window.kmaPelotonDialog();
       });
 }

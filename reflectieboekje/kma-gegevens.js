@@ -48,7 +48,8 @@
     { sinds: '4.33', wat: 'CVS-back-up: de beveiligde vorm is een object (cadetten + teamsleutel, instructeurs, peloton, groepscodes); de oude vorm (lijst cadetten) wordt nog gelezen, instructeurs worden samengevoegd', waar: 'bij terugzetten', code: 'kma-transfer.js: cvsTekst; kma-ui-volg.js: importInstructorData; kma-deelmap.js: kmaDeelHerstel · test_deelmap433' },
     { sinds: '4.33', wat: 'Deelmap: nieuwe bestanden ontvangst.json (cadet) en ontvangst/<id>.json (instructeur); oudere versies negeren ze, conflictkopieën van eigen bestanden worden opgeruimd', waar: 'bij synchroniseren', code: 'kma-deelmap.js: ontvangstNaarCadetten, ontvangstNaarStaf, opruimen · test_deelmap433' },
     { sinds: '4.33.1', wat: 'CVS: sleutels en concepten die oudere boekjes in extras meestuurden (kameraden, reserve-*, concepten) worden uit de dossiers gehaald; de rest van extras blijft', waar: 'bij de start en bij elk opslaan', code: 'kma-deelmap.js: schoonExtras · test_extras4331' },
-    { sinds: '4.34.1', wat: 'teamsleutel.json krijgt het veld toestel (willekeurige id); oudere versies negeren het', waar: 'bij publiceren', code: 'kma-deelmap.js: toestelId, publish · test_herstel4341' }
+    { sinds: '4.34.1', wat: 'teamsleutel.json krijgt het veld toestel (willekeurige id); oudere versies negeren het', waar: 'bij publiceren', code: 'kma-deelmap.js: toestelId, publish · test_herstel4341' },
+    { sinds: '4.35', wat: 'Deelmap: busbestanden in de submap bus/ naast de vaste bestanden; oude versies lezen de vaste bestanden, nieuwe het jongste busbestand', waar: 'bij synchroniseren', code: 'kma-deelmap.js: busSchrijf, busLees · test_bus435' }
   ];
 
   var IMG = /^data:image\/(png|jpe?g|webp|gif|bmp|heic|heif);base64,[A-Za-z0-9+/=\s]+$/i;
