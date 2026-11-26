@@ -74,6 +74,8 @@
   function snapshot() {
     var data = {};
     for (var i = 0; i < LS.length; i++) { var k = LS.key(i); if (ours(k)) data[k] = LS.getItem(k); }
+    // 4.40: bijlagen van het CadetVolgSysteem staan in IndexedDB; in de back-up komen de bestanden er weer in
+    if (IS_CVS && window.kmaBijlagenVul && data['kma-cvs-database']) data['kma-cvs-database'] = window.kmaBijlagenVul(data['kma-cvs-database']);
     return { kmaWebBackup: 1, app: APP, appNaam: 'KMA ' + NAME, gemaakt: new Date().toISOString(), data: data };
   }
   function isSnapshot(o) { return !!(o && o.kmaWebBackup && o.data && typeof o.data === 'object'); }
