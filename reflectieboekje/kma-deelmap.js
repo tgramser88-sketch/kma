@@ -193,6 +193,80 @@
     return Object.keys(n);
   }
   window.kmaDeelBus = { lijst: busLijst, lees: busLees, schrijf: function (d, n, t) { return busSchrijf(d, n, t); }, RE: BUS_RE };
+
+  /* 4.37: dubbele mappen. Google Drive (en soms OneDrive/SharePoint) staat twee mappen met dezelfde naam toe; zo kon
+     pelotons/5KLU twee keer bestaan (de ene met teamsleutel en cadetten, de andere met alleen staf). De app opent
+     altijd de eerste; wat in de tweede staat, kwam niet binnen. De Android-app noemt een dubbele map in de lijst
+     "naam§2" (iPhone/OneDrive: "naam (1)"). Hier wordt alles uit de dubbele map gekopieerd naar de eerste (een
+     bestand dat er al staat alleen als het in de dubbele map nieuwer is) en pas als alles is overgezet, gaat de
+     dubbele map weg. Er gaat dus niets verloren. Twee verschillende teamsleutels: niet samenvoegen, wel melden. */
+  var DUBBEL_RE = /^(.+?)(?:§(\d{1,3})| \((\d{1,3})\))$/;
+  function dubbelBasis(naam) { var m = DUBBEL_RE.exec(naam); return m ? m[1] : ''; }
+  function sleutelPub(dir) { try { var o = JSON.parse(F.read(dir + 'teamsleutel.json') || 'null'); return o && o.pub || ''; } catch (e) { return ''; } }
+  function voegSamen(van, naar, diepte) {
+    var r = { ok: true, n: 0 };
+    if (diepte > 6) { r.ok = false; return r; }
+    var doel = {};
+    F.list(naar).forEach(function (f) { doel[(f.dir ? 'd:' : 'f:') + f.name] = f; });
+    F.list(van).forEach(function (f) {
+      var nm = f.dir ? (dubbelBasis(f.name) || f.name) : (/§\d{1,3}$/.test(f.name) ? dubbelBasis(f.name) : f.name);
+      var a = van + '/' + f.name, b = naar + '/' + nm;
+      if (f.dir) { var x = voegSamen(a, b, diepte + 1); r.n += x.n; if (!x.ok) r.ok = false; return; }
+      var t = F.read(a);
+      if (t == null) { r.ok = false; return; }
+      var al = doel['f:' + nm];
+      if (al && (Number(f.mod) || 0) <= (Number(al.mod) || 0)) return;
+      if (al && F.read(b) === t) return;
+      if (F.write(b, t) && F.read(b) === t) r.n++; else r.ok = false;
+    });
+    return r;
+  }
+  /** Zoekt dubbele mappen tot diepte `diep` vanaf de hoofdmap en voegt ze samen. Geeft {samen:[pad], n, conflict:[pad], fout:[pad]}. */
+  function dubbelOpruimen(diep) {
+    var uit = { samen: [], n: 0, conflict: [], fout: [] };
+    var loop = function (dir, d) {
+      var lijst = F.list(dir), mappen = {};
+      lijst.forEach(function (f) { if (f.dir) mappen[f.name] = 1; });
+      lijst.forEach(function (f) {
+        if (!f.dir) return;
+        var b = dubbelBasis(f.name);
+        if (!b || !mappen[b]) return;
+        var van = (dir ? dir + '/' : '') + f.name, naar = (dir ? dir + '/' : '') + b;
+        var p1 = sleutelPub(naar + '/'), p2 = sleutelPub(van + '/');
+        if (p1 && p2 && p1 !== p2) { uit.conflict.push(van); return; }
+        var r = voegSamen(van, naar, 0);
+        uit.n += r.n;
+        if (r.ok && F.remove(van)) uit.samen.push(naar); else uit.fout.push(van);
+      });
+      if (d <= 0) return;
+      lijst.forEach(function (f) {
+        if (!f.dir || f.name === 'bus' || (dubbelBasis(f.name) && mappen[dubbelBasis(f.name)])) return;
+        loop((dir ? dir + '/' : '') + f.name, d - 1);
+      });
+    };
+    try { loop('', diep); } catch (e) { /* map niet bereikbaar */ }
+    return uit;
+  }
+  var DUBBEL_K = 'kma-deel-dubbel';
+  /** Bij elke ronde: snel (hoofdmap, pelotons, peloton; elke 10 minuten), eens per dag alles (ook cadetmappen). */
+  function dubbelBij(volledig) {
+    var s = getJ(DUBBEL_K, {}), nu = new Date().toISOString(), heel = volledig || oud(s.heel, 24);
+    if (!heel && !oud(s.snel, 1 / 6)) return null;
+    var u = dubbelOpruimen(heel ? 5 : 2);
+    s.snel = nu; if (heel) s.heel = nu;
+    if (u.samen.length || u.conflict.length || u.fout.length) { s.laatst = { at: nu, samen: u.samen, n: u.n, conflict: u.conflict, fout: u.fout }; s.totaal = (s.totaal || 0) + u.samen.length; }
+    setJ(DUBBEL_K, s);
+    return u;
+  }
+  window.kmaDeelDubbel = { basis: dubbelBasis, opruimen: dubbelOpruimen, bij: dubbelBij };
+  /** Regels voor "Deelmap controleren" (beide apps). */
+  function dubbelControle(add, info, pre) {
+    var u = dubbelBij(true) || { samen: [], conflict: [], fout: [] };
+    info.dubbeleMappen = u.samen.length + u.conflict.length + u.fout.length;
+    if (u.samen.length) add(pre + '-dubbel-samengevoegd', 'Dubbele map samengevoegd', 'In de deelmap stond ' + u.samen.map(function (p) { return '"' + p + '"'; }).join(', ') + ' twee keer (dat kan in Google Drive). De inhoud staat nu in één map; er is niets weggegooid.', 'let');
+    if (u.conflict.length) add(pre + '-dubbel-teamsleutel', 'Dubbele pelotonmap met een andere teamsleutel', 'De map ' + u.conflict.map(function (p) { return '"' + p + '"'; }).join(', ') + ' bestaat twee keer, elk met een eigen teamsleutel. De app voegt die niet samen. Vraag de teamleider welke de juiste is; de andere kan hij zelf in Google Drive verwijderen.');
+    if (u.fout.length) add(pre + '-dubbel-fout', 'Dubbele map niet samengevoegd', 'De map ' + u.fout.map(function (p) { return '"' + p + '"'; }).join(', ') + ' staat twee keer, maar niet alles kon worden overgezet. Er is niets weggehaald. Probeer het later opnieuw (Nu bijwerken).');
+  }
   var TIP_BESCHIKBAAR = 'Tip: zet de gedeelde map in OneDrive op <b>Altijd behouden op dit apparaat</b> (in de OneDrive-app: ⋮ bij de map → Offline beschikbaar maken). Dan kan de app de bestanden ook lezen als je even geen bereik hebt.';
   /* 4.33 (punt 4): automatisch bijwerken; "Bijgewerkt: x min geleden" in het menu en de dialoog */
   function bijgewerkt(iso) { return iso ? 'bijgewerkt ' + ago(iso) : 'nog niet bijgewerkt'; }
@@ -356,6 +430,7 @@
     /** One round: check the team key, send the dossier when it changed, fetch new feedback. */
     window.kmaDeelSync = function (manual) {
       if (busy || !F.ok() || !S().on) return Promise.resolve(null);
+      try { dubbelBij(false); } catch (e) { /* map niet bereikbaar */ }
       if (!ps()) { if (manual) toast('Vul eerst je Peoplesoft-nummer in (bij Profiel, hoofdstuk 0); daaruit maakt de app de (versleutelde) naam van jouw map.', 'error'); return Promise.resolve(null); }
       busy = true;
       return verify().then(function (err) {
@@ -381,6 +456,7 @@
       if (!window.KMAX || !KMAX.myCode()) return Promise.resolve({ lijst: l, info: info, opgeruimd: 0 });
       return verify().then(function (err) {
         info.teamsleutel = err ? 'nee' : 'ja';
+        dubbelControle(add, info, 'B');
         if (err) { add('B-teamsleutel', 'Teamsleutel niet gevonden', err); return { lijst: l, info: info, opgeruimd: 0 }; }
         var n = ps() ? opruimen(cbase() + psDir(ps()), ['dossier.json']) : 0;
         info.conflictkopieen = n;
@@ -482,6 +558,27 @@
     if (!hit) kijk('', peloton(), 'peloton');
     return hit;
   }
+
+  /** 4.37: op welk niveau koos de teamleider de map? Koos hij de map van het peloton zelf (of de map "pelotons"), dan
+      maakte de app daarin nog eens pelotons/<peloton>. Nu herkent de app dat. Staat zijn eigen teamsleutel al op de
+      huidige plek, dan blijft alles zoals het is (niets verplaatsen). */
+  function niveauKies() {
+    var p = slug(peloton()), nm = String(F.name() || ''), w = F.list('');
+    var heeft = function (n, dir) { return w.some(function (f) { return !!f.dir === dir && f.name === n; }); };
+    if (heeft('pelotons', true)) return '';
+    if (heeft('teamsleutel.json', false) || heeft('cadetten', true) || heeft('staf', true) || (p && nm.toLowerCase() === p.toLowerCase())) return 'peloton';
+    if (nm.toLowerCase() === 'pelotons' || (p && heeft(p, true))) return 'pelotons';
+    return '';
+  }
+  function niveauBijKiezen() {
+    var t = team(), cur = F.read(base() + 'teamsleutel.json'), mijn = false;
+    try { mijn = !!(cur && t && JSON.parse(cur).pub === t.pub); } catch (e) { /* geen sleutel */ }
+    if (mijn) return niveau();
+    var nv = niveauKies(), s = S2();
+    if ((s.niveau || '') !== nv) { s.niveau = nv; s.staffSeen = {}; save2(s); }
+    return nv;
+  }
+  window.kmaDeelNiveauKies = niveauKies;
 
   /* ---------------- Team key, staff key ---------------- */
   function makeTeamKey() {
@@ -702,6 +799,7 @@
   window.kmaStafOntvangst = stafOntvangstTekst;
   window.kmaDeelSync = function (manual) {
     if (busy || !F.ok() || !S2().on) return Promise.resolve(null);
+    try { dubbelBij(false); } catch (e) { /* map niet bereikbaar */ }
     if (!team()) { if (manual) toast(role() === 'teamleider' ? 'Maak eerst de teamsleutel (Deelmap)' : 'Gebruik eerst de uitnodiging van je teamleider (⋮ → Peloton en team)', 'error'); return Promise.resolve(null); }
     if (role() === 'teamleider' && !peloton()) { if (manual) toast('Vul eerst de naam van je peloton in (⋮ → Peloton en team)', 'error'); }
     if (role() !== 'teamleider' && !eigenSleutel()) {
@@ -756,6 +854,7 @@
     if (tl && !peloton()) add('C-geen-peloton', 'Geen pelotonnaam', 'Vul de naam van je peloton in (⋮ → Peloton en team).');
     if (!on) { add('C-niet-gekoppeld', 'Deelmap niet gekoppeld', tl ? 'Tik in Deelmap op Map kiezen en kies de gedeelde map (bijv. in SharePoint).' : 'Kies bij ⋮ → Peloton en team → Uitnodiging gebruiken de map van je teamleider.'); return { lijst: l, info: info, opgeruimd: 0 }; }
     if (!t) { add('C-geen-teamsleutel', tl ? 'Nog geen teamsleutel' : 'Nog niet uitgenodigd', tl ? 'Tik in Deelmap op Map kiezen; de app maakt dan de teamsleutel.' : 'Vraag je teamleider om een uitnodigingscode en gebruik die bij ⋮ → Peloton en team.'); return { lijst: l, info: info, opgeruimd: 0 }; }
+    dubbelControle(add, info, 'C');
     var codes = window.KMAX ? ['ALFA', 'BRAVO', 'CHARLIE', 'DELTA'].filter(function (g) { return KMAX.codeForGroup(g); }) : [];
     if (tl) { info.groepscodes = codes.length; if (!codes.length) add('C-geen-codes', 'Geen groepscodes', 'Maak een groepscode per groep (⋮ → Groepscodes) en geef die aan je cadetten. Zonder code kunnen zij de teamsleutel niet vinden.'); }
     var eig = eigenSleutel(); info.sleutelInMap = eig ? 'ja' : 'nee';
@@ -1034,6 +1133,7 @@
         pick(function (ok) {
           if (!ok) return;
           var go = function () { var s2 = S2(); s2.on = true; s2.written = {}; s2.staffHash = ''; save2(s2); toast('Deelmap gekoppeld: ' + F.name() + '. Tip: zet de map in OneDrive op "Altijd behouden op dit apparaat".'); window.kmaDeelSync(true); };
+          if (tl) niveauBijKiezen();
           var exists = F.read(base() + 'teamsleutel.json');
           if (tl && !team()) {
             var kmaGo = function () {
