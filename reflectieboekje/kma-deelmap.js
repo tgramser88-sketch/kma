@@ -270,6 +270,7 @@
           if (!F.write(cbase() + psDir(ps()) + '/dossier.json', sealed)) throw new Error('schrijven');
           // 4.30: na de overstap het eigen oude dossier (map met nummer) weghalen; feedback daar blijft leesbaar
           if (F.read(oudPad) != null) F.remove(oudPad);
+          // 4.34.1: een conflictkopie kan juist de nieuwste versie zijn geweest; na opruimen staat de zojuist geschreven versie er
           opruimen(cbase() + psDir(ps()), ['dossier.json']);
           s = S(); s.lastUp = h; s.lastUpAt = p.sharedAt; save(s);
           if (window.kmaMarkShared) kmaMarkShared('de deelmap');
@@ -340,6 +341,7 @@
         if (err) { add('B-teamsleutel', 'Teamsleutel niet gevonden', err); return { lijst: l, info: info, opgeruimd: 0 }; }
         var n = ps() ? opruimen(cbase() + psDir(ps()), ['dossier.json']) : 0;
         info.conflictkopieen = n;
+        if (n) { var s9 = S(); s9.lastUp = ''; save(s9); setTimeout(function () { window.kmaDeelSync(false); }, 200); }   // 4.34.1: eigen versie opnieuw schrijven
         if (ps() && F.read(cbase() + psDir(ps()) + '/dossier.json') == null) add('B-geen-dossier', 'Je dossier staat nog niet in de map', 'Wacht een minuut of open de app opnieuw. Blijft dit staan, kies dan in Deelmap opnieuw de map van je teamleider.');
         if (s.err) add('B-fout', 'Laatste keer bijwerken mislukt', s.err);
         if (oud(s.lastSync, 24)) add('B-oud', 'Lang niet bijgewerkt', 'De app werkt bij als je hem opent. Is de map bereikbaar? Zet de map in OneDrive op "Altijd behouden op dit apparaat".', 'let');
@@ -459,6 +461,8 @@
     return m.id;
   }
 
+  /** 4.34.1: vaste willekeurige id van dit toestel (niet herleidbaar), om twee teamleider-telefoons te herkennen. */
+  function toestelId() { var s = S2(); if (!s.toestel) { s.toestel = b64(crypto.getRandomValues(new Uint8Array(9))).replace(/[^A-Za-z0-9]/g, '').slice(0, 10); save2(s); } return s.toestel; }
   /** Teamleider: write teamsleutel.json with a proof per group code. */
   function publish() {
     var t = team(); if (!t || role() !== 'teamleider' || !window.KMAX) return Promise.resolve(false);
@@ -466,11 +470,14 @@
     cadets.forEach(function (c) { if (c.group && groups.indexOf(c.group) < 0) groups.push(c.group); });
     var withCode = groups.filter(function (g) { return KMAX.codeForGroup(g); });
     return Promise.all(withCode.map(function (g) { return teamProof2(KMAX.codeForGroup(g), t.pub); })).then(function (proofs) {
-      var o = { type: 'kma-teamsleutel', v: 2, pub: t.pub, groups: {}, by: t.by || '', at: t.at };
+      var o = { type: 'kma-teamsleutel', v: 2, pub: t.pub, groups: {}, by: t.by || '', at: t.at, toestel: toestelId() };
       if (peloton()) o.peloton = peloton();
       withCode.forEach(function (g, i) { o.groups[g] = proofs[i]; });
       var txt = JSON.stringify(o), cur = F.read(base() + 'teamsleutel.json');
       if (cur === txt) return true;
+      /* 4.34.1: schreef een ander toestel met dezelfde teamsleutel? Dan zijn er twee teamleider-telefoons actief (bijv. na
+         terugzetten van een back-up op een nieuwe telefoon). Melden; de oude telefoon moet de deelmap ontkoppelen. */
+      try { var oc = cur && JSON.parse(cur); if (oc && oc.pub === t.pub && oc.toestel && oc.toestel !== o.toestel) { var s7 = S2(); if (!s7.anderToestel) toast('Let op: een andere telefoon gebruikt ook jouw teamsleutel. Ontkoppel de deelmap op je oude telefoon.'); s7.anderToestel = new Date().toISOString(); save2(s7); } } catch (e) { /* oud bestand */ }
       return F.write(base() + 'teamsleutel.json', txt);
     });
   }
@@ -690,7 +697,11 @@
       F.list(base() + 'cadetten').forEach(function (d) { if (d.dir) n += opruimen(base() + 'cadetten/' + d.name, ['feedback.json', 'ontvangst.json']); });
       n += opruimen(base() + 'ontvangst', staffList().map(function (x) { return x.id + '.json'; }));
     }
-    var s = S2(); s.opruimAt = new Date().toISOString(); s.opgeruimd = (s.opgeruimd || 0) + n; save2(s);
+    var s = S2(); s.opruimAt = new Date().toISOString(); s.opgeruimd = (s.opgeruimd || 0) + n;
+    // 4.34.1: OneDrive geeft soms juist de nieuwste versie de naam van de kopie. Na opruimen daarom de eigen bestanden opnieuw schrijven.
+    if (n) { s.written = {}; s.ontvC = {}; s.ontvH = {}; s.staffHash = ''; }
+    save2(s);
+    if (n) setTimeout(function () { window.kmaDeelSync(false); }, 200);
     return n;
   }
   /** 4.33 (punt 1): alle controles van het CadetVolgSysteem; geeft {lijst, info, opgeruimd} */
@@ -713,6 +724,7 @@
     if (fout) add('C-staf-fout', fout + (fout === 1 ? ' bestand van een collega' : " bestanden van collega's") + ' niet te openen', tl ? 'Tik bij Peloton en team bij die instructeur op Nieuwe code en laat hem de nieuwe code gebruiken.' : 'Gebruik een nieuwe uitnodiging van je teamleider.');
     var warn = cadets.filter(function (c) { return c.deelWarn; }).length; info.dossierWaarschuwing = warn;
     if (warn) add('C-dossier-warn', warn + ' dossier' + (warn === 1 ? '' : 's') + ' niet ingelezen', 'Open het dossier: daar staat wat er aan de hand is (meestal heeft de cadet de app opnieuw geïnstalleerd).');
+    if (tl && s.anderToestel && !oud(s.anderToestel, 72)) add('C-twee-toestellen', 'Twee telefoons gebruiken jouw teamsleutel', 'Ontkoppel de deelmap op de telefoon die je niet meer gebruikt (⋮ → Deelmap → Ontkoppelen). Anders overschrijven ze elkaars bestanden.');
     if (s.err) add('C-fout', 'Laatste keer bijwerken mislukt', s.err);
     if (oud(s.lastSync, 24)) add('C-oud', 'Lang niet bijgewerkt', 'De app werkt bij als je hem opent. Is de map bereikbaar? Zet de map in OneDrive op "Altijd behouden op dit apparaat".', 'let');
     if (tl) { var nooit = staffList().filter(function (x) { return !x.seen && oud(x.at, 72); }).length; info.instructeursNietActief = nooit; if (nooit) add('C-staf-stil', nooit + ' instructeur' + (nooit === 1 ? '' : 's') + ' nog niet actief', 'Een uitnodiging werkt pas als de instructeur dezelfde map kiest en de code invult. Maak zo nodig een nieuwe code (Peloton en team).', 'let'); }
@@ -1013,7 +1025,17 @@
   };
   window.kmaDeelHerstel = function (d) {
     if (!d || !d.team || !d.team.pub || !d.team.priv) return false;
-    var t = team(), zet = function () {
+    /* 4.34.1: teamgegevens alleen terugzetten op een toestel met de rol teamleider. Een instructeur die de back-up van zijn
+       teamleider inleest (bijv. als "database van een collega"), krijgt alleen de dossiers; anders zou zijn telefoon zich als
+       de teamleider gedragen. */
+    if (role() !== 'teamleider' || (d.rol && d.rol !== 'teamleider')) { toast('Alleen de dossiers zijn ingelezen. Teamsleutel en instructeurs horen bij de teamleider.'); return false; }
+    var t = team();
+    // 4.34.1: controleren of de sleutels bij elkaar horen (beschadigde of verkeerde back-up)
+    return sealTo('kma-controle', d.team.pub).then(function (x) { return unseal(JSON.parse(x), d.team.priv); }).then(function (pt) { if (pt !== 'kma-controle') throw new Error('sleutel'); return herstelNu(d, t); },
+      function () { toast('De teamsleutel in deze back-up is beschadigd en is niet teruggezet. De dossiers zijn wel ingelezen.'); return false; });
+  };
+  function herstelNu(d, t) {
+    var zet = function () {
       setJ(TK, d.team);
       if (d.me && d.me.id) setJ(MK, d.me);
       if (d.peloton && d.peloton.name) setJ(PK, d.peloton);
@@ -1025,15 +1047,14 @@
         try { st().setItem('kma-cvs-groupcodes', JSON.stringify(cur)); } catch (e) { /* opslag vol */ }
       }
       var s = S2(); s.staffHash = ''; s.staffSeen = {}; s.written = {}; save2(s);
-      toast('Teamsleutel en ' + (d.staff || []).length + ' instructeur(s) teruggezet');
+      toast('Teamsleutel en ' + (d.staff || []).length + ' instructeur(s) teruggezet. Gebruik je oude telefoon niet meer voor de deelmap (ontkoppel daar).');
       setTimeout(function () { window.kmaDeelSync(false); }, 300);
     };
     if (t && t.pub !== d.team.pub) {
-      kmaConfirm('In de back-up staat een andere teamsleutel dan op dit toestel. De teamsleutel uit de back-up gebruiken? Doe dit alleen als dit je eigen back-up is.', { ok: 'Teamsleutel terugzetten', cancel: 'Huidige houden', danger: false }).then(function (ok) { if (ok) zet(); });
-      return true;
+      return kmaConfirm('In de back-up staat een andere teamsleutel dan op dit toestel. De teamsleutel uit de back-up gebruiken? Doe dit alleen als dit je eigen back-up is.', { ok: 'Teamsleutel terugzetten', cancel: 'Huidige houden', danger: false }).then(function (ok) { if (ok) zet(); return !!ok; });
     }
     zet(); return true;
-  };
+  }
   setTimeout(function () { try { if (schoonExtras() && typeof saveCVS === 'function') saveCVS(); } catch (e) { /* geen dossiers */ } }, 1500);
   setTimeout(function () { window.kmaDeelSync(false); }, 3000);
   setInterval(function () { if (!document.hidden) window.kmaDeelSync(false); }, 90000);
